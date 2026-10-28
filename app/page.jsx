@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { OFFERS } from '@/components/offers';
-import { Alert, ArrowRight, BarChart, Check, Clock, Pencil, Target, TrendUp } from '@/components/icons';
+import { COMPLIANCE, OFFERS } from '@/components/offers';
+import { ArrowRight, BarChart, Check, Clock, DOMAIN_ICONS, Pencil, Shield, Target } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
 export const metadata = { alternates: { canonical: '/' } };
@@ -37,6 +37,14 @@ const SAMPLE = [
   { name: 'Coffrets cadeaux', margin: '560 €', width: 6, state: 'bad', label: 'Critique' },
 ];
 
+// Exemple de plan d'action conformité (livrable de l'étape 2 de la démarche)
+const PLAN = [
+  { name: 'RGPD', state: 'ok', label: 'Conforme' },
+  { name: 'Procédures internes', state: 'ok', label: 'Conforme' },
+  { name: 'Anticorruption', state: 'warn', label: 'En cours' },
+  { name: 'Droit social', state: 'bad', label: 'À traiter' },
+];
+
 function Preview() {
   return (
     <div className="preview rise d2" aria-hidden="true">
@@ -63,13 +71,18 @@ function Preview() {
           ))}
         </div>
       </div>
-      <div className="float float-a">
-        <span className="float-icon ok"><TrendUp size={18} /></span>
-        <div><small>Seuil de rentabilité</small><b>Dépassé de 6&#8239;600&nbsp;€</b></div>
-      </div>
-      <div className="float float-b">
-        <span className="float-icon bad"><Alert size={18} /></span>
-        <div><small>Coffrets cadeaux</small><b>Taux de marque 14&nbsp;%</b></div>
+      <div className="plan-card">
+        <div className="plan-head">
+          <span className="float-icon ok"><Shield size={18} /></span>
+          <div><small>Exemple · plan d'action</small><b>Conformité</b></div>
+        </div>
+        <div className="meter"><span style={{ width: '60%' }} /></div>
+        {PLAN.map((r) => (
+          <div className="plan-row" key={r.name}>
+            <span>{r.name}</span>
+            <span className={'pill ' + r.state}>{r.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -90,24 +103,25 @@ export default function Home() {
         <div className="rise">
           <span className="badge"><span className="badge-dot" />Pour les dirigeants de PME</span>
           <h1>
-            Sachez ce que chaque produit vous rapporte <span className="grad-text">vraiment</span>
+            Maîtrisez vos marges, <span className="grad-text">sécurisez</span> votre conformité
           </h1>
           <p className="lead">
-            Equimarge calcule la marge de chacun de vos produits et prestations, signale ceux qui vous coûtent de
-            l'argent et vous donne votre seuil de rentabilité. Gratuit, sans logiciel à installer.
+            Equimarge accompagne les PME sur deux terrains : le suivi de la marge de chaque produit, avec un outil gratuit
+            et un diagnostic sur mesure, et la mise en conformité de l'entreprise : procédures internes, RGPD,
+            anti-blanchiment, anticorruption et droit social.
           </p>
           <div className="row">
             <Link href="/connexion?mode=inscription" className="btn lg">
               Créer mon espace gratuit <ArrowRight size={18} />
             </Link>
-            <Link href="/diagnostic" className="btn ghost lg">
-              Commander un diagnostic
+            <Link href="/conformite#devis" className="btn ghost lg">
+              Demander un devis conformité
             </Link>
           </div>
           <ul className="trust">
-            <li><Check size={18} />Gratuit</li>
-            <li><Check size={18} />Sans logiciel à installer</li>
-            <li><Check size={18} />Vos chiffres restent privés</li>
+            <li><Check size={18} />Outil de marge gratuit</li>
+            <li><Check size={18} />Conformité sur devis</li>
+            <li><Check size={18} />Réponse sous 48&nbsp;h ouvrées</li>
           </ul>
         </div>
         <Preview />
@@ -115,7 +129,52 @@ export default function Home() {
 
       <section className="section">
         <div className="section-head center">
-          <span className="eyebrow">Comment ça marche</span>
+          <span className="eyebrow">Deux pôles</span>
+          <h2>Vos marges et votre conformité, au même endroit</h2>
+          <p>Choisissez par où commencer : les deux se complètent.</p>
+        </div>
+        <div className="grid2 poles">
+          <article className="pole">
+            <div className="feature-icon"><BarChart size={22} /></div>
+            <span className="eyebrow">Pôle marges</span>
+            <h3>Pilotez votre rentabilité</h3>
+            <p className="note">
+              Un outil gratuit pour suivre la marge de chaque produit, et un diagnostic réalisé par un spécialiste de
+              l'audit pour aller plus loin.
+            </p>
+            <ul className="checks">
+              <li><Check size={16} />Marge et taux de marque par produit</li>
+              <li><Check size={16} />Alertes et seuil de rentabilité</li>
+              <li><Check size={16} />Diagnostic et plan d'action sur mesure</li>
+            </ul>
+            <div className="row">
+              <Link href="/connexion?mode=inscription" className="btn">Créer mon espace gratuit</Link>
+              <a href="#formules" className="btn ghost">Voir les formules</a>
+            </div>
+          </article>
+          <article className="pole">
+            <div className="feature-icon"><Shield size={22} /></div>
+            <span className="eyebrow">Pôle conformité</span>
+            <h3>Sécurisez votre entreprise</h3>
+            <p className="note">
+              Audit et accompagnement pour mettre en place vos politiques et procédures et répondre à vos obligations.
+            </p>
+            <ul className="checks">
+              {COMPLIANCE.map((d) => (
+                <li key={d.key}><Check size={16} />{d.id}</li>
+              ))}
+            </ul>
+            <div className="row">
+              <Link href="/conformite#devis" className="btn">Demander un devis</Link>
+              <Link href="/conformite" className="btn ghost">Découvrir</Link>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="section" id="marges">
+        <div className="section-head center">
+          <span className="eyebrow">Pôle marges · comment ça marche</span>
           <h2>Saisir, voir, agir</h2>
           <p>De vos chiffres bruts à un plan d'action, en trois étapes.</p>
         </div>
@@ -132,11 +191,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section">
+      <section className="section" id="formules">
         <div className="section-head center">
-          <span className="eyebrow">Diagnostic</span>
+          <span className="eyebrow">Pôle marges · diagnostic</span>
           <h2>Les formules de diagnostic</h2>
-          <p>Nous revenons vers vous sous 48 h ouvrées. Aucun paiement n'est demandé à ce stade.</p>
+          <p>Nous revenons vers vous sous 48&nbsp;h ouvrées. Aucun paiement n'est demandé à ce stade.</p>
         </div>
         <div className="grid3 pricing">
           {OFFERS.map((o) => (
@@ -161,17 +220,43 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section" id="conformite">
+        <div className="section-head center">
+          <span className="eyebrow">Pôle conformité</span>
+          <h2>Cinq domaines d'intervention</h2>
+          <p>Sur devis, selon votre taille et votre secteur. Réponse sous 48&nbsp;h ouvrées.</p>
+        </div>
+        <div className="grid3 grid-center">
+          {COMPLIANCE.map((d) => {
+            const Icon = DOMAIN_ICONS[d.key];
+            return (
+              <Link key={d.key} href={`/conformite?domaine=${d.key}#devis`} className="feature domain-card">
+                <div className="feature-icon"><Icon size={22} /></div>
+                <h3>{d.id}</h3>
+                <p className="note">{d.intro}</p>
+                <span className="domain-link">Demander un devis <ArrowRight size={16} /></span>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="row" style={{ justifyContent: 'center' }}>
+          <Link href="/conformite" className="btn ghost lg">
+            Découvrir l'accompagnement conformité
+          </Link>
+        </div>
+      </section>
+
       <section className="cta">
         <div>
-          <h2>Prêt à voir où se fait votre marge&nbsp;?</h2>
-          <p>Gratuit, sans logiciel à installer. Vos chiffres restent privés.</p>
+          <h2>Parlons de votre entreprise</h2>
+          <p>Outil de marge gratuit, conformité sur devis. Réponse sous 48&nbsp;h ouvrées.</p>
         </div>
         <div className="row">
           <Link href="/connexion?mode=inscription" className="btn inverse lg">
             Créer mon espace gratuit <ArrowRight size={18} />
           </Link>
-          <Link href="/diagnostic" className="btn on-grad lg">
-            Commander un diagnostic
+          <Link href="/conformite#devis" className="btn on-grad lg">
+            Demander un devis conformité
           </Link>
         </div>
       </section>

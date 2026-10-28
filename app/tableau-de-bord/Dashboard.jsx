@@ -130,6 +130,9 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
           <span className="row" style={{ gap: 8, minWidth: 0 }}>
             <span className="eyebrow">Tableau de bord mensuel</span>
             <span className="note">{email}</span>
+            <form action="/auth/deconnexion" method="post">
+              <button className="link-btn" type="submit">Se déconnecter</button>
+            </form>
           </span>
           <span className={saveClass} aria-live="polite">{saveState}</span>
         </div>

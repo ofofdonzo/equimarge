@@ -13,7 +13,7 @@ export default function Page() {
       <ul>
         <li><b>Compte utilisateur</b> (e-mail, mot de passe chiffré) : vous donner accès à votre espace. Base légale : exécution du contrat.</li>
         <li><b>Données de marge</b> (produits, prix, coûts, quantités, charges fixes) : calculer vos indicateurs. Base légale : exécution du contrat.</li>
-        <li><b>Demandes de diagnostic</b> (entreprise, contact, message) : vous recontacter et établir un devis. Base légale : votre consentement et mesures précontractuelles.</li>
+        <li><b>Demandes de diagnostic et de devis</b> (entreprise, contact, domaines concernés, message) : vous recontacter et établir un devis. Base légale : votre consentement et mesures précontractuelles.</li>
       </ul>
 
       <h2>Destinataires</h2>
@@ -22,7 +22,7 @@ export default function Page() {
       <h2>Durée de conservation</h2>
       <ul>
         <li>Données du compte et de marge : tant que le compte est actif, puis suppression sous 30 jours après sa clôture.</li>
-        <li>Demandes de diagnostic sans suite : 3 ans à compter du dernier contact.</li>
+        <li>Demandes de diagnostic ou de devis sans suite : 3 ans à compter du dernier contact.</li>
       </ul>
 
       <h2>Vos droits</h2>

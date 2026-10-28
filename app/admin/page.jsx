@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import RequestsTable from './RequestsTable';
 
-export const metadata = { title: 'Demandes de diagnostic — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Demandes — Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
@@ -31,7 +31,7 @@ export default async function Page() {
     <div className="stack">
       <div>
         <span className="eyebrow">Administration</span>
-        <h1>Demandes de diagnostic</h1>
+        <h1>Demandes de diagnostic et de devis</h1>
         <p className="note">{requests?.length || 0} demande(s). Changez le statut au fil de vos échanges avec le client.</p>
       </div>
       {error ? <p className="err">Chargement impossible : {error.message}</p> : <RequestsTable initial={requests || []} />}

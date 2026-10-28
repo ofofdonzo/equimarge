@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { OFFERS } from '@/components/offers';
-import DiagnosticForm from './DiagnosticForm';
+import RequestForm from '@/components/RequestForm';
 
 export const metadata = {
   title: 'Commander un diagnostic — Equimarge',
@@ -21,14 +21,14 @@ export default async function Page({ searchParams }) {
   return (
     <div className="stack" style={{ gap: 32 }}>
       <div>
-        <span className="eyebrow">Diagnostic de marge</span>
+        <span className="eyebrow">Pôle marges · diagnostic</span>
         <h1>Commander un diagnostic</h1>
         <p className="lead" style={{ marginBottom: 0 }}>
-          Choisissez une formule et décrivez votre entreprise. Nous revenons vers vous sous 48 h ouvrées pour fixer
+          Choisissez une formule et décrivez votre entreprise. Nous revenons vers vous sous 48&nbsp;h ouvrées pour fixer
           un premier rendez-vous. Aucun paiement n'est demandé à ce stade.
         </p>
       </div>
-      <DiagnosticForm userId={user?.id || null} defaultEmail={user?.email || ''} defaultOffer={offer} />
+      <RequestForm kind="diagnostic" userId={user?.id || null} defaultEmail={user?.email || ''} defaultOffer={offer} />
     </div>
   );
 }

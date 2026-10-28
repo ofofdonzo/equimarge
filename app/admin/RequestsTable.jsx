@@ -27,7 +27,7 @@ export default function RequestsTable({ initial }) {
       <div className="scroll">
         <table className="tbl-wide">
           <thead>
-            <tr><th>Date</th><th>Entreprise</th><th>Formule</th><th>Contact</th><th>Statut</th><th></th></tr>
+            <tr><th>Date</th><th>Entreprise</th><th>Demande</th><th>Contact</th><th>Statut</th><th></th></tr>
           </thead>
           <tbody>
             {rows.map((r) => (
@@ -51,6 +51,7 @@ export default function RequestsTable({ initial }) {
                         <div><b>SIREN :</b> {r.siren || '—'}<br /><b>Secteur :</b> {r.sector || '—'}<br /><b>CA :</b> {r.revenue_band || '—'}</div>
                         <div><b>Téléphone :</b> {r.phone || '—'}<br /><b>Disponibilités :</b> {r.availability || '—'}<br /><b>Compte client :</b> {r.user_id ? 'oui' : 'non'}</div>
                       </div>
+                      {r.topics?.length > 0 && <p style={{ padding: '0 8px' }}><b>Domaines :</b> {r.topics.join(', ')}</p>}
                       {r.message && <p style={{ padding: '0 8px', whiteSpace: 'pre-wrap' }}>{r.message}</p>}
                     </td>
                   </tr>

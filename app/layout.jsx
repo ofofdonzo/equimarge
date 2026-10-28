@@ -4,9 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { LogOut, LogoMark } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
-const TITLE = 'Equimarge — le suivi de marge des PME';
+const TITLE = 'Equimarge — marges et conformité des PME';
 const DESCRIPTION =
-  "Suivez la marge de chaque produit, repérez ce qui la fait baisser et commandez un diagnostic réalisé par un spécialiste de l'audit.";
+  'Suivi de marge gratuit, diagnostic et mise en conformité des PME : procédures internes, RGPD, anti-blanchiment, anticorruption, droit social.';
 
 export function generateMetadata() {
   return {
@@ -55,12 +55,15 @@ export default async function RootLayout({ children }) {
               </span>
             </Link>
             <nav className="nav" aria-label="Navigation principale">
-              <Link href="/diagnostic" className="nav-link">
-                Diagnostic
+              <Link href="/#marges" className="nav-link">
+                Marges
+              </Link>
+              <Link href="/conformite" className="nav-link">
+                Conformité
               </Link>
               {user ? (
                 <>
-                  <form action="/auth/deconnexion" method="post">
+                  <form action="/auth/deconnexion" method="post" className="logout">
                     <button className="nav-link" type="submit" title="Se déconnecter">
                       <LogOut size={18} />
                       <span className="hide-sm">Se déconnecter</span>
@@ -90,10 +93,11 @@ export default async function RootLayout({ children }) {
                   Equi<span>marge</span>
                 </span>
               </Link>
-              <p>Le suivi de marge des PME.</p>
+              <p>Marges et conformité des PME.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
-              <Link href="/diagnostic">Diagnostic</Link>
+              <Link href="/diagnostic">Diagnostic de marge</Link>
+              <Link href="/conformite">Conformité</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>

@@ -36,6 +36,14 @@ export const Percent = icon(<><path d="M19 5 5 19" /><circle cx="7" cy="7" r="2.
 export const Wallet = icon(<><rect x="3" y="6" width="18" height="14" rx="2.5" /><path d="M3 10.5h18" /><path d="M16 15h1.5" /></>);
 export const Shield = icon(<><path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6L12 3Z" /><path d="m9 12 2 2 4-4" /></>);
 export const LogOut = icon(<><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" /><path d="m16 16 4-4-4-4" /><path d="M20 12H10" /></>);
+export const ClipboardList = icon(<><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 2.5h6v3H9z" /><path d="M9 11h6" /><path d="M9 15h4" /></>);
+export const Database = icon(<><ellipse cx="12" cy="5.5" rx="7" ry="2.5" /><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13" /><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" /></>);
+export const Search = icon(<><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></>);
+export const Scale = icon(<><path d="M12 4v16" /><path d="M8 20h8" /><path d="M5 7h14" /><path d="m5 7-2.5 6a2.5 2.5 0 0 0 5 0L5 7Z" /><path d="m19 7-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z" /></>);
+export const Users = icon(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" /><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8" /></>);
+
+// Icône de chaque domaine de conformité (clés de COMPLIANCE dans components/offers.js)
+export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, lcbft: Search, sapin: Scale, social: Users };
 
 // Logo : trois barres montantes sur un carré en dégradé. `id` doit être unique dans la page.
 export function LogoMark({ id = 'logo', size = 32 }) {

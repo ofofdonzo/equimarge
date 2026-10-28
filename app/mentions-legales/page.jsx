@@ -27,6 +27,10 @@ export default function Page() {
         Les calculs fournis par l'outil sont indicatifs et dépendent des données saisies par l'utilisateur. Ils ne
         remplacent pas l'avis d'un expert-comptable.
       </p>
+      <p>
+        Les missions de mise en conformité proposées par Equimarge relèvent de l'audit et de l'accompagnement
+        opérationnel. Elles ne constituent pas des consultations juridiques.
+      </p>
     </article>
   );
 }

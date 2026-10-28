@@ -1,10 +1,11 @@
 # Equimarge
 
-Application de suivi de marge pour PME, avec commande de diagnostic.
+Site et application pour PME, en deux pôles : suivi de marge (outil gratuit et diagnostic) et mise en conformité (sur devis).
 
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
+- **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
 - **Administration** (`/admin`) : vous seul voyez les demandes et changez leur statut.
 - **Mentions légales** et **Confidentialité** : modèles à compléter (cherchez `[À COMPLÉTER]`).
 
@@ -48,7 +49,7 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr` et suivez le
 ### 7. Avant d'ouvrir au public
 - Complétez les `[À COMPLÉTER]` des pages légales (SIREN, adresse, responsable, coordonnées de l'hébergeur).
 - Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données).
-- Ajustez les formules et prix dans `components/offers.js`.
+- Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).
 
 ### 8. Apparaître dans Google

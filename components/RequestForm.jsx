@@ -2,23 +2,32 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { OFFERS, SECTORS, REVENUE_BANDS } from '@/components/offers';
-import { ArrowRight, Check, Clock } from '@/components/icons';
+import { OFFERS, COMPLIANCE, COMPLIANCE_OFFER, SECTORS, REVENUE_BANDS } from '@/components/offers';
+import { ArrowRight, Check, Clock, DOMAIN_ICONS } from '@/components/icons';
 
-export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
+// Formulaire de demande, commun aux deux pôles :
+// kind="diagnostic" : choix d'une formule de diagnostic de marge ;
+// kind="conformite" : choix d'un ou plusieurs domaines, devis sur mesure.
+export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, defaultTopics = [] }) {
+  const compliance = kind === 'conformite';
   const [f, setF] = useState({
-    offer: defaultOffer, company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
+    offer: compliance ? COMPLIANCE_OFFER : defaultOffer, topics: defaultTopics,
+    company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
     contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false,
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  const toggleTopic = (key) =>
+    setF({ ...f, topics: f.topics.includes(key) ? f.topics.filter((t) => t !== key) : [...f.topics, key] });
+  const topicNames = COMPLIANCE.filter((d) => f.topics.includes(d.key)).map((d) => d.id);
 
   async function submit(e) {
     e.preventDefault();
     const siren = f.siren.replace(/\s/g, '');
     const miss = [];
+    if (compliance && topicNames.length === 0) miss.push('au moins un domaine');
     if (!f.company.trim()) miss.push('la raison sociale');
     if (siren && !/^\d{9}$/.test(siren)) miss.push('un SIREN à 9 chiffres (ou laissez le champ vide)');
     if (!f.contact_name.trim()) miss.push('votre nom');
@@ -32,6 +41,8 @@ export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
     const { error } = await supabase.from('diagnostic_requests').insert({
       user_id: userId,
       offer: f.offer,
+      // La colonne topics n'est envoyée que pour la conformité (voir supabase/schema.sql)
+      ...(compliance && { topics: topicNames }),
       company: f.company.trim(),
       siren: siren || null,
       sector: f.sector,
@@ -54,11 +65,18 @@ export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
       <div className="panel success stack" style={{ padding: 28 }}>
         <span className="done-icon"><Check size={26} /></span>
         <h2 style={{ margin: 0 }}>Demande envoyée</h2>
-        <p style={{ margin: 0 }}>
-          Merci. Votre demande de diagnostic <b>{f.offer}</b> pour <b>{f.company}</b> est bien enregistrée. Nous vous
-          écrivons à {f.email} sous 48 h ouvrées.
-        </p>
-        {!userId && (
+        {compliance ? (
+          <p style={{ margin: 0 }}>
+            Merci. Votre demande de devis pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée. Nous vous
+            écrivons à {f.email} sous 48&nbsp;h ouvrées.
+          </p>
+        ) : (
+          <p style={{ margin: 0 }}>
+            Merci. Votre demande de diagnostic <b>{f.offer}</b> pour <b>{f.company}</b> est bien enregistrée. Nous vous
+            écrivons à {f.email} sous 48&nbsp;h ouvrées.
+          </p>
+        )}
+        {!userId && !compliance && (
           <p className="note" style={{ margin: 0 }}>
             En attendant, créez votre espace gratuit pour saisir vos marges : nous gagnerons du temps lors du rendez-vous.{' '}
             <Link href="/connexion?mode=inscription">Créer mon espace</Link>
@@ -70,20 +88,40 @@ export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
 
   return (
     <form className="stack" onSubmit={submit} noValidate>
-      <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-        <legend><span className="step-label"><span className="n">1</span>Formule</span></legend>
-        <div className="grid3">
-          {OFFERS.map((o) => (
-            <label key={o.id} className={'offer' + (f.offer === o.id ? ' selected' : '')}>
-              <input type="radio" name="offer" value={o.id} checked={f.offer === o.id} onChange={set('offer')} />
-              <h3>{o.id}</h3>
-              <span className="meta"><Clock size={16} />{o.delay}</span>
-              <div className="price">{o.price}</div>
-              <ul className="checks">{o.items.map((i) => <li key={i}><Check size={16} />{i}</li>)}</ul>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {compliance ? (
+        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend><span className="step-label"><span className="n">1</span>Domaines concernés</span></legend>
+          <div className="grid3 topics">
+            {COMPLIANCE.map((d) => {
+              const Icon = DOMAIN_ICONS[d.key];
+              const on = f.topics.includes(d.key);
+              return (
+                <label key={d.key} className={'offer topic' + (on ? ' selected' : '')}>
+                  <input type="checkbox" name="topics" value={d.key} checked={on} onChange={() => toggleTopic(d.key)} />
+                  <span className="topic-icon"><Icon size={20} /></span>
+                  <span className="topic-name">{d.id}</span>
+                </label>
+              );
+            })}
+          </div>
+          <p className="note" style={{ marginBottom: 0 }}>Plusieurs choix possibles. Tarif sur devis, selon votre situation.</p>
+        </fieldset>
+      ) : (
+        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend><span className="step-label"><span className="n">1</span>Formule</span></legend>
+          <div className="grid3">
+            {OFFERS.map((o) => (
+              <label key={o.id} className={'offer' + (f.offer === o.id ? ' selected' : '')}>
+                <input type="radio" name="offer" value={o.id} checked={f.offer === o.id} onChange={set('offer')} />
+                <h3>{o.id}</h3>
+                <span className="meta"><Clock size={16} />{o.delay}</span>
+                <div className="price">{o.price}</div>
+                <ul className="checks">{o.items.map((i) => <li key={i}><Check size={16} />{i}</li>)}</ul>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       <div className="panel stack">
         <span className="step-label"><span className="n">2</span>Votre entreprise</span>
@@ -106,8 +144,15 @@ export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
           <div className="field"><label htmlFor="dispo">Disponibilités</label><input id="dispo" placeholder="ex. mardi matin" maxLength={200} value={f.availability} onChange={set('availability')} /></div>
         </div>
         <div className="field">
-          <label htmlFor="msg">Qu'attendez-vous du diagnostic ?</label>
-          <textarea id="msg" rows={3} maxLength={4000} placeholder="ex. Notre marge baisse depuis 6 mois malgré un CA stable." value={f.message} onChange={set('message')} />
+          <label htmlFor="msg">{compliance ? 'Décrivez votre besoin' : "Qu'attendez-vous du diagnostic ?"}</label>
+          <textarea
+            id="msg"
+            rows={3}
+            maxLength={4000}
+            placeholder={compliance ? 'ex. Un client grand compte nous demande notre dispositif anticorruption.' : 'ex. Notre marge baisse depuis 6 mois malgré un CA stable.'}
+            value={f.message}
+            onChange={set('message')}
+          />
         </div>
         <label className="check">
           <input id="consent" type="checkbox" checked={f.consent} onChange={set('consent')} />
@@ -119,7 +164,7 @@ export default function DiagnosticForm({ userId, defaultEmail, defaultOffer }) {
         {error && <p className="err" role="alert">{error}</p>}
         <div className="row">
           <button className="btn lg" type="submit" disabled={busy}>
-            {busy ? 'Envoi…' : <>Envoyer ma demande <ArrowRight size={18} /></>}
+            {busy ? 'Envoi…' : <>{compliance ? 'Demander un devis' : 'Envoyer ma demande'} <ArrowRight size={18} /></>}
           </button>
           <span className="note">* champs obligatoires</span>
         </div>

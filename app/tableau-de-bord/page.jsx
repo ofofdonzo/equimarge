@@ -26,7 +26,7 @@ export default async function Page() {
       {isAdmin && (
         <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
           <span className="row" style={{ gap: 10 }}><Shield /> Vous êtes administrateur.</span>
-          <Link href="/admin" className="btn sm">Voir les demandes de diagnostic</Link>
+          <Link href="/admin" className="btn sm">Voir les demandes</Link>
         </div>
       )}
       <Dashboard
@@ -37,11 +37,11 @@ export default async function Page() {
       />
       {requests && requests.length > 0 && (
         <div className="panel">
-          <h2>Mes demandes de diagnostic</h2>
+          <h2>Mes demandes</h2>
           <div className="scroll">
             <table>
               <thead>
-                <tr><th>Date</th><th>Formule</th><th>Statut</th></tr>
+                <tr><th>Date</th><th>Demande</th><th>Statut</th></tr>
               </thead>
               <tbody>
                 {requests.map((r) => (

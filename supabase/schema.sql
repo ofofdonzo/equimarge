@@ -55,7 +55,7 @@ create policy "chacun gère ses paramètres" on public.settings
 create table if not exists public.diagnostic_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
-  offer text not null check (offer in ('Flash','Essentiel','Complet')),
+  offer text not null check (offer in ('Flash','Essentiel','Complet','Conformité')),
   company text not null check (char_length(company) between 1 and 200),
   siren text check (siren is null or siren ~ '^[0-9]{9}$'),
   sector text,
@@ -70,6 +70,16 @@ create table if not exists public.diagnostic_requests (
   created_at timestamptz not null default now()
 );
 create index if not exists diag_created_idx on public.diagnostic_requests(created_at desc);
+
+-- Demandes de devis conformité (offer = 'Conformité') et domaines choisis.
+-- Ces lignes mettent aussi à jour une base créée avec une version précédente de ce fichier.
+alter table public.diagnostic_requests add column if not exists topics text[];
+alter table public.diagnostic_requests drop constraint if exists diagnostic_requests_offer_check;
+alter table public.diagnostic_requests add constraint diagnostic_requests_offer_check
+  check (offer in ('Flash','Essentiel','Complet','Conformité'));
+alter table public.diagnostic_requests drop constraint if exists diagnostic_requests_topics_check;
+alter table public.diagnostic_requests add constraint diagnostic_requests_topics_check
+  check (topics is null or (cardinality(topics) between 1 and 10 and char_length(array_to_string(topics, ',')) <= 500));
 alter table public.diagnostic_requests enable row level security;
 
 -- Tout le monde (même sans compte) peut envoyer une demande

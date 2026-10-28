@@ -7,7 +7,7 @@ export default function Page() {
       <p className="note">Dernière mise à jour : 28 octobre 2026</p>
 
       <h2>Responsable du traitement</h2>
-      <p>Equimarge, [À COMPLÉTER : nom et adresse du responsable], contact@equimarge.fr.</p>
+      <p>Equimarge (SASU en cours de constitution), représentée par son président Ousmane DONZO, Paris, France. Contact : contact@equimarge.fr.</p>
 
       <h2>Données collectées et finalités</h2>
       <ul>

@@ -17,8 +17,9 @@ export default function Page() {
       <p>[À COMPLÉTER : prénom et nom]</p>
       <h2>Hébergement</h2>
       <p>
-        Site : Netlify, Inc., San Francisco, Californie, États-Unis ([À COMPLÉTER : adresse postale et téléphone de Netlify, indiqués sur netlify.com]).<br />
-        Données : Supabase Inc., serveurs situés dans l'Union européenne (région choisie à la création du projet).
+        Site : Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, États-Unis, téléphone : +1 415 691 1573.<br />
+        Données : Supabase, 65 Chulia Street #38-02/03, OCBC Centre, Singapour 049513 ; serveurs situés dans l'Union
+        européenne (région choisie à la création du projet).
       </p>
       <h2>Propriété intellectuelle</h2>
       <p>Les contenus du site (textes, logo, mise en page) sont la propriété d'Equimarge. Toute reproduction sans autorisation est interdite.</p>

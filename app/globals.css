@@ -85,3 +85,8 @@ td.num { font-family: var(--mono); font-size: .9rem; }
 .legal h2 { margin-top: 24px; }
 select.status { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
 @media (prefers-reduced-motion: reduce) { .bar .fill { transition: none; } }
+
+/* Empêche les tableaux larges d'élargir la page sur téléphone */
+main, .stack > *, .grid2 > *, .grid3 > * { min-width: 0; }
+html, body { overflow-x: hidden; }
+.lead, .note { overflow-wrap: anywhere; }

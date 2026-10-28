@@ -12,7 +12,8 @@ export default function Page() {
         Président : Ousmane DONZO<br />
         Siège : Paris, France<br />
         SIREN : en cours d'attribution<br />
-        Contact : contact@equimarge.fr
+        Téléphone : <a href="tel:+33766557340">07 66 55 73 40</a><br />
+        Contact : <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>
       </p>
       <h2>Directeur de la publication</h2>
       <p>Ousmane DONZO, président</p>

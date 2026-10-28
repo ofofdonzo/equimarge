@@ -51,6 +51,19 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr` et suivez le
 - Ajustez les formules et prix dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).
 
+### 8. Apparaître dans Google
+Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages publiques), `/robots.txt` (espaces privés exclus), titres, descriptions et image de partage. Les adresses suivent automatiquement le domaine utilisé (`xxx.netlify.app`, puis `equimarge.fr`). Il reste à signaler le site à Google, de préférence **après** l'étape 6 :
+1. Ouvrez [Google Search Console](https://search.google.com/search-console) avec votre compte Google, puis **Ajouter une propriété**.
+2. Deux façons de prouver que le site est à vous :
+   - **Domaine** (recommandé, avec `equimarge.fr`) : copiez l'enregistrement TXT proposé et ajoutez-le dans la zone DNS de votre registraire, puis cliquez **Valider** (quelques minutes à quelques heures).
+   - **Préfixe d'URL** (avec l'adresse Netlify) : méthode **Balise HTML**. Copiez uniquement la valeur de `content="…"`, ajoutez-la dans Netlify > **Site configuration** > **Environment variables** sous le nom `GOOGLE_SITE_VERIFICATION`, relancez un déploiement (**Deploys** > **Trigger deploy**), puis cliquez **Valider**.
+3. Menu **Sitemaps** : saisissez `sitemap.xml` et cliquez **Envoyer**.
+4. Menu **Inspection de l'URL** : collez l'adresse de l'accueil, puis **Demander l'indexation**.
+5. Comptez quelques jours à deux semaines. Au début, le site sort surtout sur une recherche de son nom (« Equimarge ») ; les recherches générales viennent avec le temps et les liens vers le site.
+6. (Facultatif) [Bing Webmaster Tools](https://www.bing.com/webmasters) : **Importer depuis Google Search Console**. Bing alimente aussi DuckDuckGo et Ecosia.
+
+Pour être trouvé plus vite, créez des liens vers le site : fiche Google Business Profile, page LinkedIn, annuaires professionnels, signature e-mail.
+
 ## Travailler en local (optionnel)
 ```bash
 npm install

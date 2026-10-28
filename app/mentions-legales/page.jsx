@@ -1,4 +1,4 @@
-export const metadata = { title: 'Mentions légales — Equimarge' };
+export const metadata = { title: 'Mentions légales — Equimarge', alternates: { canonical: '/mentions-legales' } };
 
 // Remplacez chaque [À COMPLÉTER] avant la mise en ligne publique.
 export default function Page() {

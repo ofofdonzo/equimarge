@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 import { OFFERS } from '@/components/offers';
 import DiagnosticForm from './DiagnosticForm';
 
-export const metadata = { title: 'Commander un diagnostic — Equimarge' };
+export const metadata = {
+  title: 'Commander un diagnostic — Equimarge',
+  description:
+    "Diagnostic de marge pour PME, réalisé par un spécialiste de l'audit : plusieurs formules, réponse sous 48 h ouvrées, aucun paiement à la commande.",
+  alternates: { canonical: '/diagnostic' },
+};
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ searchParams }) {

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Shield } from '@/components/icons';
 import Dashboard from './Dashboard';
 
-export const metadata = { title: 'Mon espace — Equimarge' };
+export const metadata = { title: 'Mon espace — Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

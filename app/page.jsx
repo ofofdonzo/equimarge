@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { OFFERS } from '@/components/offers';
 import { Alert, ArrowRight, BarChart, Check, Clock, Pencil, Target, TrendUp } from '@/components/icons';
+import { siteUrl } from '@/lib/site';
+
+export const metadata = { alternates: { canonical: '/' } };
 
 const STEPS = [
   {
@@ -73,8 +76,16 @@ function Preview() {
 }
 
 export default function Home() {
+  const base = siteUrl();
+  // Fiche lue par Google pour afficher le nom du site et de l'entreprise dans les résultats
+  const jsonLd = [
+    { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Equimarge', url: `${base}/`, inLanguage: 'fr-FR' },
+    { '@context': 'https://schema.org', '@type': 'Organization', name: 'Equimarge', url: `${base}/`, logo: `${base}/icon.svg`, email: 'contact@equimarge.fr' },
+  ];
+
   return (
     <div className="home">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="hero">
         <div className="rise">
           <span className="badge"><span className="badge-dot" />Pour les dirigeants de PME</span>

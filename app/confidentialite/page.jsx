@@ -1,4 +1,4 @@
-export const metadata = { title: 'Confidentialité — Equimarge' };
+export const metadata = { title: 'Confidentialité — Equimarge', alternates: { canonical: '/confidentialite' } };
 
 export default function Page() {
   return (

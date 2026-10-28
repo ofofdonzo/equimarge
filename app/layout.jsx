@@ -2,12 +2,25 @@ import Link from 'next/link';
 import './globals.css';
 import { createClient } from '@/lib/supabase/server';
 import { LogOut, LogoMark } from '@/components/icons';
+import { siteUrl } from '@/lib/site';
 
-export const metadata = {
-  title: 'Equimarge — le suivi de marge des PME',
-  description:
-    "Suivez la marge de chaque produit, repérez ce qui la fait baisser et commandez un diagnostic réalisé par un spécialiste de l'audit.",
-};
+const TITLE = 'Equimarge — le suivi de marge des PME';
+const DESCRIPTION =
+  "Suivez la marge de chaque produit, repérez ce qui la fait baisser et commandez un diagnostic réalisé par un spécialiste de l'audit.";
+
+export function generateMetadata() {
+  return {
+    metadataBase: new URL(siteUrl()),
+    title: TITLE,
+    description: DESCRIPTION,
+    applicationName: 'Equimarge',
+    // Aperçu affiché quand le lien est partagé (LinkedIn, WhatsApp, e-mail…) ; l'image est app/opengraph-image.png
+    openGraph: { type: 'website', locale: 'fr_FR', siteName: 'Equimarge', title: TITLE, description: DESCRIPTION },
+    twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
+    // Code de vérification Google Search Console (méthode « Balise HTML »), à mettre dans Netlify > Environment variables
+    verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
+  };
+}
 
 export const viewport = {
   themeColor: [

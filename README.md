@@ -7,7 +7,7 @@ Site et application pour PME, en deux pôles : suivi de marge (outil gratuit et 
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
 - **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
 - **Administration** (`/admin`) : vous seul voyez les demandes et changez leur statut.
-- **Mentions légales** et **Confidentialité** : modèles à compléter (cherchez `[À COMPLÉTER]`).
+- **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
 Technique : Next.js 14 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
 
@@ -47,7 +47,7 @@ Dans Supabase > **Authentication** > **URL Configuration** :
 Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr` et suivez les instructions DNS chez votre registraire (OVH, Gandi…). Mettez ensuite à jour l'étape 4.
 
 ### 7. Avant d'ouvrir au public
-- Complétez les `[À COMPLÉTER]` des pages légales (SIREN, adresse, responsable, coordonnées de l'hébergeur).
+- Après l'immatriculation de la SASU, complétez `app/mentions-legales/page.jsx` et `app/confidentialite/page.jsx` : retirez « en cours de constitution », ajoutez l'adresse complète du siège, le SIREN, le capital social, « RCS Paris » et le n° de TVA intracommunautaire.
 - Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données).
 - Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).

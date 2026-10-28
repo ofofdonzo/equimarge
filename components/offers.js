@@ -1,4 +1,5 @@
 // Formules de diagnostic : modifiez les prix et contenus ici, ils se mettent à jour partout.
+// `featured: true` met une formule en avant sur l'accueil (badge « Recommandée »).
 export const OFFERS = [
   {
     id: 'Flash',
@@ -10,6 +11,7 @@ export const OFFERS = [
     id: 'Essentiel',
     delay: 'Sous 10 jours',
     price: '490 € HT',
+    featured: true,
     items: ['Analyse produit par produit', "Revue des prix et des coûts d'achat", 'Rapport écrit et restitution'],
   },
   {

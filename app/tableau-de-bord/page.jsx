@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { Shield } from '@/components/icons';
 import Dashboard from './Dashboard';
 
 export const metadata = { title: 'Mon espace — Equimarge' };
@@ -23,9 +24,9 @@ export default async function Page() {
   return (
     <div className="stack">
       {isAdmin && (
-        <div className="panel row" style={{ justifyContent: 'space-between' }}>
-          <span>Vous êtes administrateur.</span>
-          <Link href="/admin" className="btn">Voir les demandes de diagnostic</Link>
+        <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
+          <span className="row" style={{ gap: 10 }}><Shield /> Vous êtes administrateur.</span>
+          <Link href="/admin" className="btn sm">Voir les demandes de diagnostic</Link>
         </div>
       )}
       <Dashboard
@@ -47,7 +48,7 @@ export default async function Page() {
                   <tr key={r.id}>
                     <td>{new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
                     <td>{r.offer}</td>
-                    <td>{r.status}</td>
+                    <td><span className="pill">{r.status}</span></td>
                   </tr>
                 ))}
               </tbody>

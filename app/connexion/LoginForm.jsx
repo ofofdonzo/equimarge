@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { BarChart, Check, Lock } from '@/components/icons';
 
 const MESSAGES = {
   'Invalid login credentials': 'E-mail ou mot de passe incorrect.',
@@ -53,14 +54,39 @@ export default function LoginForm() {
     router.refresh();
   }
 
+  const signup = mode === 'signup';
+  function switchTo(m) {
+    setMode(m);
+    setError('');
+    setInfo('');
+  }
+
   return (
-    <div className="stack" style={{ maxWidth: 440 }}>
+    <div className="auth">
       <div>
-        <span className="eyebrow">{mode === 'signup' ? 'Inscription gratuite' : 'Connexion'}</span>
-        <h1>{mode === 'signup' ? 'Créer votre espace' : 'Accéder à votre espace'}</h1>
-        <p className="note">Vos chiffres restent privés : vous seul y avez accès.</p>
+        <span className="eyebrow">{signup ? 'Inscription gratuite' : 'Connexion'}</span>
+        <h1>{signup ? 'Créer votre espace' : 'Accéder à votre espace'}</h1>
+        <p className="lead">Vos chiffres restent privés : vous seul y avez accès.</p>
+        <ul className="benefits">
+          <li>
+            <span className="ic"><BarChart /></span>
+            <div><b>La marge de chaque produit</b><span>Taux de marque, marge par ligne, alertes et seuil de rentabilité.</span></div>
+          </li>
+          <li>
+            <span className="ic"><Lock /></span>
+            <div><b>Des données protégées</b><span>Hébergées dans l'Union européenne, ni vendues ni cédées.</span></div>
+          </li>
+          <li>
+            <span className="ic"><Check /></span>
+            <div><b>Gratuit</b><span>Sans logiciel à installer.</span></div>
+          </li>
+        </ul>
       </div>
-      <form className="panel stack" onSubmit={submit} noValidate>
+      <form className="panel auth-card stack" onSubmit={submit} noValidate>
+        <div className="segmented" role="group" aria-label="Type d'accès">
+          <button type="button" aria-pressed={!signup} onClick={() => switchTo('login')}>Se connecter</button>
+          <button type="button" aria-pressed={signup} onClick={() => switchTo('signup')}>Créer un espace</button>
+        </div>
         <div className="field">
           <label htmlFor="email">E-mail professionnel</label>
           <input id="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -70,7 +96,7 @@ export default function LoginForm() {
           <input
             id="password"
             type="password"
-            autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+            autoComplete={signup ? 'new-password' : 'current-password'}
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -78,25 +104,10 @@ export default function LoginForm() {
         </div>
         {error && <p className="err" role="alert">{error}</p>}
         {info && <p className="panel success" role="status" style={{ margin: 0 }}>{info}</p>}
-        <button className="btn" type="submit" disabled={busy}>
-          {busy ? 'Un instant…' : mode === 'signup' ? 'Créer mon espace' : 'Se connecter'}
+        <button className="btn lg block" type="submit" disabled={busy}>
+          {busy ? 'Un instant…' : signup ? 'Créer mon espace' : 'Se connecter'}
         </button>
       </form>
-      <p className="note">
-        {mode === 'signup' ? 'Déjà un compte ? ' : 'Pas encore de compte ? '}
-        <button
-          type="button"
-          className="btn ghost"
-          style={{ padding: '2px 8px' }}
-          onClick={() => {
-            setMode(mode === 'signup' ? 'login' : 'signup');
-            setError('');
-            setInfo('');
-          }}
-        >
-          {mode === 'signup' ? 'Se connecter' : 'Créer un espace'}
-        </button>
-      </p>
     </div>
   );
 }

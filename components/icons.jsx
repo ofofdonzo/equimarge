@@ -45,20 +45,40 @@ export const Users = icon(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5
 // Icône de chaque domaine de conformité (clés de COMPLIANCE dans components/offers.js)
 export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, lcbft: Search, sapin: Scale, social: Users };
 
-// Logo : trois barres montantes sur un carré en dégradé. `id` doit être unique dans la page.
+// Logo : bouclier vert (conformité) gravé d'un « E » dont la branche du haut sort du cadre (marge qui
+// progresse), sur un carré bleu nuit. `id` doit être unique dans la page (il préfixe les dégradés).
 export function LogoMark({ id = 'logo', size = 32 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
       <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#0E7490" />
-          <stop offset="1" stopColor="#059669" />
+        <linearGradient id={`${id}-t`} x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#0E2A52" />
+          <stop offset="1" stopColor="#071631" />
+        </linearGradient>
+        <radialGradient id={`${id}-g`} cx="32" cy="32" r="26" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#10B981" stopOpacity=".45" />
+          <stop offset="1" stopColor="#10B981" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={`${id}-s`} x1="12" y1="10" x2="50" y2="56" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#4ADE80" />
+          <stop offset=".5" stopColor="#10B981" />
+          <stop offset="1" stopColor="#047857" />
+        </linearGradient>
+        <linearGradient id={`${id}-b`} x1="20" y1="18" x2="56" y2="24" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#86EFAC" />
+          <stop offset="1" stopColor="#22C55E" />
         </linearGradient>
       </defs>
-      <rect width="32" height="32" rx="9" fill={`url(#${id})`} />
-      <rect x="8" y="17" width="4" height="8" rx="2" fill="#fff" fillOpacity=".65" />
-      <rect x="14" y="12" width="4" height="13" rx="2" fill="#fff" fillOpacity=".82" />
-      <rect x="20" y="7" width="4" height="18" rx="2" fill="#fff" />
+      <rect width="64" height="64" rx="16" fill={`url(#${id}-t)`} />
+      <circle cx="32" cy="32" r="26" fill={`url(#${id}-g)`} />
+      <g transform="translate(32 32) scale(.8) translate(-33.75 -31.7)">
+        <path d="M30 9 49 15.8v14c0 11.8-8 19.9-19 24.6C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill={`url(#${id}-s)`} />
+        <path d="M30 9v45.4C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill="#fff" fillOpacity=".14" />
+        <rect x="19.5" y="18" width="6" height="25.5" rx="2.4" fill="#fff" fillOpacity=".95" />
+        <rect x="19.5" y="37.5" width="12" height="6" rx="2.4" fill="#fff" fillOpacity=".7" />
+        <rect x="19.5" y="27.75" width="17" height="6" rx="2.4" fill="#fff" fillOpacity=".85" />
+        <rect x="19.5" y="18" width="37" height="6" rx="2.4" fill={`url(#${id}-b)`} />
+      </g>
     </svg>
   );
 }

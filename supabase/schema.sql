@@ -17,6 +17,7 @@ as $$
   select exists (select 1 from public.admins where user_id = auth.uid());
 $$;
 
+drop policy if exists "admins lisent leur ligne" on public.admins;
 create policy "admins lisent leur ligne" on public.admins
   for select using (user_id = auth.uid());
 
@@ -33,6 +34,7 @@ create table if not exists public.products (
 create index if not exists products_user_idx on public.products(user_id);
 alter table public.products enable row level security;
 
+drop policy if exists "chacun gère ses produits" on public.products;
 create policy "chacun gère ses produits" on public.products
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
@@ -45,6 +47,7 @@ create table if not exists public.settings (
 );
 alter table public.settings enable row level security;
 
+drop policy if exists "chacun gère ses paramètres" on public.settings;
 create policy "chacun gère ses paramètres" on public.settings
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
@@ -70,15 +73,18 @@ create index if not exists diag_created_idx on public.diagnostic_requests(create
 alter table public.diagnostic_requests enable row level security;
 
 -- Tout le monde (même sans compte) peut envoyer une demande
+drop policy if exists "envoyer une demande" on public.diagnostic_requests;
 create policy "envoyer une demande" on public.diagnostic_requests
   for insert to anon, authenticated
   with check (user_id is null or user_id = auth.uid());
 
 -- Un client connecté voit ses propres demandes
+drop policy if exists "voir ses demandes" on public.diagnostic_requests;
 create policy "voir ses demandes" on public.diagnostic_requests
   for select to authenticated using (user_id = auth.uid() or public.is_admin());
 
 -- Seul l'administrateur change le statut
+drop policy if exists "admin met à jour" on public.diagnostic_requests;
 create policy "admin met à jour" on public.diagnostic_requests
   for update to authenticated using (public.is_admin()) with check (public.is_admin());
 

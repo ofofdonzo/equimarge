@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import RequestsTable from './RequestsTable';
 
-export const metadata = { title: 'Demandes de diagnostic — Equimarge' };
+export const metadata = { title: 'Demandes de diagnostic — Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

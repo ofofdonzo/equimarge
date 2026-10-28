@@ -4,7 +4,7 @@ export default function Page() {
   return (
     <article className="legal">
       <h1>Politique de confidentialité</h1>
-      <p className="note">Dernière mise à jour : [À COMPLÉTER : date de mise en ligne]</p>
+      <p className="note">Dernière mise à jour : 28 octobre 2026</p>
 
       <h2>Responsable du traitement</h2>
       <p>Equimarge, [À COMPLÉTER : nom et adresse du responsable], contact@equimarge.fr.</p>

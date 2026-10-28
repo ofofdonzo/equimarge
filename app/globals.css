@@ -1,16 +1,17 @@
 /* ---------- Couleurs, ombres et polices ---------- */
+/* Identité : vert (marges, croissance) et bleu nuit (fond du logo, thème sombre) */
 :root {
-  --bg: #F6F8FB; --surface: #FFFFFF; --surface-2: #F1F5F9; --raised: #FFFFFF;
-  --line: #E2E8F0; --line-strong: #CBD5E1; --fg: #0B1B2B; --muted: #5A6B7D;
-  --accent: #0E7490; --accent-strong: #0B5E75; --accent-ink: #FFFFFF;
+  --bg: #F6F9F7; --surface: #FFFFFF; --surface-2: #F0F5F2; --raised: #FFFFFF;
+  --line: #E1E9E4; --line-strong: #C8D5CD; --fg: #0B1B2B; --muted: #566A61;
+  --accent: #047857; --accent-strong: #065F46; --accent-ink: #FFFFFF;
   --accent-soft: color-mix(in srgb, var(--accent) 10%, var(--surface));
-  --grad: linear-gradient(135deg, #0E7490 0%, #0F766E 55%, #047857 100%);
-  --grad-text: linear-gradient(90deg, #0E7490 0%, #059669 100%);
+  --grad: linear-gradient(135deg, #047857 0%, #15803D 100%);
+  --grad-text: linear-gradient(90deg, #047857 0%, #16A34A 100%);
   --ok: #15803D; --warn: #B45309; --bad: #B91C1C;
-  --glow-1: rgb(14 116 144 / .14); --glow-2: rgb(16 185 129 / .12);
+  --glow-1: rgb(5 150 105 / .16); --glow-2: rgb(74 222 128 / .14);
   --shadow-sm: 0 1px 2px rgb(15 23 42 / .05);
   --shadow: 0 1px 2px rgb(15 23 42 / .04), 0 12px 32px -12px rgb(15 23 42 / .16);
-  --shadow-lg: 0 2px 4px rgb(15 23 42 / .04), 0 32px 64px -24px rgb(14 116 144 / .38);
+  --shadow-lg: 0 2px 4px rgb(15 23 42 / .04), 0 32px 64px -24px rgb(4 120 87 / .34);
   --radius: 18px; --radius-lg: 24px;
   --display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --body: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -18,13 +19,13 @@
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #070D12; --surface: #0E171F; --surface-2: #14212B; --raised: #1D2B36;
-    --line: #1D2A35; --line-strong: #2E3F4C; --fg: #E6EEF4; --muted: #93A4B4;
-    --accent: #2DD4BF; --accent-strong: #5EEAD4; --accent-ink: #042F2E;
-    --grad: linear-gradient(135deg, #22D3EE 0%, #2DD4BF 50%, #34D399 100%);
-    --grad-text: linear-gradient(90deg, #22D3EE 0%, #34D399 100%);
+    --bg: #071226; --surface: #0C1B33; --surface-2: #11233F; --raised: #172C4D;
+    --line: #1A2C47; --line-strong: #28406A; --fg: #E6EEF7; --muted: #93A6BF;
+    --accent: #34D399; --accent-strong: #6EE7B7; --accent-ink: #052E16;
+    --grad: linear-gradient(135deg, #10B981 0%, #4ADE80 100%);
+    --grad-text: linear-gradient(90deg, #34D399 0%, #86EFAC 100%);
     --ok: #4ADE80; --warn: #FBBF24; --bad: #F87171;
-    --glow-1: rgb(34 211 238 / .10); --glow-2: rgb(52 211 153 / .08);
+    --glow-1: rgb(16 185 129 / .14); --glow-2: rgb(37 99 235 / .14);
     --shadow-sm: 0 1px 2px rgb(0 0 0 / .4);
     --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 16px 40px -16px rgb(0 0 0 / .65);
     --shadow-lg: 0 2px 4px rgb(0 0 0 / .4), 0 40px 80px -24px rgb(0 0 0 / .75);
@@ -77,7 +78,11 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 }
 .header-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 1.3rem; letter-spacing: -.02em; color: var(--fg); text-decoration: none; }
-.brand svg { flex: none; }
+.brand svg { flex: none; border-radius: 25%; }
+@media (prefers-color-scheme: dark) {
+  /* Le carré bleu nuit du logo se détache du fond sombre grâce à un liseré et un léger halo vert */
+  .brand svg { box-shadow: 0 0 0 1px rgb(255 255 255 / .1), 0 0 18px -4px rgb(16 185 129 / .55); }
+}
 .brand span span { color: var(--accent); }
 .nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .nav form { display: flex; margin: 0; }

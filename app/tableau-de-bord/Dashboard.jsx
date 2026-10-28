@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { ArrowRight, Percent, Plus, Receipt, TrendUp, Wallet } from '@/components/icons';
 
 const eur = (n) =>
   Number.isFinite(n) ? n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }) : '–';
@@ -120,31 +121,39 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
   }, [products, settings]);
 
   const max = Math.max(1, ...calc.lines.map((l) => Math.abs(l.m)));
+  const saveClass = saveState === 'Enregistré' ? 'save' : saveState === 'Enregistrement…' ? 'save busy' : 'save bad';
 
   return (
     <div className="stack">
       <div>
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="eyebrow">Tableau de bord mensuel · {email}</span>
-          <span className="note" aria-live="polite">{saveState}</span>
+          <span className="row" style={{ gap: 8, minWidth: 0 }}>
+            <span className="eyebrow">Tableau de bord mensuel</span>
+            <span className="note">{email}</span>
+          </span>
+          <span className={saveClass} aria-live="polite">{saveState}</span>
         </div>
         <h1>{settings.company ? `Les marges de ${settings.company}` : 'Où se fait votre marge'}</h1>
       </div>
 
       <div className="kpis">
-        <div className="kpi"><small>Chiffre d'affaires HT</small><b>{eur(calc.CA)}</b></div>
-        <div className="kpi"><small>Marge brute</small><b>{eur(calc.MB)}</b></div>
-        <div className="kpi"><small>Taux de marque</small><b>{pct(calc.TM)}</b></div>
+        <div className="kpi"><span className="kpi-icon"><Receipt size={18} /></span><small>Chiffre d'affaires HT</small><b>{eur(calc.CA)}</b></div>
+        <div className="kpi"><span className="kpi-icon"><TrendUp size={18} /></span><small>Marge brute</small><b>{eur(calc.MB)}</b></div>
+        <div className="kpi"><span className="kpi-icon"><Percent size={18} /></span><small>Taux de marque</small><b>{pct(calc.TM)}</b></div>
         <div className="kpi">
+          <span className="kpi-icon"><Wallet size={18} /></span>
           <small>Résultat après charges fixes</small>
-          <b style={{ color: calc.res < 0 ? 'var(--bad)' : undefined }}>{eur(calc.res)}</b>
+          <b className={calc.res < 0 ? 'neg' : undefined}>{eur(calc.res)}</b>
         </div>
       </div>
 
       <div className="panel">
-        <h2>Produits et prestations</h2>
+        <div className="panel-head">
+          <h2>Produits et prestations</h2>
+          <button className="btn ghost sm" type="button" onClick={addProduct}><Plus size={16} />Ajouter une ligne</button>
+        </div>
         {products.length === 0 ? (
-          <p className="note">Ajoutez votre premier produit ou prestation pour voir sa marge.</p>
+          <div className="empty"><p className="note">Ajoutez votre premier produit ou prestation pour voir sa marge.</p></div>
         ) : (
           <div className="scroll">
             <table className="tbl-wide">
@@ -171,10 +180,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
             </table>
           </div>
         )}
-        <div className="row" style={{ marginTop: 12 }}>
-          <button className="btn ghost" type="button" onClick={addProduct}>Ajouter une ligne</button>
-        </div>
-        <p className="note">Repères : taux de marque sous 20 % = critique, entre 20 et 35 % = à surveiller. Ces seuils varient selon le secteur.</p>
+        <p className="note" style={{ marginBottom: 0 }}>Repères : taux de marque sous 20 % = critique, entre 20 et 35 % = à surveiller. Ces seuils varient selon le secteur.</p>
       </div>
 
       <div className="grid2">
@@ -188,24 +194,29 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
             <label htmlFor="fixed">Charges fixes mensuelles (€ HT) : loyer, salaires, abonnements</label>
             <input id="fixed" inputMode="decimal" value={settings._fixed_costs ?? settings.fixed_costs} onChange={(e) => updateSettings('fixed_costs', e.target.value)} />
           </div>
-          <div>
+          <div className="threshold">
             <span className="eyebrow">Seuil de rentabilité</span>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: '1.3rem' }}>
+            <div className="big">
               {Number.isFinite(calc.SR) ? eur(calc.SR) + ' de CA / mois' : '–'}
             </div>
             {Number.isFinite(calc.SR) && calc.CA > 0 && (
-              <p className="note">
-                {calc.CA >= calc.SR
-                  ? `Vous dépassez le seuil de ${eur(calc.CA - calc.SR)} ce mois-ci.`
-                  : `Il manque ${eur(calc.SR - calc.CA)} de chiffre d'affaires pour couvrir vos charges.`}
-              </p>
+              <>
+                <div className={'meter' + (calc.CA < calc.SR ? ' short' : '')} aria-hidden="true">
+                  <span style={{ width: `${Math.min(1, calc.CA / calc.SR) * 100}%` }} />
+                </div>
+                <p className="note">
+                  {calc.CA >= calc.SR
+                    ? `Vous dépassez le seuil de ${eur(calc.CA - calc.SR)} ce mois-ci.`
+                    : `Il manque ${eur(calc.SR - calc.CA)} de chiffre d'affaires pour couvrir vos charges.`}
+                </p>
+              </>
             )}
           </div>
         </div>
         <div className="panel">
           <h2>Marge par ligne</h2>
           <div className="bars">
-            {calc.lines.length === 0 && <p className="note">La répartition apparaîtra ici.</p>}
+            {calc.lines.length === 0 && <div className="empty"><p className="note">La répartition apparaîtra ici.</p></div>}
             {calc.lines.map((l) => (
               <div className="bar" key={l.id}>
                 <span title={l.name}>{l.name || 'Sans nom'}</span>
@@ -217,12 +228,12 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
         </div>
       </div>
 
-      <div className="panel row" style={{ justifyContent: 'space-between' }}>
+      <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
         <div style={{ minWidth: 0, flex: '1 1 260px' }}>
           <h2 style={{ marginBottom: 4 }}>Besoin d'un regard extérieur ?</h2>
           <p className="note" style={{ margin: 0 }}>Un diagnostic identifie les postes qui grèvent votre marge et propose un plan d'action.</p>
         </div>
-        <Link className="btn" href="/diagnostic">Commander un diagnostic</Link>
+        <Link className="btn" href="/diagnostic">Commander un diagnostic <ArrowRight size={18} /></Link>
       </div>
     </div>
   );

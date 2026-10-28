@@ -19,7 +19,7 @@ export default function RequestsTable({ initial }) {
     } else setMsg('');
   }
 
-  if (rows.length === 0) return <div className="panel note">Aucune demande pour le moment. Elles apparaîtront ici dès qu'un client remplit le formulaire.</div>;
+  if (rows.length === 0) return <div className="panel empty note">Aucune demande pour le moment. Elles apparaîtront ici dès qu'un client remplit le formulaire.</div>;
 
   return (
     <div className="panel">
@@ -42,11 +42,11 @@ export default function RequestsTable({ initial }) {
                       {STATUSES.map((s) => <option key={s}>{s}</option>)}
                     </select>
                   </td>
-                  <td><button className="btn ghost" style={{ padding: '4px 10px' }} type="button" onClick={() => setOpen(open === r.id ? null : r.id)}>{open === r.id ? 'Fermer' : 'Détails'}</button></td>
+                  <td><button className="btn ghost sm" type="button" onClick={() => setOpen(open === r.id ? null : r.id)}>{open === r.id ? 'Fermer' : 'Détails'}</button></td>
                 </tr>
                 {open === r.id && (
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'left', background: 'var(--soft)' }}>
+                  <tr className="detail">
+                    <td colSpan={6} style={{ textAlign: 'left' }}>
                       <div className="grid2" style={{ padding: 8 }}>
                         <div><b>SIREN :</b> {r.siren || '—'}<br /><b>Secteur :</b> {r.sector || '—'}<br /><b>CA :</b> {r.revenue_band || '—'}</div>
                         <div><b>Téléphone :</b> {r.phone || '—'}<br /><b>Disponibilités :</b> {r.availability || '—'}<br /><b>Compte client :</b> {r.user_id ? 'oui' : 'non'}</div>

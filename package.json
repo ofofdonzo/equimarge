@@ -16,5 +16,8 @@
   },
   "engines": {
     "node": ">=18.18"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "5.16.2"
   }
 }

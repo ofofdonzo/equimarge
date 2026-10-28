@@ -4,3 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+
+# Fait fonctionner Next.js sur Netlify (pages dynamiques, connexion, middleware)
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

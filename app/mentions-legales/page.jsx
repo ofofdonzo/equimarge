@@ -17,7 +17,7 @@ export default function Page() {
       <p>[À COMPLÉTER : prénom et nom]</p>
       <h2>Hébergement</h2>
       <p>
-        Site : Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.<br />
+        Site : Netlify, Inc., San Francisco, Californie, États-Unis ([À COMPLÉTER : adresse postale et téléphone de Netlify, indiqués sur netlify.com]).<br />
         Données : Supabase Inc., serveurs situés dans l'Union européenne (région choisie à la création du projet).
       </p>
       <h2>Propriété intellectuelle</h2>

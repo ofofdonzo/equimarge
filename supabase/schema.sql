@@ -76,7 +76,15 @@ alter table public.diagnostic_requests enable row level security;
 drop policy if exists "envoyer une demande" on public.diagnostic_requests;
 create policy "envoyer une demande" on public.diagnostic_requests
   for insert to anon, authenticated
-  with check (user_id is null or user_id = auth.uid());
+  with check (
+    (user_id is null or user_id = auth.uid())
+    and status = 'Nouvelle'
+    and coalesce(char_length(sector), 0) <= 100
+    and coalesce(char_length(revenue_band), 0) <= 100
+    and coalesce(char_length(phone), 0) <= 40
+    and coalesce(char_length(availability), 0) <= 200
+    and char_length(email) <= 320
+  );
 
 -- Un client connecté voit ses propres demandes
 drop policy if exists "voir ses demandes" on public.diagnostic_requests;

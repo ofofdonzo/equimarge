@@ -17,7 +17,7 @@ export default function Page() {
       </ul>
 
       <h2>Destinataires</h2>
-      <p>Seul Equimarge accède à vos données. Elles ne sont ni vendues ni cédées. Nos sous-traitants techniques sont Supabase (hébergement de la base, UE) et Vercel (hébergement du site).</p>
+      <p>Seul Equimarge accède à vos données. Elles ne sont ni vendues ni cédées. Nos sous-traitants techniques sont Supabase (hébergement de la base, UE) et Netlify (hébergement du site).</p>
 
       <h2>Durée de conservation</h2>
       <ul>

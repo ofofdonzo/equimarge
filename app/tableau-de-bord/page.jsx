@@ -32,6 +32,7 @@ export default async function Page() {
         initialProducts={(products || []).map((p) => ({ ...p, price: +p.price, cost: +p.cost, quantity: +p.quantity }))}
         initialSettings={{ company: settings?.company || '', fixed_costs: +(settings?.fixed_costs || 0) }}
         email={user.email}
+        userId={user.id}
       />
       {requests && requests.length > 0 && (
         <div className="panel">

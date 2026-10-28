@@ -18,33 +18,58 @@ function Status({ tm }) {
   return <span className="pill ok">Saine</span>;
 }
 
-export default function Dashboard({ initialProducts, initialSettings, email }) {
+export default function Dashboard({ initialProducts, initialSettings, email, userId }) {
   const supabase = useMemo(() => createClient(), []);
   const [products, setProducts] = useState(initialProducts);
   const [settings, setSettings] = useState(initialSettings);
   const [saveState, setSaveState] = useState('Enregistré');
   const timers = useRef({});
 
-  // Enregistrement différé : on attend 600 ms après la dernière frappe
+  const pending = useRef(0);
+  const failed = useRef(false);
+
+  // Enregistrement différé : on attend 600 ms après la dernière frappe.
+  // « Enregistré » ne s'affiche qu'une fois toutes les sauvegardes en cours terminées.
   function schedule(key, fn) {
-    clearTimeout(timers.current[key]);
+    if (timers.current[key]) clearTimeout(timers.current[key]);
+    else pending.current += 1;
     setSaveState('Enregistrement…');
     timers.current[key] = setTimeout(async () => {
+      delete timers.current[key];
       const { error } = await fn();
-      setSaveState(error ? "Échec de l'enregistrement, vérifiez votre connexion" : 'Enregistré');
+      if (error) failed.current = true;
+      pending.current -= 1;
+      if (pending.current === 0) {
+        setSaveState(failed.current ? "Échec de l'enregistrement, vérifiez votre connexion" : 'Enregistré');
+        failed.current = false;
+      }
     }, 600);
+  }
+  function cancel(key) {
+    if (!timers.current[key]) return;
+    clearTimeout(timers.current[key]);
+    delete timers.current[key];
+    pending.current -= 1;
+    if (pending.current === 0) setSaveState('Enregistré');
   }
   useEffect(() => () => Object.values(timers.current).forEach(clearTimeout), []);
 
+  // Prévient avant de quitter la page si une saisie n'est pas encore enregistrée
+  useEffect(() => {
+    const warn = (e) => {
+      if (pending.current > 0) e.preventDefault();
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, []);
+
   function updateProduct(id, field, value) {
-    setProducts((list) => {
-      const next = list.map((p) => (p.id === id ? { ...p, [field]: field === 'name' ? value : num(value), ['_' + field]: value } : p));
-      const row = next.find((p) => p.id === id);
-      schedule('p' + id, () =>
-        supabase.from('products').update({ name: row.name, price: row.price, cost: row.cost, quantity: row.quantity }).eq('id', id)
-      );
-      return next;
-    });
+    const next = products.map((p) => (p.id === id ? { ...p, [field]: field === 'name' ? value : num(value), ['_' + field]: value } : p));
+    const row = next.find((p) => p.id === id);
+    setProducts(next);
+    schedule('p' + id, () =>
+      supabase.from('products').update({ name: row.name, price: row.price, cost: row.cost, quantity: row.quantity }).eq('id', id)
+    );
   }
 
   async function addProduct() {
@@ -61,19 +86,20 @@ export default function Dashboard({ initialProducts, initialSettings, email }) {
 
   async function removeProduct(id) {
     const prev = products;
+    cancel('p' + id);
     setProducts((l) => l.filter((p) => p.id !== id));
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) {
       setProducts(prev);
       setSaveState('Suppression impossible : ' + error.message);
-    }
+    } else if (pending.current === 0) setSaveState('Enregistré');
   }
 
   function updateSettings(field, value) {
     const next = { ...settings, [field]: field === 'company' ? value : num(value), ['_' + field]: value };
     setSettings(next);
     schedule('settings', () =>
-      supabase.from('settings').upsert({ company: next.company, fixed_costs: next.fixed_costs, updated_at: new Date().toISOString() })
+      supabase.from('settings').upsert({ user_id: userId, company: next.company, fixed_costs: next.fixed_costs, updated_at: new Date().toISOString() })
     );
   }
 

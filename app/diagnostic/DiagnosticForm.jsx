@@ -21,7 +21,7 @@ export default function DiagnosticForm({ userId, defaultEmail }) {
     if (!f.company.trim()) miss.push('la raison sociale');
     if (siren && !/^\d{9}$/.test(siren)) miss.push('un SIREN à 9 chiffres (ou laissez le champ vide)');
     if (!f.contact_name.trim()) miss.push('votre nom');
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) miss.push('un e-mail valide');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) miss.push('un e-mail valide');
     if (!f.consent) miss.push("votre accord sur l'utilisation des données");
     if (miss.length) return setError('Il manque ' + miss.join(', ') + '.');
 
@@ -86,7 +86,7 @@ export default function DiagnosticForm({ userId, defaultEmail }) {
       <div className="panel stack">
         <span className="eyebrow">2. Votre entreprise</span>
         <div className="grid2">
-          <div className="field"><label htmlFor="company">Raison sociale *</label><input id="company" autoComplete="organization" value={f.company} onChange={set('company')} /></div>
+          <div className="field"><label htmlFor="company">Raison sociale *</label><input id="company" autoComplete="organization" maxLength={200} value={f.company} onChange={set('company')} /></div>
           <div className="field"><label htmlFor="siren">SIREN</label><input id="siren" inputMode="numeric" placeholder="9 chiffres" value={f.siren} onChange={set('siren')} /></div>
           <div className="field"><label htmlFor="sector">Secteur</label>
             <select id="sector" value={f.sector} onChange={set('sector')}>{SECTORS.map((s) => <option key={s}>{s}</option>)}</select></div>
@@ -98,10 +98,10 @@ export default function DiagnosticForm({ userId, defaultEmail }) {
       <div className="panel stack">
         <span className="eyebrow">3. Contact</span>
         <div className="grid2">
-          <div className="field"><label htmlFor="name">Nom et prénom *</label><input id="name" autoComplete="name" value={f.contact_name} onChange={set('contact_name')} /></div>
+          <div className="field"><label htmlFor="name">Nom et prénom *</label><input id="name" autoComplete="name" maxLength={200} value={f.contact_name} onChange={set('contact_name')} /></div>
           <div className="field"><label htmlFor="email">E-mail professionnel *</label><input id="email" type="email" autoComplete="email" value={f.email} onChange={set('email')} /></div>
-          <div className="field"><label htmlFor="phone">Téléphone</label><input id="phone" type="tel" autoComplete="tel" value={f.phone} onChange={set('phone')} /></div>
-          <div className="field"><label htmlFor="dispo">Disponibilités</label><input id="dispo" placeholder="ex. mardi matin" value={f.availability} onChange={set('availability')} /></div>
+          <div className="field"><label htmlFor="phone">Téléphone</label><input id="phone" type="tel" autoComplete="tel" maxLength={40} value={f.phone} onChange={set('phone')} /></div>
+          <div className="field"><label htmlFor="dispo">Disponibilités</label><input id="dispo" placeholder="ex. mardi matin" maxLength={200} value={f.availability} onChange={set('availability')} /></div>
         </div>
         <div className="field">
           <label htmlFor="msg">Qu'attendez-vous du diagnostic ?</label>

@@ -1,6 +1,6 @@
 # Equimarge
 
-Site et application pour PME, en deux pôles : suivi de marge (outil gratuit et diagnostic) et mise en conformité (sur devis).
+Site et application pour PME, en deux pôles : mise en conformité (sur devis) et suivi de marge (outil gratuit et diagnostic).
 
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.

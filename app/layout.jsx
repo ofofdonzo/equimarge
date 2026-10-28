@@ -4,9 +4,9 @@ import { createClient } from '@/lib/supabase/server';
 import { LogOut, LogoMark } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
-const TITLE = 'Equimarge — marges et conformité des PME';
+const TITLE = 'Equimarge — conformité et marges des PME';
 const DESCRIPTION =
-  'Suivi de marge gratuit, diagnostic et mise en conformité des PME : procédures internes, RGPD, anti-blanchiment, anticorruption, droit social.';
+  'Mise en conformité des PME (procédures internes, RGPD, anti-blanchiment, anticorruption, droit social), diagnostic et suivi de marge gratuit.';
 
 export function generateMetadata() {
   return {
@@ -55,11 +55,11 @@ export default async function RootLayout({ children }) {
               </span>
             </Link>
             <nav className="nav" aria-label="Navigation principale">
-              <Link href="/#marges" className="nav-link">
-                Marges
-              </Link>
               <Link href="/conformite" className="nav-link">
                 Conformité
+              </Link>
+              <Link href="/#marges" className="nav-link">
+                Marges
               </Link>
               {user ? (
                 <>
@@ -93,11 +93,11 @@ export default async function RootLayout({ children }) {
                   Equi<span>marge</span>
                 </span>
               </Link>
-              <p>Marges et conformité des PME.</p>
+              <p>Conformité et marges des PME.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
-              <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/conformite">Conformité</Link>
+              <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>

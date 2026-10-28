@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { COMPLIANCE, OFFERS } from '@/components/offers';
-import { ArrowRight, BarChart, Check, Clock, DOMAIN_ICONS, Pencil, Shield, Target } from '@/components/icons';
+import { ArrowRight, BarChart, Check, Clock, DOMAIN_ICONS, Pencil, Shield, Target, TrendUp } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
 export const metadata = { alternates: { canonical: '/' } };
@@ -29,20 +29,20 @@ const STEPS = [
   },
 ];
 
-// Données fictives de l'aperçu : les marges additionnées donnent la marge brute affichée.
-const SAMPLE = [
-  { name: 'Gamme Prestige', margin: '8 900 €', width: 100, state: 'ok', label: 'Saine' },
-  { name: 'Service installation', margin: '6 120 €', width: 69, state: 'ok', label: 'Saine' },
-  { name: 'Pièces détachées', margin: '2 950 €', width: 33, state: 'warn', label: 'À surveiller' },
-  { name: 'Coffrets cadeaux', margin: '560 €', width: 6, state: 'bad', label: 'Critique' },
+// Exemple de plan d'action conformité (livrable de l'étape 2 de la démarche) :
+// l'avancement affiché est la moyenne des cinq domaines.
+const PLAN = [
+  { name: 'RGPD', progress: 100, state: 'ok', label: 'Conforme' },
+  { name: 'Procédures internes', progress: 100, state: 'ok', label: 'Conforme' },
+  { name: 'Anticorruption', progress: 60, state: 'warn', label: 'En cours' },
+  { name: 'Anti-blanchiment', progress: 40, state: 'warn', label: 'En cours' },
+  { name: 'Droit social', progress: 10, state: 'bad', label: 'À traiter' },
 ];
 
-// Exemple de plan d'action conformité (livrable de l'étape 2 de la démarche)
-const PLAN = [
-  { name: 'RGPD', state: 'ok', label: 'Conforme' },
-  { name: 'Procédures internes', state: 'ok', label: 'Conforme' },
-  { name: 'Anticorruption', state: 'warn', label: 'En cours' },
-  { name: 'Droit social', state: 'bad', label: 'À traiter' },
+// Exemple de suivi de marge (outil gratuit)
+const SAMPLE = [
+  { name: 'Gamme Prestige', state: 'ok', label: 'Saine' },
+  { name: 'Coffrets cadeaux', state: 'bad', label: 'Critique' },
 ];
 
 function Preview() {
@@ -51,21 +51,21 @@ function Preview() {
       <div className="preview-card">
         <div className="preview-head">
           <span className="preview-dots"><i /><i /><i /></span>
-          <span>Exemple · tableau de bord mensuel</span>
+          <span>Exemple · plan d'action conformité</span>
         </div>
         <div className="preview-kpis">
-          <div><small>Chiffre d'affaires</small><b>48&#8239;200&nbsp;€</b></div>
-          <div><small>Marge brute</small><b>18&#8239;530&nbsp;€</b></div>
-          <div><small>Taux de marque</small><b className="grad-text">38,4&nbsp;%</b></div>
+          <div><small>Domaines suivis</small><b>5</b></div>
+          <div><small>Conformes</small><b>2 sur 5</b></div>
+          <div><small>Avancement</small><b className="grad-text">62&nbsp;%</b></div>
         </div>
         <div className="preview-rows">
-          {SAMPLE.map((r) => (
+          {PLAN.map((r) => (
             <div className="preview-row" key={r.name}>
               <span className="name">{r.name}</span>
               <div className="track">
-                <div className={'fill' + (r.state === 'ok' ? '' : ' ' + r.state)} style={{ width: `${r.width}%` }} />
+                <div className={'fill' + (r.state === 'ok' ? '' : ' ' + r.state)} style={{ width: `${r.progress}%` }} />
               </div>
-              <span className="v">{r.margin}</span>
+              <span className="v">{r.progress}&nbsp;%</span>
               <span className={'pill ' + r.state}>{r.label}</span>
             </div>
           ))}
@@ -73,11 +73,12 @@ function Preview() {
       </div>
       <div className="plan-card">
         <div className="plan-head">
-          <span className="float-icon ok"><Shield size={18} /></span>
-          <div><small>Exemple · plan d'action</small><b>Conformité</b></div>
+          <span className="float-icon ok"><TrendUp size={18} /></span>
+          <div><small>Exemple · tableau de bord</small><b>Marges du mois</b></div>
         </div>
-        <div className="meter"><span style={{ width: '60%' }} /></div>
-        {PLAN.map((r) => (
+        <div className="plan-row"><span>Taux de marque</span><b className="grad-text">38,4&nbsp;%</b></div>
+        <div className="plan-row"><span>Marge brute</span><b>18&#8239;530&nbsp;€</b></div>
+        {SAMPLE.map((r) => (
           <div className="plan-row" key={r.name}>
             <span>{r.name}</span>
             <span className={'pill ' + r.state}>{r.label}</span>
@@ -103,24 +104,24 @@ export default function Home() {
         <div className="rise">
           <span className="badge"><span className="badge-dot" />Pour les dirigeants de PME</span>
           <h1>
-            Maîtrisez vos marges, <span className="grad-text">sécurisez</span> votre conformité
+            Sécurisez votre <span className="grad-text">conformité</span>, maîtrisez vos marges
           </h1>
           <p className="lead">
-            Equimarge accompagne les PME sur deux terrains : le suivi de la marge de chaque produit, avec un outil gratuit
-            et un diagnostic sur mesure, et la mise en conformité de l'entreprise : procédures internes, RGPD,
-            anti-blanchiment, anticorruption et droit social.
+            Equimarge accompagne les PME sur deux terrains : la mise en conformité de l'entreprise (procédures internes,
+            RGPD, anti-blanchiment, anticorruption, droit social) et le suivi de la marge de chaque produit, avec un outil
+            gratuit et un diagnostic sur mesure.
           </p>
           <div className="row">
-            <Link href="/connexion?mode=inscription" className="btn lg">
-              Créer mon espace gratuit <ArrowRight size={18} />
+            <Link href="/conformite#devis" className="btn lg">
+              Demander un devis conformité <ArrowRight size={18} />
             </Link>
-            <Link href="/conformite#devis" className="btn ghost lg">
-              Demander un devis conformité
+            <Link href="/connexion?mode=inscription" className="btn ghost lg">
+              Créer mon espace gratuit
             </Link>
           </div>
           <ul className="trust">
-            <li><Check size={18} />Outil de marge gratuit</li>
             <li><Check size={18} />Conformité sur devis</li>
+            <li><Check size={18} />Outil de marge gratuit</li>
             <li><Check size={18} />Réponse sous 48&nbsp;h ouvrées</li>
           </ul>
         </div>
@@ -130,10 +131,27 @@ export default function Home() {
       <section className="section">
         <div className="section-head center">
           <span className="eyebrow">Deux pôles</span>
-          <h2>Vos marges et votre conformité, au même endroit</h2>
+          <h2>Votre conformité et vos marges, au même endroit</h2>
           <p>Choisissez par où commencer : les deux se complètent.</p>
         </div>
         <div className="grid2 poles">
+          <article className="pole">
+            <div className="feature-icon"><Shield size={22} /></div>
+            <span className="eyebrow">Pôle conformité</span>
+            <h3>Sécurisez votre entreprise</h3>
+            <p className="note">
+              Audit et accompagnement pour mettre en place vos politiques et procédures et répondre à vos obligations.
+            </p>
+            <ul className="checks">
+              {COMPLIANCE.map((d) => (
+                <li key={d.key}><Check size={16} />{d.id}</li>
+              ))}
+            </ul>
+            <div className="row">
+              <Link href="/conformite#devis" className="btn">Demander un devis</Link>
+              <Link href="/conformite" className="btn ghost">Découvrir</Link>
+            </div>
+          </article>
           <article className="pole">
             <div className="feature-icon"><BarChart size={22} /></div>
             <span className="eyebrow">Pôle marges</span>
@@ -152,23 +170,32 @@ export default function Home() {
               <a href="#formules" className="btn ghost">Voir les formules</a>
             </div>
           </article>
-          <article className="pole">
-            <div className="feature-icon"><Shield size={22} /></div>
-            <span className="eyebrow">Pôle conformité</span>
-            <h3>Sécurisez votre entreprise</h3>
-            <p className="note">
-              Audit et accompagnement pour mettre en place vos politiques et procédures et répondre à vos obligations.
-            </p>
-            <ul className="checks">
-              {COMPLIANCE.map((d) => (
-                <li key={d.key}><Check size={16} />{d.id}</li>
-              ))}
-            </ul>
-            <div className="row">
-              <Link href="/conformite#devis" className="btn">Demander un devis</Link>
-              <Link href="/conformite" className="btn ghost">Découvrir</Link>
-            </div>
-          </article>
+        </div>
+      </section>
+
+      <section className="section" id="conformite">
+        <div className="section-head center">
+          <span className="eyebrow">Pôle conformité</span>
+          <h2>Cinq domaines d'intervention</h2>
+          <p>Sur devis, selon votre taille et votre secteur. Réponse sous 48&nbsp;h ouvrées.</p>
+        </div>
+        <div className="grid3 grid-center">
+          {COMPLIANCE.map((d) => {
+            const Icon = DOMAIN_ICONS[d.key];
+            return (
+              <Link key={d.key} href={`/conformite?domaine=${d.key}#devis`} className="feature domain-card">
+                <div className="feature-icon"><Icon size={22} /></div>
+                <h3>{d.id}</h3>
+                <p className="note">{d.intro}</p>
+                <span className="domain-link">Demander un devis <ArrowRight size={16} /></span>
+              </Link>
+            );
+          })}
+        </div>
+        <div className="row" style={{ justifyContent: 'center' }}>
+          <Link href="/conformite" className="btn ghost lg">
+            Découvrir l'accompagnement conformité
+          </Link>
         </div>
       </section>
 
@@ -220,43 +247,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section" id="conformite">
-        <div className="section-head center">
-          <span className="eyebrow">Pôle conformité</span>
-          <h2>Cinq domaines d'intervention</h2>
-          <p>Sur devis, selon votre taille et votre secteur. Réponse sous 48&nbsp;h ouvrées.</p>
-        </div>
-        <div className="grid3 grid-center">
-          {COMPLIANCE.map((d) => {
-            const Icon = DOMAIN_ICONS[d.key];
-            return (
-              <Link key={d.key} href={`/conformite?domaine=${d.key}#devis`} className="feature domain-card">
-                <div className="feature-icon"><Icon size={22} /></div>
-                <h3>{d.id}</h3>
-                <p className="note">{d.intro}</p>
-                <span className="domain-link">Demander un devis <ArrowRight size={16} /></span>
-              </Link>
-            );
-          })}
-        </div>
-        <div className="row" style={{ justifyContent: 'center' }}>
-          <Link href="/conformite" className="btn ghost lg">
-            Découvrir l'accompagnement conformité
-          </Link>
-        </div>
-      </section>
-
       <section className="cta">
         <div>
           <h2>Parlons de votre entreprise</h2>
-          <p>Outil de marge gratuit, conformité sur devis. Réponse sous 48&nbsp;h ouvrées.</p>
+          <p>Conformité sur devis, outil de marge gratuit. Réponse sous 48&nbsp;h ouvrées.</p>
         </div>
         <div className="row">
-          <Link href="/connexion?mode=inscription" className="btn inverse lg">
-            Créer mon espace gratuit <ArrowRight size={18} />
+          <Link href="/conformite#devis" className="btn inverse lg">
+            Demander un devis conformité <ArrowRight size={18} />
           </Link>
-          <Link href="/conformite#devis" className="btn on-grad lg">
-            Demander un devis conformité
+          <Link href="/connexion?mode=inscription" className="btn on-grad lg">
+            Créer mon espace gratuit
           </Link>
         </div>
       </section>

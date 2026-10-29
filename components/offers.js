@@ -25,6 +25,8 @@ export const OFFERS = [
 // Pôle conformité : domaines d'intervention (sur devis). Modifiez textes et listes ici.
 // `key` sert à l'icône et au lien direct /conformite?domaine=… ; ne le changez pas.
 export const COMPLIANCE_OFFER = 'Conformité';
+// Pré-diagnostic conformité offert : l'offre des publicités (page /pre-diagnostic, textes dans app/pre-diagnostic/page.jsx)
+export const PRE_DIAGNOSTIC_OFFER = 'Pré-diagnostic';
 export const COMPLIANCE = [
   {
     key: 'procedures',

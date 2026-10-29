@@ -40,7 +40,6 @@ export const ClipboardList = icon(<><rect x="5" y="4" width="14" height="17" rx=
 export const Database = icon(<><ellipse cx="12" cy="5.5" rx="7" ry="2.5" /><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13" /><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5" /></>);
 export const Search = icon(<><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></>);
 export const Scale = icon(<><path d="M12 4v16" /><path d="M8 20h8" /><path d="M5 7h14" /><path d="m5 7-2.5 6a2.5 2.5 0 0 0 5 0L5 7Z" /><path d="m19 7-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z" /></>);
-export const Calendar = icon(<><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17" /><path d="M8 3v4M16 3v4" /></>);
 export const Users = icon(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" /><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8" /></>);
 
 // Icône de chaque domaine de conformité (clés de COMPLIANCE dans components/offers.js)

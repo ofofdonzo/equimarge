@@ -2,7 +2,6 @@ import Link from 'next/link';
 import './globals.css';
 import { createClient } from '@/lib/supabase/server';
 import { LogOut, LogoMark } from '@/components/icons';
-import CookieConsent, { ManageCookies } from '@/components/CookieConsent';
 import { siteUrl } from '@/lib/site';
 
 const TITLE = 'Equimarge — conformité et marges des PME';
@@ -98,19 +97,16 @@ export default async function RootLayout({ children }) {
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
               <Link href="/conformite">Conformité</Link>
-              <Link href="/pre-diagnostic">Pré-diagnostic offert</Link>
               <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>
-              <ManageCookies />
             </nav>
           </div>
           <div className="wrap">
             <div className="footer-bottom">© {new Date().getFullYear()} Equimarge</div>
           </div>
         </footer>
-        <CookieConsent />
       </body>
     </html>
   );

@@ -6,8 +6,7 @@ Site et application pour PME, en deux pôles : mise en conformité (sur devis) e
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
 - **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
-- **Pré-diagnostic** (`/pre-diagnostic`) : page d'arrivée des publicités Meta, pré-diagnostic conformité offert avec un formulaire court (voir l'étape 9).
-- **Administration** (`/admin`) : vous seul voyez les demandes, les publicités qui les ont apportées, et changez leur statut.
+- **Administration** (`/admin`) : vous seul voyez les demandes et changez leur statut.
 - **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
 Technique : Next.js 14 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
@@ -65,23 +64,6 @@ Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages 
 6. (Facultatif) [Bing Webmaster Tools](https://www.bing.com/webmasters) : **Importer depuis Google Search Console**. Bing alimente aussi DuckDuckGo et Ecosia.
 
 Pour être trouvé plus vite, créez des liens vers le site : fiche Google Business Profile, page LinkedIn, annuaires professionnels, signature e-mail.
-
-### 9. Trouver des clients avec la publicité Meta (5 €/jour)
-La page `/pre-diagnostic` reçoit les visiteurs des publicités Facebook et Instagram : une offre claire (pré-diagnostic conformité offert, 30 min en visio), des preuves, aucun risque pour le prospect, et une seule action (le formulaire). Les textes sont dans `app/pre-diagnostic/page.jsx`. Dès que vous avez de vrais témoignages, ajoutez-les dans `TESTIMONIALS` (avec l'accord écrit du client) : la section s'affiche toute seule.
-
-1. **Base de données** : relancez `supabase/schema.sql` dans Supabase > SQL Editor. Sans cela, le formulaire de la page est refusé. Faites une demande d'essai avant de lancer les pubs.
-2. **Pixel Meta** : dans le Gestionnaire d'événements Meta, **Connecter des sources de données** > **Web** > **Pixel Meta**, puis notez l'identifiant (une suite de chiffres). Dans les paramètres du pixel, désactivez la **correspondance avancée automatique** : sinon le pixel lit les champs du formulaire, ce que la politique de confidentialité exclut. Ajoutez l'identifiant dans Netlify > **Environment variables** sous le nom `NEXT_PUBLIC_META_PIXEL_ID`, puis relancez un déploiement. Le bandeau cookies apparaît alors ; le pixel ne se charge qu'après « Accepter », et le lien « Gérer les cookies » s'ajoute en bas de page.
-3. (Facultatif) **Prise de rendez-vous** : si vous avez un agenda en ligne (Calendly, Cal.com, page de réservation Google Agenda), ajoutez son adresse sous `NEXT_PUBLIC_BOOKING_URL` et relancez un déploiement : après sa demande, le prospect peut choisir son créneau tout de suite.
-4. (Recommandé) **Domaine** : dans les paramètres de votre portefeuille Meta Business, **Sécurité de la marque** > **Domaines**, vérifiez `equimarge.fr`.
-5. **Campagne** : objectif **Prospects**, lieu de conversion **Site web**, le pixel ci-dessus et l'événement **Lead** (envoyé à chaque demande) ; 5 € par jour ; adresse de destination `https://equimarge.fr/pre-diagnostic`. Dans le champ **Paramètres d'URL** de chaque pub, collez :
-   ```
-   utm_source={{site_source_name}}&utm_medium=paid&utm_campaign={{campaign.name}}&utm_term={{adset.name}}&utm_content={{ad.name}}
-   ```
-   Meta remplace lui-même les `{{…}}` par la plateforme et les noms de la campagne, de l'ensemble de publicités et de la pub.
-6. **Tester** : 3 à 5 pubs dans la même campagne, chacune avec un angle et un nom parlant (ex. `rgpd-amende`, `duerp-1-salarie`, `sapin2-fournisseur`). Laissez tourner une semaine sans y toucher.
-7. **Amplifier** : dans `/admin`, le tableau **Demandes par publicité** montre combien de demandes et de clients gagnés chaque pub a apportés ; le coût de chaque pub est dans le Gestionnaire de publicités. Coupez celles qui n'apportent rien, gardez les gagnantes et augmentez leur budget par paliers.
-
-Meta ne compte que les visiteurs qui ont accepté les cookies, alors que `/admin` compte toutes les demandes : fiez-vous à `/admin` pour juger vos pubs. La demande garde la trace de la pub tant que le visiteur la remplit sur la page où il est arrivé.
 
 ## Travailler en local (optionnel)
 ```bash

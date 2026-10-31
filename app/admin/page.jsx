@@ -1,11 +1,19 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Workspace from './Workspace';
+import Agents from './Agents';
 
-export const metadata = { title: 'Poste de travail — Equimarge', robots: { index: false } };
+// Le manifeste rend le poste de travail installable (écran d'accueil de l'iPhone, appli sur ordinateur),
+// ce qui permet les notifications sur iPhone.
+export const metadata = {
+  title: 'Poste de travail — Equimarge',
+  robots: { index: false },
+  manifest: '/poste.webmanifest',
+  appleWebApp: { capable: true, title: 'Equimarge', statusBarStyle: 'black-translucent' },
+};
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
+export default async function Page({ searchParams }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -29,12 +37,16 @@ export default async function Page() {
   ]);
 
   if (error) return <p className="err">Chargement impossible : {error.message}</p>;
+  const { demande } = (await searchParams) || {};
 
   return (
     <Workspace
       initialRequests={requests || []}
       initialTracking={tracking || []}
+      initialSelected={typeof demande === 'string' && (requests || []).some((r) => r.id === demande) ? demande : null}
       setupMissing={Boolean(trackingError)}
-    />
+    >
+      <Agents />
+    </Workspace>
   );
 }

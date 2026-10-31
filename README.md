@@ -7,7 +7,7 @@ Site et application pour PME, en trois pôles : mise en conformité (sur devis),
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
 - **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
 - **Automatisation** (`/automatisation`) : les « étages » d'agents IA (mails et appels manqués, factures et relances, planning et achats, superviseur et rapport du soir) et le formulaire de devis (formule « Automatisation »).
-- **Poste de travail** (`/admin`) : réservé à vous. Les demandes arrivent en direct (son, notification du navigateur, compteur dans l'onglet). Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
+- **Poste de travail** (`/admin`) : réservé à vous. S'installe comme une appli sur l'iPhone ou l'ordinateur. Les demandes arrivent en direct (son, compteur dans l'onglet) et une notification vous prévient même appli fermée. Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
 - **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
 Technique : Next.js 16 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
@@ -28,7 +28,7 @@ Comptez une heure. Tout se fait depuis un navigateur, sur ordinateur de préfér
 ### 3. Hébergement (Netlify)
 1. Créez un compte sur netlify.com **avec votre compte GitHub**.
 2. **Add new site** > **Import an existing project** > GitHub > choisissez `equimarge`. Les réglages de build sont lus dans `netlify.toml`.
-3. **Obligatoire** : dans **Site configuration** > **Environment variables**, ajoutez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (valeurs notées à l'étape 1.3). Sans elles, le déploiement s'arrête avec un message d'erreur et l'ancienne version du site reste en ligne.
+3. (Facultatif) Le site utilise par défaut le projet Supabase d'Equimarge, inscrit dans `lib/supabase/config.js`. Pour un autre projet, ajoutez dans **Site configuration** > **Environment variables** `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (valeurs notées à l'étape 1.3).
 4. **Deploy**. Après 1 à 2 minutes, le site est en ligne sur une adresse `xxx.netlify.app`.
 
 ### 4. Relier Supabase au site
@@ -57,12 +57,26 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr`, définissez
 ### 8. Activer le poste de travail
 Si votre base a été créée avant cette version, exécutez à nouveau tout `supabase/schema.sql` dans Supabase > SQL Editor (relançable sans perte de données). Il ajoute la formule « Automatisation », les tables de suivi et de notes, et le temps réel. Ouvrez ensuite `/admin` et cliquez **Activer les alertes**.
 
-### 9. Être prévenu par e-mail, même page fermée (facultatif, 10 minutes)
-1. Créez un compte gratuit sur [resend.com](https://resend.com) **avec l'adresse qui doit recevoir les alertes** (sans domaine vérifié, Resend n'écrit qu'à cette adresse). Menu **API Keys** > **Create API key**.
-2. Netlify > **Site configuration** > **Environment variables** : ajoutez `RESEND_API_KEY` (la clé), `ALERT_EMAIL` (cette adresse) et `WEBHOOK_SECRET` (une longue phrase de votre choix). Relancez un déploiement.
-3. Supabase > **Database** > **Webhooks** > **Create a new hook** : table `diagnostic_requests`, événement **Insert**, type **HTTP Request**, méthode **POST**, URL `https://VOTRE-ADRESSE/api/alerte-demande`, et un en-tête `x-webhook-secret` avec la même phrase que `WEBHOOK_SECRET`.
-4. Faites une demande test sur le site : l'e-mail arrive en quelques secondes, et votre « Agent Mails » le range sous « Equimarge ».
-5. Une fois `equimarge.fr` acheté et vérifié dans Resend, ajoutez `ALERT_FROM=Equimarge <alertes@equimarge.fr>`.
+### 9. Être prévenu sur votre téléphone, même appli fermée (10 minutes)
+Le poste de travail s'installe comme une appli (iPhone, Android, ordinateur) et reçoit une notification à chaque nouvelle demande. La base Supabase prévient le site, qui envoie la notification (et un e-mail si vous le souhaitez).
+
+1. **Netlify** > **Site configuration** > **Environment variables**, ajoutez :
+   - `WEBHOOK_SECRET` : une longue phrase secrète de votre choix ;
+   - `VAPID_PRIVATE_KEY` : la clé privée des notifications (celle qui va avec la clé publique de `lib/push.js` ; pour en générer une nouvelle paire : `npx web-push generate-vapid-keys`, puis mettez la publique dans `lib/push.js`) ;
+   - `SUPABASE_SERVICE_ROLE_KEY` : Supabase > **Project Settings** > **API Keys** > clé **service_role** (secrète : jamais dans le code).
+
+   Puis **Deploys** > **Trigger deploy**.
+2. **Supabase** > **SQL Editor** : exécutez `supabase/schema.sql` (étapes 7 et 8), puis rangez le secret dans le coffre-fort, avec la même phrase que `WEBHOOK_SECRET` :
+   ```sql
+   select vault.create_secret('VOTRE-PHRASE', 'equimarge_webhook_secret');
+   ```
+   (Pour la changer plus tard : `select vault.update_secret(id, 'NOUVELLE-PHRASE') from vault.secrets where name = 'equimarge_webhook_secret';`)
+3. **Sur iPhone** : ouvrez `https://VOTRE-ADRESSE/admin` dans **Safari** > **Partager** > **Sur l'écran d'accueil**. Ouvrez Equimarge depuis l'icône, puis **Activer les alertes** > **Autoriser**. (Sur ordinateur ou Android, **Activer les alertes** suffit.) Faites-le sur chaque appareil à prévenir.
+4. Faites une demande test sur le site : la notification arrive en quelques secondes. Un appui dessus ouvre directement la fiche.
+
+**E-mail en plus (facultatif)** : créez un compte sur [resend.com](https://resend.com) avec l'adresse qui doit recevoir les alertes, **API Keys** > **Create API key**, puis ajoutez dans Netlify `RESEND_API_KEY` et `ALERT_EMAIL`. Une fois `equimarge.fr` vérifié dans Resend, ajoutez `ALERT_FROM=Equimarge <alertes@equimarge.fr>`.
+
+N'ajoutez pas en plus un « Database Webhook » dans le tableau de bord Supabase : chaque alerte arriverait deux fois.
 
 ### 10. Apparaître dans Google
 Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages publiques), `/robots.txt` (espaces privés exclus), titres, descriptions et image de partage. Les adresses utilisent le domaine principal du site sur Netlify (`xxx.netlify.app`, puis `equimarge.fr` après l'étape 6), ou la variable `SITE_URL` si vous la définissez. Il reste à signaler le site à Google, de préférence **après** l'étape 6 :

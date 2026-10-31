@@ -1,10 +1,10 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { AUTOMATION, COMPLIANCE, STATUSES, poleOf } from '@/components/offers';
-import { AGENTS } from '@/components/agents';
+import Alerts, { showLocalNotification } from './Alerts';
 import {
-  Alert, ArrowLeft, Bell, Bot, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
+  Alert, ArrowLeft, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
 } from '@/components/icons';
 
 // Poste de travail de l'administrateur : les demandes arrivent en direct, se traitent dans une fiche
@@ -94,41 +94,26 @@ function beep() {
   }
 }
 
-const noSubscribe = () => () => {};
-
-export default function Workspace({ initialRequests, initialTracking, setupMissing }) {
+// initialSelected : fiche à ouvrir d'emblée (lien /admin?demande=… d'une notification ou d'un e-mail d'alerte).
+export default function Workspace({ initialRequests, initialTracking, initialSelected = null, setupMissing, children }) {
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState(initialRequests);
   const [tracking, setTracking] = useState(() => Object.fromEntries(initialTracking.map((t) => [t.request_id, t])));
   const [view, setView] = useState(initialRequests.some((r) => r.status === 'Nouvelle') ? 'todo' : 'all');
   const [pole, setPole] = useState('Tous');
   const [q, setQ] = useState('');
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState(initialSelected);
   const [live, setLive] = useState(false);
   const [fresh, setFresh] = useState(() => new Set());
-  // Autorisation des notifications : lue dans le navigateur (« default » côté serveur), puis mise à jour après la demande
-  const browserPerm = useSyncExternalStore(
-    noSubscribe,
-    () => ('Notification' in window ? Notification.permission : 'default'),
-    () => 'default'
-  );
-  const [askedPerm, setPerm] = useState(null);
-  const perm = askedPerm ?? browserPerm;
   const [msg, setMsg] = useState('');
 
   // ---------- Temps réel ----------
+  // Page visible : le son et la ligne en surbrillance suffisent. Page en arrière-plan : notification système
+  // (même étiquette que la notification envoyée par le serveur, pour ne jamais l'afficher deux fois).
   const notify = useCallback((r) => {
     beep();
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const n = new Notification('Nouvelle demande — Equimarge', {
-          body: `${r.company} · ${r.offer}`,
-          tag: r.id,
-        });
-        n.onclick = () => { window.focus(); setSelected(r.id); n.close(); };
-      }
-    } catch {
-      // Notifications non prises en charge (certains navigateurs mobiles)
+    if (document.visibilityState !== 'visible') {
+      showLocalNotification('Nouvelle demande — Equimarge', `${r.company} · ${r.offer}`, r.id);
     }
   }, []);
 
@@ -155,11 +140,6 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   useEffect(() => {
     document.title = (todoCount ? `(${todoCount}) ` : '') + 'Poste de travail — Equimarge';
   }, [todoCount]);
-
-  async function askPermission() {
-    if (!('Notification' in window)) return setMsg("Ce navigateur n'affiche pas les notifications.");
-    setPerm(await Notification.requestPermission());
-  }
 
   // ---------- Filtres et indicateurs ----------
   const due = (r) => OPEN(r) && tracking[r.id]?.next_action_at && tracking[r.id].next_action_at <= today();
@@ -210,11 +190,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
           <span className={'live' + (live ? ' on' : '')} title="Les nouvelles demandes s'affichent sans recharger la page">
             {live ? 'En direct' : 'Connexion…'}
           </span>
-          {perm !== 'granted' && (
-            <button type="button" className="btn ghost sm" onClick={askPermission}>
-              <Bell size={16} /> Activer les alertes
-            </button>
-          )}
+          <Alerts supabase={supabase} />
         </div>
       </div>
 
@@ -313,26 +289,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
         </section>
       </div>
 
-      <section className="panel">
-        <div className="panel-head">
-          <h2 className="row" style={{ gap: 10 }}><Bot size={20} /> Mes agents</h2>
-          <span className="note">Ils préparent, vous validez : aucun n'envoie de mail ni ne paie.</span>
-        </div>
-        <ul className="agents">
-          {AGENTS.map((a) => (
-            <li key={a.name} className="agent">
-              <span className="agent-top"><b>{a.name}</b><span className="pill ok">Planifié</span></span>
-              <span className="meta"><Clock size={14} />{a.when}</span>
-              <span className="note">{a.does}</span>
-              {a.link && (
-                <a href={a.link.href} target="_blank" rel="noopener noreferrer" className="domain-link">
-                  {a.link.label} <External size={14} />
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {children}
     </div>
   );
 }

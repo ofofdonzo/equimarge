@@ -2,10 +2,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { AUTOMATION, COMPLIANCE, STATUSES, poleOf } from '@/components/offers';
-import { AGENTS } from '@/components/agents';
 import Alerts, { showLocalNotification } from './Alerts';
 import {
-  Alert, ArrowLeft, Bot, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
+  Alert, ArrowLeft, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
 } from '@/components/icons';
 
 // Poste de travail de l'administrateur : les demandes arrivent en direct, se traitent dans une fiche
@@ -95,7 +94,7 @@ function beep() {
   }
 }
 
-export default function Workspace({ initialRequests, initialTracking, setupMissing }) {
+export default function Workspace({ initialRequests, initialTracking, setupMissing, children }) {
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState(initialRequests);
   const [tracking, setTracking] = useState(() => Object.fromEntries(initialTracking.map((t) => [t.request_id, t])));
@@ -283,26 +282,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
         </section>
       </div>
 
-      <section className="panel">
-        <div className="panel-head">
-          <h2 className="row" style={{ gap: 10 }}><Bot size={20} /> Mes agents</h2>
-          <span className="note">Ils préparent, vous validez : aucun n'envoie de mail ni ne paie.</span>
-        </div>
-        <ul className="agents">
-          {AGENTS.map((a) => (
-            <li key={a.name} className="agent">
-              <span className="agent-top"><b>{a.name}</b><span className="pill ok">Planifié</span></span>
-              <span className="meta"><Clock size={14} />{a.when}</span>
-              <span className="note">{a.does}</span>
-              {a.link && (
-                <a href={a.link.href} target="_blank" rel="noopener noreferrer" className="domain-link">
-                  {a.link.label} <External size={14} />
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {children}
     </div>
   );
 }

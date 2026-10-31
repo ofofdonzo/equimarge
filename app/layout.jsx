@@ -10,9 +10,9 @@ import { siteUrl } from '@/lib/site';
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-inter' });
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap', variable: '--font-jakarta' });
 
-const TITLE = 'Equimarge — conformité et marges des PME';
+const TITLE = 'Equimarge — conformité, marges et automatisation des PME';
 const DESCRIPTION =
-  'Mise en conformité des PME (procédures internes, RGPD, anti-blanchiment, anticorruption, droit social), diagnostic et suivi de marge gratuit.';
+  'Mise en conformité des PME (procédures internes, RGPD, anti-blanchiment, anticorruption, droit social), diagnostic et suivi de marge gratuit, automatisation des tâches répétitives par agents IA.';
 
 export function generateMetadata() {
   return {
@@ -51,8 +51,12 @@ export default function RootLayout({ children }) {
               <Link href="/conformite" className="nav-link">
                 Conformité
               </Link>
-              <Link href="/#marges" className="nav-link">
+              <Link href="/#marges" className="nav-link hide-xs">
                 Marges
+              </Link>
+              <Link href="/automatisation" className="nav-link">
+                <span className="hide-xs">Automatisation</span>
+                <span className="show-xs" aria-hidden="true">IA</span>
               </Link>
               <AuthNav />
             </nav>
@@ -70,11 +74,12 @@ export default function RootLayout({ children }) {
                   Equi<span>marge</span>
                 </span>
               </Link>
-              <p>Conformité et marges des PME.</p>
+              <p>Conformité, marges et automatisation des PME.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
               <Link href="/conformite">Conformité</Link>
               <Link href="/diagnostic">Diagnostic de marge</Link>
+              <Link href="/automatisation">Automatisation IA</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>

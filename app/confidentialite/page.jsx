@@ -26,6 +26,10 @@ export default function Page() {
           ce transfert hors de l'Union européenne est encadré par les clauses contractuelles types de la Commission
           européenne.
         </li>
+        <li>
+          <b>Resend, Inc.</b> (États-Unis) : envoi à Equimarge d'une alerte e-mail lorsqu'une demande est déposée (contenu
+          de la demande). Ce transfert est encadré de la même manière.
+        </li>
       </ul>
       <p>Les polices de caractères sont servies par le site lui-même : aucune donnée n'est transmise à Google ou à un autre service tiers lors de votre visite.</p>
 

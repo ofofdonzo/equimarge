@@ -42,8 +42,21 @@ export const Search = icon(<><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4
 export const Scale = icon(<><path d="M12 4v16" /><path d="M8 20h8" /><path d="M5 7h14" /><path d="m5 7-2.5 6a2.5 2.5 0 0 0 5 0L5 7Z" /><path d="m19 7-2.5 6a2.5 2.5 0 0 0 5 0L19 7Z" /></>);
 export const Users = icon(<><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8" /><path d="M18 14.2a6.5 6.5 0 0 1 3.5 5.8" /></>);
 
+export const Mail = icon(<><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m4 7 8 6 8-6" /></>);
+export const Phone = icon(<path d="M5 4h3.5l1.8 4.5-2.3 1.4a11 11 0 0 0 6.1 6.1l1.4-2.3L20 15.5V19a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 3.5 5.6 1.5 1.5 0 0 1 5 4Z" />);
+export const Calendar = icon(<><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17" /><path d="M8 3v4M16 3v4" /></>);
+export const Bot = icon(<><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 4v4" /><circle cx="12" cy="3.5" r="1" /><path d="M9 13.5v1M15 13.5v1" /><path d="M2 13v3M22 13v3" /></>);
+export const Bell = icon(<><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z" /><path d="M10 21h4" /></>);
+export const Layers = icon(<><path d="m12 3 9 5-9 5-9-5 9-5Z" /><path d="m3 13 9 5 9-5" /></>);
+export const Copy = icon(<><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>);
+export const ArrowLeft = icon(<><path d="M19 12H5" /><path d="m11 6-6 6 6 6" /></>);
+export const External = icon(<><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" /></>);
+
 // Icône de chaque domaine de conformité (clés de COMPLIANCE dans components/offers.js)
 export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, lcbft: Search, sapin: Scale, social: Users };
+
+// Icône de chaque étage d'automatisation (clés de AUTOMATION dans components/offers.js)
+export const FLOOR_ICONS = { messages: Mail, factures: Receipt, planning: Calendar, superviseur: Bot };
 
 // Logo : bouclier vert (conformité) gravé d'un « E » dont la branche du haut sort du cadre (marge qui
 // progresse), sur un carré bleu nuit. `id` doit être unique dans la page (il préfixe les dégradés).

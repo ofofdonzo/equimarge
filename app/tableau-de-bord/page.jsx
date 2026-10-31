@@ -26,7 +26,7 @@ export default async function Page() {
       {isAdmin && (
         <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
           <span className="row" style={{ gap: 10 }}><Shield /> Vous êtes administrateur.</span>
-          <Link href="/admin" className="btn sm">Voir les demandes</Link>
+          <Link href="/admin" className="btn sm">Ouvrir mon poste de travail</Link>
         </div>
       )}
       <Dashboard

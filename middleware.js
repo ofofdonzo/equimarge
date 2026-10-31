@@ -44,5 +44,5 @@ export async function middleware(request) {
 // Le middleware ne tourne que là où la session sert côté serveur : espaces privés, et formulaires
 // qui préremplissent l'e-mail du client connecté. Les autres pages restent statiques.
 export const config = {
-  matcher: ['/tableau-de-bord/:path*', '/admin/:path*', '/diagnostic', '/conformite'],
+  matcher: ['/tableau-de-bord/:path*', '/admin/:path*', '/diagnostic', '/conformite', '/automatisation'],
 };

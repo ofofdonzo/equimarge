@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { COMPLIANCE, OFFERS } from '@/components/offers';
-import { ArrowRight, BarChart, Check, Clock, DOMAIN_ICONS, Pencil, Shield, Target, TrendUp } from '@/components/icons';
+import { ArrowRight, BarChart, Bot, Check, Clock, DOMAIN_ICONS, Pencil, Shield, Target, TrendUp } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
 export const metadata = { alternates: { canonical: '/' } };
@@ -107,9 +107,9 @@ export default function Home() {
             Sécurisez votre <span className="grad-text">conformité</span>, maîtrisez vos marges
           </h1>
           <p className="lead">
-            Equimarge accompagne les PME sur deux terrains : la mise en conformité de l'entreprise (procédures internes,
-            RGPD, anti-blanchiment, anticorruption, droit social) et le suivi de la marge de chaque produit, avec un outil
-            gratuit et un diagnostic sur mesure.
+            Equimarge accompagne les PME sur trois terrains : la mise en conformité de l'entreprise (procédures internes,
+            RGPD, anti-blanchiment, anticorruption, droit social), le suivi de la marge de chaque produit, avec un outil
+            gratuit et un diagnostic sur mesure, et l'automatisation des tâches répétitives par des agents IA.
           </p>
           <div className="row">
             <Link href="/conformite#devis" className="btn lg">
@@ -130,11 +130,11 @@ export default function Home() {
 
       <section className="section">
         <div className="section-head center">
-          <span className="eyebrow">Deux pôles</span>
-          <h2>Votre conformité et vos marges, au même endroit</h2>
-          <p>Choisissez par où commencer : les deux se complètent.</p>
+          <span className="eyebrow">Trois pôles</span>
+          <h2>Votre conformité, vos marges et votre temps, au même endroit</h2>
+          <p>Choisissez par où commencer : les trois se complètent.</p>
         </div>
-        <div className="grid2 poles">
+        <div className="grid3 poles">
           <article className="pole">
             <div className="feature-icon"><Shield size={22} /></div>
             <span className="eyebrow">Pôle conformité</span>
@@ -168,6 +168,23 @@ export default function Home() {
             <div className="row">
               <Link href="/connexion?mode=inscription" className="btn">Créer mon espace gratuit</Link>
               <a href="#formules" className="btn ghost">Voir les formules</a>
+            </div>
+          </article>
+          <article className="pole">
+            <div className="feature-icon"><Bot size={22} /></div>
+            <span className="eyebrow">Pôle automatisation</span>
+            <h3>Gagnez du temps chaque jour</h3>
+            <p className="note">
+              Des agents IA prennent en charge ce qui se répète, et un superviseur vous résume la journée en cinq lignes.
+            </p>
+            <ul className="checks">
+              <li><Check size={16} />Mails, messages et appels manqués</li>
+              <li><Check size={16} />Factures et relances</li>
+              <li><Check size={16} />Planning, achats et rapport du soir</li>
+            </ul>
+            <div className="row">
+              <Link href="/automatisation#devis" className="btn">Demander un devis</Link>
+              <Link href="/automatisation" className="btn ghost">Découvrir</Link>
             </div>
           </article>
         </div>

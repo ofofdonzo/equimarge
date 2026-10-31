@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import RequestsTable from './RequestsTable';
+import Workspace from './Workspace';
 
-export const metadata = { title: 'Demandes — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Poste de travail — Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
@@ -22,19 +22,18 @@ export default async function Page() {
     );
   }
 
-  const { data: requests, error } = await supabase
-    .from('diagnostic_requests')
-    .select('*')
-    .order('created_at', { ascending: false });
+  const [{ data: requests, error }, { data: tracking, error: trackingError }] = await Promise.all([
+    supabase.from('diagnostic_requests').select('*').order('created_at', { ascending: false }),
+    supabase.from('request_tracking').select('*'),
+  ]);
+
+  if (error) return <p className="err">Chargement impossible : {error.message}</p>;
 
   return (
-    <div className="stack">
-      <div>
-        <span className="eyebrow">Administration</span>
-        <h1>Demandes de diagnostic et de devis</h1>
-        <p className="note">{requests?.length || 0} demande(s). Changez le statut au fil de vos échanges avec le client.</p>
-      </div>
-      {error ? <p className="err">Chargement impossible : {error.message}</p> : <RequestsTable initial={requests || []} />}
-    </div>
+    <Workspace
+      initialRequests={requests || []}
+      initialTracking={tracking || []}
+      setupMissing={Boolean(trackingError)}
+    />
   );
 }

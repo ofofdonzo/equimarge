@@ -58,6 +58,47 @@ export const COMPLIANCE = [
   },
 ];
 
+// Pôle automatisation : les « étages » d'agents IA installés chez le client (sur devis).
+// Modifiez textes et listes ici. `key` sert à l'icône et au lien /automatisation?etage=… ; ne le changez pas.
+export const AUTOMATION_OFFER = 'Automatisation';
+export const AUTOMATION = [
+  {
+    key: 'messages',
+    floor: 'Étage 1',
+    id: 'Mails, messages et appels manqués',
+    intro: "Chaque demande reçoit une réponse, même à 2 h du matin : tri, réponses préparées, rappels des appels manqués.",
+    items: ['Tri et classement de la boîte de réception', 'Réponses préparées, validées par vous', 'Appels manqués transformés en tâches'],
+  },
+  {
+    key: 'factures',
+    floor: 'Étage 2',
+    id: 'Factures et relances',
+    intro: 'Les factures partent, les retards de paiement sont repérés et relancés au bon moment.',
+    items: ['Suivi des factures émises et reçues', 'Relances graduées des impayés', 'Échéancier des paiements fournisseurs'],
+  },
+  {
+    key: 'planning',
+    floor: 'Étage 3',
+    id: 'Planning et achats',
+    intro: 'Rendez-vous, tâches de l’équipe et commandes fournisseurs suivis sans ressaisie.',
+    items: ['Planning et rappels automatiques', 'Suivi des commandes et des stocks', 'Alertes avant les ruptures'],
+  },
+  {
+    key: 'superviseur',
+    floor: 'Dernier étage',
+    id: 'Superviseur et rapport du soir',
+    intro: 'Un agent surveille les autres et vous envoie cinq lignes chaque soir : ce qui est fait, ce qui vous attend.',
+    items: ['Contrôle du travail des autres agents', 'Rapport de cinq lignes chaque soir', 'Alerte immédiate en cas de problème'],
+  },
+];
+
+// Pôle de chaque demande, d'après sa formule (utilisé par le poste de travail)
+export function poleOf(offer) {
+  if (offer === COMPLIANCE_OFFER) return 'Conformité';
+  if (offer === AUTOMATION_OFFER) return 'Automatisation';
+  return 'Marges';
+}
+
 export const SECTORS = [
   'Commerce de détail',
   'Négoce / distribution',

@@ -55,7 +55,7 @@ create policy "chacun gère ses paramètres" on public.settings
 create table if not exists public.diagnostic_requests (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
-  offer text not null check (offer in ('Flash','Essentiel','Complet','Conformité')),
+  offer text not null check (offer in ('Flash','Essentiel','Complet','Conformité','Automatisation')),
   company text not null check (char_length(company) between 1 and 200),
   siren text check (siren is null or siren ~ '^[0-9]{9}$'),
   sector text,
@@ -71,12 +71,13 @@ create table if not exists public.diagnostic_requests (
 );
 create index if not exists diag_created_idx on public.diagnostic_requests(created_at desc);
 
--- Demandes de devis conformité (offer = 'Conformité') et domaines choisis.
+-- Demandes de devis conformité (offer = 'Conformité') ou automatisation (offer = 'Automatisation')
+-- et domaines ou étages choisis.
 -- Ces lignes mettent aussi à jour une base créée avec une version précédente de ce fichier.
 alter table public.diagnostic_requests add column if not exists topics text[];
 alter table public.diagnostic_requests drop constraint if exists diagnostic_requests_offer_check;
 alter table public.diagnostic_requests add constraint diagnostic_requests_offer_check
-  check (offer in ('Flash','Essentiel','Complet','Conformité'));
+  check (offer in ('Flash','Essentiel','Complet','Conformité','Automatisation'));
 alter table public.diagnostic_requests drop constraint if exists diagnostic_requests_topics_check;
 alter table public.diagnostic_requests add constraint diagnostic_requests_topics_check
   check (topics is null or (cardinality(topics) between 1 and 10 and char_length(array_to_string(topics, ',')) <= 500));
@@ -106,6 +107,45 @@ drop policy if exists "admin met à jour" on public.diagnostic_requests;
 create policy "admin met à jour" on public.diagnostic_requests
   for update to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- 5. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
+-- 5. Poste de travail de l'administrateur : suivi interne et notes.
+-- Tables séparées : le client qui voit sa demande ne voit jamais le montant du devis ni vos notes.
+create table if not exists public.request_tracking (
+  request_id uuid primary key references public.diagnostic_requests(id) on delete cascade,
+  amount numeric(12,2) check (amount is null or amount >= 0),
+  next_action text check (next_action is null or char_length(next_action) <= 300),
+  next_action_at date,
+  updated_at timestamptz not null default now()
+);
+alter table public.request_tracking enable row level security;
+drop policy if exists "admin gère le suivi" on public.request_tracking;
+create policy "admin gère le suivi" on public.request_tracking
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+create table if not exists public.request_notes (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.diagnostic_requests(id) on delete cascade,
+  body text not null check (char_length(body) between 1 and 4000),
+  created_at timestamptz not null default now()
+);
+create index if not exists notes_request_idx on public.request_notes(request_id, created_at desc);
+alter table public.request_notes enable row level security;
+drop policy if exists "admin gère les notes" on public.request_notes;
+create policy "admin gère les notes" on public.request_notes
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- 6. Temps réel : les nouvelles demandes apparaissent dans le poste de travail sans recharger la page.
+-- (Seul l'administrateur les reçoit : le temps réel respecte les règles d'accès ci-dessus.)
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'diagnostic_requests'
+     ) then
+    alter publication supabase_realtime add table public.diagnostic_requests;
+  end if;
+end $$;
+
+-- 7. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
 -- Remplacez l'e-mail puis exécutez cette ligne seule :
 -- insert into public.admins (user_id) select id from auth.users where email = 'contact@equimarge.fr';

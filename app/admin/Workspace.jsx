@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { AUTOMATION, COMPLIANCE, STATUSES, poleOf } from '@/components/offers';
 import { AGENTS } from '@/components/agents';
@@ -94,6 +94,8 @@ function beep() {
   }
 }
 
+const noSubscribe = () => () => {};
+
 export default function Workspace({ initialRequests, initialTracking, setupMissing }) {
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState(initialRequests);
@@ -104,7 +106,14 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   const [selected, setSelected] = useState(null);
   const [live, setLive] = useState(false);
   const [fresh, setFresh] = useState(() => new Set());
-  const [perm, setPerm] = useState('default');
+  // Autorisation des notifications : lue dans le navigateur (« default » côté serveur), puis mise à jour après la demande
+  const browserPerm = useSyncExternalStore(
+    noSubscribe,
+    () => ('Notification' in window ? Notification.permission : 'default'),
+    () => 'default'
+  );
+  const [askedPerm, setPerm] = useState(null);
+  const perm = askedPerm ?? browserPerm;
   const [msg, setMsg] = useState('');
 
   // ---------- Temps réel ----------
@@ -124,7 +133,6 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   }, []);
 
   useEffect(() => {
-    if ('Notification' in window) setPerm(Notification.permission);
     const channel = supabase
       .channel('poste-de-travail')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'diagnostic_requests' }, (p) => {
@@ -176,8 +184,19 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   async function setStatus(id, status) {
     const prev = rows;
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status } : x)));
-    const { error } = await supabase.from('diagnostic_requests').update({ status }).eq('id', id);
-    if (error) { setRows(prev); setMsg('Statut non enregistré : ' + error.message); } else setMsg('');
+    // .select() renvoie la ligne modifiée : une liste vide signifie que la base a refusé la mise à jour
+    const { data, error } = await supabase.from('diagnostic_requests').update({ status }).eq('id', id).select('id');
+    if (error || !data?.length) { setRows(prev); setMsg('Statut non enregistré : ' + (error?.message || 'modification refusée.')); } else setMsg('');
+  }
+
+  // Droit à l'effacement (RGPD) : suppression définitive, avec le suivi et les notes
+  async function remove(r) {
+    if (!window.confirm(`Supprimer définitivement la demande de ${r.company} (${r.contact_name}) ?`)) return;
+    const { data, error } = await supabase.from('diagnostic_requests').delete().eq('id', r.id).select('id');
+    if (error || !data?.length) return setMsg('Suppression impossible : ' + (error?.message || 'refusée.'));
+    setRows((l) => l.filter((x) => x.id !== r.id));
+    setSelected(null);
+    setMsg('');
   }
 
   return (
@@ -278,6 +297,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
               setupMissing={setupMissing}
               onBack={() => setSelected(null)}
               onStatus={(s) => setStatus(current.id, s)}
+              onDelete={() => remove(current)}
               onTracking={(t) => setTracking((m) => ({ ...m, [current.id]: t }))}
             />
           ) : (
@@ -317,7 +337,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   );
 }
 
-function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTracking }) {
+function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTracking, onDelete }) {
   const [amount, setAmount] = useState(t?.amount ?? '');
   const [nextAction, setNextAction] = useState(t?.next_action ?? '');
   const [nextAt, setNextAt] = useState(t?.next_action_at ?? '');
@@ -472,6 +492,11 @@ function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTrackin
           </div>
         </>
       )}
+
+      <p className="note" style={{ margin: 0 }}>
+        Sans échange depuis 3 ans, la demande est supprimée automatiquement.{' '}
+        <button type="button" className="link-btn" onClick={onDelete}>Supprimer maintenant</button>
+      </p>
     </div>
   );
 }

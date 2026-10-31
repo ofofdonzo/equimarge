@@ -6,7 +6,7 @@ export const metadata = { title: 'Poste de travail — Equimarge', robots: { ind
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -23,7 +23,8 @@ export default async function Page() {
   }
 
   const [{ data: requests, error }, { data: tracking, error: trackingError }] = await Promise.all([
-    supabase.from('diagnostic_requests').select('*').order('created_at', { ascending: false }),
+    // Les 1 000 plus récentes : au-delà, la purge des 3 ans et la suppression gardent la liste courte
+    supabase.from('diagnostic_requests').select('*').order('created_at', { ascending: false }).limit(1000),
     supabase.from('request_tracking').select('*'),
   ]);
 

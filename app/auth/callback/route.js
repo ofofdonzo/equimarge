@@ -8,9 +8,10 @@ export async function GET(request) {
   const safe = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord';
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}${safe}`);
   }
-  return NextResponse.redirect(`${origin}/connexion`);
+  // Lien expiré, déjà utilisé ou incomplet : la page de connexion l'explique
+  return NextResponse.redirect(`${origin}/connexion?erreur=lien`);
 }

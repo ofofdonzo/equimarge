@@ -3,14 +3,16 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowRight, Percent, Plus, Receipt, TrendUp, Wallet } from '@/components/icons';
+import { computeMargins, parseAmount } from '@/lib/marges.mjs';
 
 const eur = (n) =>
   Number.isFinite(n) ? n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }) : '–';
 const pct = (n) => (Number.isFinite(n) ? (n * 100).toLocaleString('fr-FR', { maximumFractionDigits: 1 }) + ' %' : '–');
-const num = (v) => {
-  const n = parseFloat(String(v).replace(',', '.'));
-  return Number.isFinite(n) && n >= 0 ? n : 0;
-};
+const MAX_LINES = 500;
+const NAME_MAX = 200;
+
+const INVALID = 'Valeur non enregistrée : saisissez un nombre positif (10 milliards maximum).';
+const bad = (raw) => raw !== undefined && parseAmount(raw) === null;
 
 function Status({ tm }) {
   if (!Number.isFinite(tm)) return null;
@@ -41,7 +43,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
       if (error) failed.current = true;
       pending.current -= 1;
       if (pending.current === 0) {
-        setSaveState(failed.current ? "Échec de l'enregistrement, vérifiez votre connexion" : 'Enregistré');
+        setSaveState(failed.current ? "Échec de l'enregistrement. Vérifiez votre connexion et les valeurs saisies." : 'Enregistré');
         failed.current = false;
       }
     }, 600);
@@ -64,16 +66,23 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
 
+  // Une saisie invalide (lettres, négatif, trop grand) reste affichée et signalée, mais n'est pas enregistrée.
   function updateProduct(id, field, value) {
-    const next = products.map((p) => (p.id === id ? { ...p, [field]: field === 'name' ? value : num(value), ['_' + field]: value } : p));
+    const amount = field === 'name' ? null : parseAmount(value);
+    const valid = field === 'name' || amount !== null;
+    const next = products.map((p) =>
+      p.id === id ? { ...p, ...(valid && { [field]: field === 'name' ? value : amount }), ['_' + field]: value } : p
+    );
     const row = next.find((p) => p.id === id);
     setProducts(next);
+    if (!valid) return setSaveState(INVALID);
     schedule('p' + id, () =>
       supabase.from('products').update({ name: row.name, price: row.price, cost: row.cost, quantity: row.quantity }).eq('id', id)
     );
   }
 
   async function addProduct() {
+    if (products.length >= MAX_LINES) return setSaveState(`Limite de ${MAX_LINES} lignes atteinte.`);
     setSaveState('Enregistrement…');
     const { data, error } = await supabase
       .from('products')
@@ -97,28 +106,17 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
   }
 
   function updateSettings(field, value) {
-    const next = { ...settings, [field]: field === 'company' ? value : num(value), ['_' + field]: value };
+    const amount = field === 'company' ? null : parseAmount(value);
+    const valid = field === 'company' || amount !== null;
+    const next = { ...settings, ...(valid && { [field]: field === 'company' ? value : amount }), ['_' + field]: value };
     setSettings(next);
+    if (!valid) return setSaveState(INVALID);
     schedule('settings', () =>
       supabase.from('settings').upsert({ user_id: userId, company: next.company, fixed_costs: next.fixed_costs, updated_at: new Date().toISOString() })
     );
   }
 
-  const calc = useMemo(() => {
-    let CA = 0, CV = 0;
-    const lines = products.map((p) => {
-      const ca = p.price * p.quantity;
-      const cv = p.cost * p.quantity;
-      CA += ca;
-      CV += cv;
-      return { ...p, m: ca - cv, tm: p.price ? (p.price - p.cost) / p.price : NaN };
-    });
-    const MB = CA - CV;
-    const TM = CA ? MB / CA : NaN;
-    const F = settings.fixed_costs;
-    const SR = TM > 0 ? F / TM : NaN;
-    return { lines, CA, MB, TM, F, SR, res: MB - F };
-  }, [products, settings]);
+  const calc = useMemo(() => computeMargins(products, settings.fixed_costs), [products, settings]);
 
   const max = Math.max(1, ...calc.lines.map((l) => Math.abs(l.m)));
   const saveClass = saveState === 'Enregistré' ? 'save' : saveState === 'Enregistrement…' ? 'save busy' : 'save bad';
@@ -169,10 +167,10 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
               <tbody>
                 {calc.lines.map((p) => (
                   <tr key={p.id}>
-                    <td><input id={`n-${p.id}`} aria-label="Désignation" value={p.name} onChange={(e) => updateProduct(p.id, 'name', e.target.value)} /></td>
-                    <td><input id={`p-${p.id}`} aria-label="Prix de vente HT" inputMode="decimal" value={p._price ?? p.price} onChange={(e) => updateProduct(p.id, 'price', e.target.value)} /></td>
-                    <td><input id={`c-${p.id}`} aria-label="Coût unitaire HT" inputMode="decimal" value={p._cost ?? p.cost} onChange={(e) => updateProduct(p.id, 'cost', e.target.value)} /></td>
-                    <td><input id={`q-${p.id}`} aria-label="Quantité par mois" inputMode="decimal" value={p._quantity ?? p.quantity} onChange={(e) => updateProduct(p.id, 'quantity', e.target.value)} /></td>
+                    <td><input id={`n-${p.id}`} aria-label="Désignation" maxLength={NAME_MAX} value={p.name} onChange={(e) => updateProduct(p.id, 'name', e.target.value)} /></td>
+                    <td><input id={`p-${p.id}`} aria-label="Prix de vente HT" inputMode="decimal" maxLength={16} aria-invalid={bad(p._price)} value={p._price ?? p.price} onChange={(e) => updateProduct(p.id, 'price', e.target.value)} /></td>
+                    <td><input id={`c-${p.id}`} aria-label="Coût unitaire HT" inputMode="decimal" maxLength={16} aria-invalid={bad(p._cost)} value={p._cost ?? p.cost} onChange={(e) => updateProduct(p.id, 'cost', e.target.value)} /></td>
+                    <td><input id={`q-${p.id}`} aria-label="Quantité par mois" inputMode="decimal" maxLength={16} aria-invalid={bad(p._quantity)} value={p._quantity ?? p.quantity} onChange={(e) => updateProduct(p.id, 'quantity', e.target.value)} /></td>
                     <td className="num">{eur(p.m)}</td>
                     <td className="num">{pct(p.tm)}</td>
                     <td><Status tm={p.tm} /></td>
@@ -191,11 +189,11 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
           <h2>Votre entreprise</h2>
           <div className="field">
             <label htmlFor="company">Raison sociale</label>
-            <input id="company" value={settings.company} onChange={(e) => updateSettings('company', e.target.value)} />
+            <input id="company" maxLength={NAME_MAX} value={settings.company} onChange={(e) => updateSettings('company', e.target.value)} />
           </div>
           <div className="field">
             <label htmlFor="fixed">Charges fixes mensuelles (€ HT) : loyer, salaires, abonnements</label>
-            <input id="fixed" inputMode="decimal" value={settings._fixed_costs ?? settings.fixed_costs} onChange={(e) => updateSettings('fixed_costs', e.target.value)} />
+            <input id="fixed" inputMode="decimal" maxLength={16} aria-invalid={bad(settings._fixed_costs)} value={settings._fixed_costs ?? settings.fixed_costs} onChange={(e) => updateSettings('fixed_costs', e.target.value)} />
           </div>
           <div className="threshold">
             <span className="eyebrow">Seuil de rentabilité</span>

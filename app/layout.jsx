@@ -1,8 +1,14 @@
 import Link from 'next/link';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-import { createClient } from '@/lib/supabase/server';
-import { LogOut, LogoMark } from '@/components/icons';
+import AuthNav from '@/components/AuthNav';
+import { LogoMark } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
+
+// Polices téléchargées au build et servies par le site lui-même : aucune requête vers Google
+// et donc aucune adresse IP de visiteur transmise.
+const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-inter' });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap', variable: '--font-jakarta' });
 
 const TITLE = 'Equimarge — conformité et marges des PME';
 const DESCRIPTION =
@@ -29,22 +35,9 @@ export const viewport = {
   ],
 };
 
-export default async function RootLayout({ children }) {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export default function RootLayout({ children }) {
   return (
-    <html lang="fr">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
-        />
-      </head>
+    <html lang="fr" className={`${inter.variable} ${jakarta.variable}`}>
       <body>
         <header className="site-header">
           <div className="wrap header-inner">
@@ -61,23 +54,7 @@ export default async function RootLayout({ children }) {
               <Link href="/#marges" className="nav-link">
                 Marges
               </Link>
-              {user ? (
-                <>
-                  <form action="/auth/deconnexion" method="post" className="logout">
-                    <button className="nav-link" type="submit" title="Se déconnecter">
-                      <LogOut size={18} />
-                      <span className="hide-sm">Se déconnecter</span>
-                    </button>
-                  </form>
-                  <Link href="/tableau-de-bord" className="btn sm">
-                    Mon espace
-                  </Link>
-                </>
-              ) : (
-                <Link href="/connexion" className="btn sm">
-                  Se connecter
-                </Link>
-              )}
+              <AuthNav />
             </nav>
           </div>
         </header>

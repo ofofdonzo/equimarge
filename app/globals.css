@@ -13,8 +13,8 @@
   --shadow: 0 1px 2px rgb(15 23 42 / .04), 0 12px 32px -12px rgb(15 23 42 / .16);
   --shadow-lg: 0 2px 4px rgb(15 23 42 / .04), 0 32px 64px -24px rgb(4 120 87 / .34);
   --radius: 18px; --radius-lg: 24px;
-  --display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --display: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --body: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -160,6 +160,7 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 .pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
 .err { margin: 0; padding: 10px 14px; border-radius: 12px; font-size: .9rem; color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); border: 1px solid color-mix(in srgb, var(--bad) 25%, transparent); }
+input[aria-invalid="true"] { border-color: var(--bad); box-shadow: 0 0 0 1px var(--bad); }
 .success { border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); background: color-mix(in srgb, var(--ok) 6%, var(--surface)); }
 .empty { padding: 28px 16px; text-align: center; border: 1px dashed var(--line-strong); border-radius: 14px; }
 .empty p { margin: 0; }
@@ -424,3 +425,4 @@ section[id] { scroll-margin-top: 88px; }
 main, .stack > *, .grid2 > *, .grid3 > * { min-width: 0; }
 html, body { overflow-x: clip; }
 .lead, .note { overflow-wrap: anywhere; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

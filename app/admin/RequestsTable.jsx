@@ -12,11 +12,22 @@ export default function RequestsTable({ initial }) {
   async function setStatus(id, status) {
     const prev = rows;
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status } : x)));
-    const { error } = await supabase.from('diagnostic_requests').update({ status }).eq('id', id);
-    if (error) {
+    // .select() renvoie la ligne modifiée : une liste vide signifie que la base a refusé la mise à jour
+    const { data, error } = await supabase.from('diagnostic_requests').update({ status }).eq('id', id).select('id');
+    if (error || !data?.length) {
       setRows(prev);
-      setMsg('Statut non enregistré : ' + error.message);
+      setMsg('Statut non enregistré : ' + (error?.message || 'modification refusée.'));
     } else setMsg('');
+  }
+
+  // Droit à l'effacement (RGPD) : suppression définitive à la demande de la personne
+  async function remove(r) {
+    if (!window.confirm(`Supprimer définitivement la demande de ${r.company} (${r.contact_name}) ?`)) return;
+    const { data, error } = await supabase.from('diagnostic_requests').delete().eq('id', r.id).select('id');
+    if (error || !data?.length) return setMsg('Suppression impossible : ' + (error?.message || 'refusée.'));
+    setRows((l) => l.filter((x) => x.id !== r.id));
+    setOpen(null);
+    setMsg('');
   }
 
   if (rows.length === 0) return <div className="panel empty note">Aucune demande pour le moment. Elles apparaîtront ici dès qu'un client remplit le formulaire.</div>;
@@ -53,6 +64,9 @@ export default function RequestsTable({ initial }) {
                       </div>
                       {r.topics?.length > 0 && <p style={{ padding: '0 8px' }}><b>Domaines :</b> {r.topics.join(', ')}</p>}
                       {r.message && <p style={{ padding: '0 8px', whiteSpace: 'pre-wrap' }}>{r.message}</p>}
+                      <p style={{ padding: '0 8px' }}>
+                        <button className="btn ghost sm" type="button" onClick={() => remove(r)}>Supprimer cette demande</button>
+                      </p>
                     </td>
                   </tr>
                 )}

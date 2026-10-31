@@ -13,7 +13,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
   const [f, setF] = useState({
     offer: compliance ? COMPLIANCE_OFFER : defaultOffer, topics: defaultTopics,
     company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
-    contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false,
+    contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false, website: '',
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -42,6 +42,8 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     if (miss.length) return setError('Il manque ' + miss.join(', ') + '.');
 
     setError('');
+    // Champ piège invisible : seul un robot le remplit. On simule l'envoi sans rien enregistrer.
+    if (f.website) return setDone(true);
     setBusy(true);
     const supabase = createClient();
     const { error } = await supabase.from('diagnostic_requests').insert({
@@ -61,6 +63,8 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
       consent: true,
     });
     setBusy(false);
+    if (error?.message?.includes('trop_de_demandes'))
+      return setError('Plusieurs demandes ont déjà été envoyées récemment. Réessayez dans une heure, ou écrivez à contact@equimarge.fr.');
     if (error) return setError("L'envoi a échoué. Réessayez, ou écrivez directement à contact@equimarge.fr.");
     setDone(true);
   }
@@ -144,7 +148,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
         <span className="step-label"><span className="n">3</span>Contact</span>
         <div className="grid2">
           <div className="field"><label htmlFor="name">Nom et prénom *</label><input id="name" autoComplete="name" maxLength={200} value={f.contact_name} onChange={set('contact_name')} /></div>
-          <div className="field"><label htmlFor="email">E-mail professionnel *</label><input id="email" type="email" autoComplete="email" value={f.email} onChange={set('email')} /></div>
+          <div className="field"><label htmlFor="email">E-mail professionnel *</label><input id="email" type="email" autoComplete="email" maxLength={320} value={f.email} onChange={set('email')} /></div>
           <div className="field"><label htmlFor="phone">Téléphone</label><input id="phone" type="tel" autoComplete="tel" maxLength={40} value={f.phone} onChange={set('phone')} /></div>
           <div className="field"><label htmlFor="dispo">Disponibilités</label><input id="dispo" placeholder="ex. mardi matin" maxLength={200} value={f.availability} onChange={set('availability')} /></div>
         </div>
@@ -158,6 +162,10 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
             value={f.message}
             onChange={set('message')}
           />
+        </div>
+        <div className="hp" aria-hidden="true">
+          <label htmlFor="website">Ne pas remplir</label>
+          <input id="website" name="website" tabIndex={-1} autoComplete="off" value={f.website} onChange={set('website')} />
         </div>
         <label className="check">
           <input id="consent" type="checkbox" checked={f.consent} onChange={set('consent')} />

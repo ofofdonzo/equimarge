@@ -1,12 +1,13 @@
 # Equimarge
 
-Site et application pour PME, en deux pôles : mise en conformité (sur devis) et suivi de marge (outil gratuit et diagnostic).
+Site et application pour PME, en trois pôles : mise en conformité (sur devis), suivi de marge (outil gratuit et diagnostic) et automatisation des tâches répétitives par agents IA (sur devis).
 
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
 - **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
-- **Administration** (`/admin`) : vous seul voyez les demandes et changez leur statut.
+- **Automatisation** (`/automatisation`) : les « étages » d'agents IA (mails et appels manqués, factures et relances, planning et achats, superviseur et rapport du soir) et le formulaire de devis (formule « Automatisation »).
+- **Poste de travail** (`/admin`) : réservé à vous. Les demandes arrivent en direct (son, notification du navigateur, compteur dans l'onglet). Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
 - **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
 Technique : Next.js 14 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
@@ -52,7 +53,17 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr` et suivez le
 - Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).
 
-### 8. Apparaître dans Google
+### 8. Activer le poste de travail
+Si votre base a été créée avant cette version, exécutez à nouveau tout `supabase/schema.sql` dans Supabase > SQL Editor (relançable sans perte de données). Il ajoute la formule « Automatisation », les tables de suivi et de notes, et le temps réel. Ouvrez ensuite `/admin` et cliquez **Activer les alertes**.
+
+### 9. Être prévenu par e-mail, même page fermée (facultatif, 10 minutes)
+1. Créez un compte gratuit sur [resend.com](https://resend.com) **avec l'adresse qui doit recevoir les alertes** (sans domaine vérifié, Resend n'écrit qu'à cette adresse). Menu **API Keys** > **Create API key**.
+2. Netlify > **Site configuration** > **Environment variables** : ajoutez `RESEND_API_KEY` (la clé), `ALERT_EMAIL` (cette adresse) et `WEBHOOK_SECRET` (une longue phrase de votre choix). Relancez un déploiement.
+3. Supabase > **Database** > **Webhooks** > **Create a new hook** : table `diagnostic_requests`, événement **Insert**, type **HTTP Request**, méthode **POST**, URL `https://VOTRE-ADRESSE/api/alerte-demande`, et un en-tête `x-webhook-secret` avec la même phrase que `WEBHOOK_SECRET`.
+4. Faites une demande test sur le site : l'e-mail arrive en quelques secondes, et votre « Agent Mails » le range sous « Equimarge ».
+5. Une fois `equimarge.fr` acheté et vérifié dans Resend, ajoutez `ALERT_FROM=Equimarge <alertes@equimarge.fr>`.
+
+### 10. Apparaître dans Google
 Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages publiques), `/robots.txt` (espaces privés exclus), titres, descriptions et image de partage. Les adresses suivent automatiquement le domaine utilisé (`xxx.netlify.app`, puis `equimarge.fr`). Il reste à signaler le site à Google, de préférence **après** l'étape 6 :
 1. Ouvrez [Google Search Console](https://search.google.com/search-console) avec votre compte Google, puis **Ajouter une propriété**.
 2. Deux façons de prouver que le site est à vous :

@@ -2,16 +2,23 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { OFFERS, COMPLIANCE, COMPLIANCE_OFFER, SECTORS, REVENUE_BANDS } from '@/components/offers';
-import { ArrowRight, Check, Clock, DOMAIN_ICONS } from '@/components/icons';
+import { OFFERS, COMPLIANCE, COMPLIANCE_OFFER, AUTOMATION, AUTOMATION_OFFER, SECTORS, REVENUE_BANDS } from '@/components/offers';
+import { ArrowRight, Check, Clock, DOMAIN_ICONS, FLOOR_ICONS } from '@/components/icons';
 
 // Formulaire de demande, commun aux deux pôles :
 // kind="diagnostic" : choix d'une formule de diagnostic de marge ;
-// kind="conformite" : choix d'un ou plusieurs domaines, devis sur mesure.
+// kind="conformite" : choix d'un ou plusieurs domaines, devis sur mesure ;
+// kind="automatisation" : choix d'un ou plusieurs étages d'agents IA, devis sur mesure.
+const QUOTE_KINDS = {
+  conformite: { offer: COMPLIANCE_OFFER, list: COMPLIANCE, icons: DOMAIN_ICONS, legend: 'Domaines concernés', what: 'au moins un domaine' },
+  automatisation: { offer: AUTOMATION_OFFER, list: AUTOMATION, icons: FLOOR_ICONS, legend: 'Tâches à automatiser', what: 'au moins une tâche à automatiser' },
+};
+
 export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, defaultTopics = [] }) {
-  const compliance = kind === 'conformite';
+  const quote = QUOTE_KINDS[kind];
+  const compliance = Boolean(quote);
   const [f, setF] = useState({
-    offer: compliance ? COMPLIANCE_OFFER : defaultOffer, topics: defaultTopics,
+    offer: quote ? quote.offer : defaultOffer, topics: defaultTopics,
     company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
     contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false,
   });
@@ -22,7 +29,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
   const toggleTopic = (key) =>
     setF({ ...f, topics: f.topics.includes(key) ? f.topics.filter((t) => t !== key) : [...f.topics, key] });
-  const topicNames = COMPLIANCE.filter((d) => f.topics.includes(d.key)).map((d) => d.id);
+  const topicNames = (quote?.list || []).filter((d) => f.topics.includes(d.key)).map((d) => d.id);
 
   // Amène la confirmation à l'écran, même quand le formulaire est en bas de page (/conformite)
   useEffect(() => {
@@ -33,7 +40,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     e.preventDefault();
     const siren = f.siren.replace(/\s/g, '');
     const miss = [];
-    if (compliance && topicNames.length === 0) miss.push('au moins un domaine');
+    if (quote && topicNames.length === 0) miss.push(quote.what);
     if (!f.company.trim()) miss.push('la raison sociale');
     if (siren && !/^\d{9}$/.test(siren)) miss.push('un SIREN à 9 chiffres (ou laissez le champ vide)');
     if (!f.contact_name.trim()) miss.push('votre nom');
@@ -47,7 +54,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     const { error } = await supabase.from('diagnostic_requests').insert({
       user_id: userId,
       offer: f.offer,
-      // La colonne topics n'est envoyée que pour la conformité (voir supabase/schema.sql)
+      // La colonne topics n'est envoyée que pour les devis (voir supabase/schema.sql)
       ...(compliance && { topics: topicNames }),
       company: f.company.trim(),
       siren: siren || null,
@@ -72,7 +79,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
         <h2 style={{ margin: 0 }}>Demande envoyée</h2>
         {compliance ? (
           <p style={{ margin: 0 }}>
-            Merci. Votre demande de devis pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée. Nous vous
+            Merci. Votre demande de devis {kind === 'automatisation' ? 'd’automatisation ' : ''}pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée. Nous vous
             écrivons à {f.email} sous 48&nbsp;h ouvrées.
           </p>
         ) : (
@@ -95,10 +102,10 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     <form className="stack" onSubmit={submit} noValidate>
       {compliance ? (
         <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend><span className="step-label"><span className="n">1</span>Domaines concernés</span></legend>
-          <div className="grid3 topics">
-            {COMPLIANCE.map((d) => {
-              const Icon = DOMAIN_ICONS[d.key];
+          <legend><span className="step-label"><span className="n">1</span>{quote.legend}</span></legend>
+          <div className={(kind === 'automatisation' ? 'grid2' : 'grid3') + ' topics'}>
+            {quote.list.map((d) => {
+              const Icon = quote.icons[d.key];
               const on = f.topics.includes(d.key);
               return (
                 <label key={d.key} className={'offer topic' + (on ? ' selected' : '')}>
@@ -154,7 +161,13 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
             id="msg"
             rows={3}
             maxLength={4000}
-            placeholder={compliance ? 'ex. Un client grand compte nous demande notre dispositif anticorruption.' : 'ex. Notre marge baisse depuis 6 mois malgré un CA stable.'}
+            placeholder={
+              kind === 'automatisation'
+                ? 'ex. Nous recevons 80 mails par jour et nos relances de factures se font à la main.'
+                : compliance
+                  ? 'ex. Un client grand compte nous demande notre dispositif anticorruption.'
+                  : 'ex. Notre marge baisse depuis 6 mois malgré un CA stable.'
+            }
             value={f.message}
             onChange={set('message')}
           />

@@ -49,8 +49,9 @@ function Building() {
   );
 }
 
-export default async function Page({ searchParams }) {
-  const supabase = createClient();
+export default async function Page(props) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

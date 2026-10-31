@@ -19,8 +19,9 @@ const STEPS = [
   { n: '04', title: 'Suivi', text: "Des points réguliers pour faire vivre le dispositif et l'adapter à vos évolutions.", Icon: TrendUp },
 ];
 
-export default async function Page({ searchParams }) {
-  const supabase = createClient();
+export default async function Page(props) {
+  const searchParams = await props.searchParams;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

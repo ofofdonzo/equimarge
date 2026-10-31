@@ -10,7 +10,7 @@ Site et application pour PME, en trois pôles : mise en conformité (sur devis),
 - **Poste de travail** (`/admin`) : réservé à vous. S'installe comme une appli sur l'iPhone ou l'ordinateur. Les demandes arrivent en direct (son, compteur dans l'onglet) et une notification vous prévient même appli fermée. Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
 - **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
-Technique : Next.js 14 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
+Technique : Next.js 16 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
 
 ## Mise en ligne, pas à pas
 
@@ -28,7 +28,7 @@ Comptez une heure. Tout se fait depuis un navigateur, sur ordinateur de préfér
 ### 3. Hébergement (Netlify)
 1. Créez un compte sur netlify.com **avec votre compte GitHub**.
 2. **Add new site** > **Import an existing project** > GitHub > choisissez `equimarge`. Les réglages de build sont lus dans `netlify.toml`.
-3. (Facultatif) Dans **Site configuration** > **Environment variables**, ajoutez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` ; sinon les valeurs de `lib/supabase/config.js` sont utilisées.
+3. (Facultatif) Le site utilise par défaut le projet Supabase d'Equimarge, inscrit dans `lib/supabase/config.js`. Pour un autre projet, ajoutez dans **Site configuration** > **Environment variables** `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (valeurs notées à l'étape 1.3).
 4. **Deploy**. Après 1 à 2 minutes, le site est en ligne sur une adresse `xxx.netlify.app`.
 
 ### 4. Relier Supabase au site
@@ -45,11 +45,12 @@ Dans Supabase > **Authentication** > **URL Configuration** :
 3. Reconnectez-vous : un bouton **Voir les demandes de diagnostic** apparaît dans votre espace.
 
 ### 6. Nom de domaine equimarge.fr
-Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr` et suivez les instructions DNS chez votre registraire (OVH, Gandi…). Mettez ensuite à jour l'étape 4.
+Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr`, définissez-le comme **domaine principal** et suivez les instructions DNS chez votre registraire (OVH, Gandi…). Mettez ensuite à jour l'étape 4, puis relancez un déploiement (**Deploys** > **Trigger deploy**) : l'adresse du site utilisée par Google (plan du site, liens canoniques) est fixée au moment du déploiement.
 
 ### 7. Avant d'ouvrir au public
 - Après l'immatriculation de la SASU, complétez `app/mentions-legales/page.jsx` et `app/confidentialite/page.jsx` : retirez « en cours de constitution », ajoutez l'adresse complète du siège, le SIREN, le capital social, « RCS Paris » et le n° de TVA intracommunautaire.
 - Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données).
+- La purge automatique des demandes de plus de 3 ans utilise l'extension **pg_cron**. Si l'exécution du fichier affiche « Purge automatique non programmée », activez `pg_cron` dans Supabase > **Database** > **Extensions**, puis relancez le fichier.
 - Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).
 
@@ -78,7 +79,7 @@ Le poste de travail s'installe comme une appli (iPhone, Android, ordinateur) et 
 N'ajoutez pas en plus un « Database Webhook » dans le tableau de bord Supabase : chaque alerte arriverait deux fois.
 
 ### 10. Apparaître dans Google
-Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages publiques), `/robots.txt` (espaces privés exclus), titres, descriptions et image de partage. Les adresses suivent automatiquement le domaine utilisé (`xxx.netlify.app`, puis `equimarge.fr`). Il reste à signaler le site à Google, de préférence **après** l'étape 6 :
+Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages publiques), `/robots.txt` (espaces privés exclus), titres, descriptions et image de partage. Les adresses utilisent le domaine principal du site sur Netlify (`xxx.netlify.app`, puis `equimarge.fr` après l'étape 6), ou la variable `SITE_URL` si vous la définissez. Il reste à signaler le site à Google, de préférence **après** l'étape 6 :
 1. Ouvrez [Google Search Console](https://search.google.com/search-console) avec votre compte Google, puis **Ajouter une propriété**.
 2. Deux façons de prouver que le site est à vous :
    - **Domaine** (recommandé, avec `equimarge.fr`) : copiez l'enregistrement TXT proposé et ajoutez-le dans la zone DNS de votre registraire, puis cliquez **Valider** (quelques minutes à quelques heures).
@@ -95,4 +96,12 @@ Pour être trouvé plus vite, créez des liens vers le site : fiche Google Busin
 npm install
 cp .env.example .env.local   # puis remplissez les deux valeurs
 npm run dev                  # http://localhost:3000
+npm run lint && npm test     # vérifications, aussi lancées par GitHub à chaque modification
 ```
+
+## Sécurité et conformité
+- **Accès aux données** : chaque table est protégée par des règles Supabase (RLS) ; un client ne voit que ses propres données.
+- **Formulaire public** : 3 demandes par heure au plus pour un même e-mail, 30 par heure au total, et un champ piège contre les robots.
+- **En-têtes de sécurité** (`next.config.mjs`) : le site ne peut pas être affiché dans une autre page et ne charge que ses propres fichiers.
+- **RGPD** : polices servies par le site (aucun appel à Google), demandes supprimables depuis `/admin`, purge automatique après 3 ans sans échange.
+- **Dépendances** : `npm audit` est lancé par GitHub à chaque modification.

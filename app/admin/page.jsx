@@ -13,8 +13,8 @@ export const metadata = {
 };
 export const dynamic = 'force-dynamic';
 
-export default async function Page() {
-  const supabase = createClient();
+export default async function Page({ searchParams }) {
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,16 +31,19 @@ export default async function Page() {
   }
 
   const [{ data: requests, error }, { data: tracking, error: trackingError }] = await Promise.all([
-    supabase.from('diagnostic_requests').select('*').order('created_at', { ascending: false }),
+    // Les 1 000 plus récentes : au-delà, la purge des 3 ans et la suppression gardent la liste courte
+    supabase.from('diagnostic_requests').select('*').order('created_at', { ascending: false }).limit(1000),
     supabase.from('request_tracking').select('*'),
   ]);
 
   if (error) return <p className="err">Chargement impossible : {error.message}</p>;
+  const { demande } = (await searchParams) || {};
 
   return (
     <Workspace
       initialRequests={requests || []}
       initialTracking={tracking || []}
+      initialSelected={typeof demande === 'string' && (requests || []).some((r) => r.id === demande) ? demande : null}
       setupMissing={Boolean(trackingError)}
     >
       <Agents />

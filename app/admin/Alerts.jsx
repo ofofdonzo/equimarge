@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { VAPID_PUBLIC_KEY } from '@/lib/push';
 import { Bell } from '@/components/icons';
 
@@ -54,26 +54,40 @@ export default function Alerts({ supabase }) {
   const [err, setErr] = useState('');
   const [help, setHelp] = useState(false);
 
-  const refresh = useCallback(async () => {
-    const env = environment();
-    if (!env.supported) return setState(env.ios && !env.standalone ? 'ios-install' : 'unsupported');
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      if (Notification.permission === 'denied') return setState('denied');
-      const sub = await reg.pushManager.getSubscription();
-      if (sub && Notification.permission === 'granted') {
-        setState('on');
+  // État initial lu dans le navigateur (service worker, autorisation, abonnement existant).
+  // Tout passe par des appels asynchrones : l'état n'est mis à jour qu'à leur retour.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const env = environment();
+      let next = 'off';
+      let sub = null;
+      let problem = '';
+      if (!env.supported) next = env.ios && !env.standalone ? 'ios-install' : 'unsupported';
+      else {
+        try {
+          const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+          if (Notification.permission === 'denied') next = 'denied';
+          else {
+            sub = await reg.pushManager.getSubscription();
+            if (sub && Notification.permission === 'granted') next = 'on';
+          }
+        } catch (e) {
+          next = 'unsupported';
+          problem = 'Service des notifications indisponible : ' + (e?.message || e);
+        }
+      }
+      if (!alive) return;
+      setState(next);
+      if (problem) setErr(problem);
+      if (next === 'on' && sub) {
         // On réenregistre à chaque visite : l'abonnement peut changer sans prévenir.
         const e = await saveSubscription(supabase, sub);
-        if (e) setErr('Abonnement non enregistré : ' + e.message);
-      } else setState('off');
-    } catch (e) {
-      setState('unsupported');
-      setErr('Service des notifications indisponible : ' + (e?.message || e));
-    }
+        if (e && alive) setErr('Abonnement non enregistré : ' + e.message);
+      }
+    })();
+    return () => { alive = false; };
   }, [supabase]);
-
-  useEffect(() => { refresh(); }, [refresh]);
 
   async function enable() {
     setErr('');

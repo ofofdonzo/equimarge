@@ -41,6 +41,8 @@ export async function middleware(request) {
   return response;
 }
 
+// Le middleware ne tourne que là où la session sert côté serveur : espaces privés, et formulaires
+// qui préremplissent l'e-mail du client connecté. Les autres pages restent statiques.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|webmanifest)$).*)'],
+  matcher: ['/tableau-de-bord/:path*', '/admin/:path*', '/diagnostic', '/conformite', '/automatisation'],
 };

@@ -1,5 +1,6 @@
 -- Equimarge : base de données
--- À coller une seule fois dans Supabase > SQL Editor > New query, puis "Run".
+-- À coller dans Supabase > SQL Editor > New query, puis "Run".
+-- Le fichier est relançable sans perte de données : relancez-le après chaque mise à jour.
 
 -- 1. Administrateurs (vous)
 create table if not exists public.admins (
@@ -34,6 +35,27 @@ create table if not exists public.products (
 create index if not exists products_user_idx on public.products(user_id);
 alter table public.products enable row level security;
 
+alter table public.products drop constraint if exists products_name_length;
+alter table public.products add constraint products_name_length check (char_length(name) <= 200);
+
+-- 500 lignes au plus par client
+create or replace function public.limit_products()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if (select count(*) from public.products where user_id = new.user_id) >= 500 then
+    raise exception 'limite_de_lignes' using hint = '500 lignes au maximum par compte';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists products_limit on public.products;
+create trigger products_limit before insert on public.products
+  for each row execute function public.limit_products();
+
 drop policy if exists "chacun gère ses produits" on public.products;
 create policy "chacun gère ses produits" on public.products
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
@@ -46,6 +68,9 @@ create table if not exists public.settings (
   updated_at timestamptz not null default now()
 );
 alter table public.settings enable row level security;
+
+alter table public.settings drop constraint if exists settings_company_length;
+alter table public.settings add constraint settings_company_length check (char_length(company) <= 200);
 
 drop policy if exists "chacun gère ses paramètres" on public.settings;
 create policy "chacun gère ses paramètres" on public.settings
@@ -83,6 +108,51 @@ alter table public.diagnostic_requests add constraint diagnostic_requests_topics
   check (topics is null or (cardinality(topics) between 1 and 10 and char_length(array_to_string(topics, ',')) <= 500));
 alter table public.diagnostic_requests enable row level security;
 
+-- Date du dernier échange : point de départ de la durée de conservation (3 ans, voir la politique de confidentialité)
+alter table public.diagnostic_requests add column if not exists last_contact_at timestamptz not null default now();
+create index if not exists diag_email_idx on public.diagnostic_requests(lower(email), created_at desc);
+create index if not exists diag_last_contact_idx on public.diagnostic_requests(last_contact_at);
+
+-- Anti-spam : au plus 3 demandes par heure pour un même e-mail et 30 par heure au total.
+-- Les dates sont imposées par la base, pour qu'un envoi ne puisse pas se dater dans le passé.
+create or replace function public.check_request_rate()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.created_at := now();
+  new.last_contact_at := now();
+  if (select count(*) from public.diagnostic_requests
+        where lower(email) = lower(new.email) and created_at > now() - interval '1 hour') >= 3
+     or (select count(*) from public.diagnostic_requests
+        where created_at > now() - interval '1 hour') >= 30 then
+    raise exception 'trop_de_demandes' using hint = 'Réessayez dans une heure';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists diag_rate_limit on public.diagnostic_requests;
+create trigger diag_rate_limit before insert on public.diagnostic_requests
+  for each row execute function public.check_request_rate();
+
+-- Chaque changement de statut par l'administrateur compte comme un échange
+create or replace function public.touch_last_contact()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.status is distinct from old.status then
+    new.last_contact_at := now();
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists diag_touch on public.diagnostic_requests;
+create trigger diag_touch before update on public.diagnostic_requests
+  for each row execute function public.touch_last_contact();
+
 -- Tout le monde (même sans compte) peut envoyer une demande
 drop policy if exists "envoyer une demande" on public.diagnostic_requests;
 create policy "envoyer une demande" on public.diagnostic_requests
@@ -106,6 +176,37 @@ create policy "voir ses demandes" on public.diagnostic_requests
 drop policy if exists "admin met à jour" on public.diagnostic_requests;
 create policy "admin met à jour" on public.diagnostic_requests
   for update to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- Seul l'administrateur supprime une demande (droit à l'effacement)
+drop policy if exists "admin supprime" on public.diagnostic_requests;
+create policy "admin supprime" on public.diagnostic_requests
+  for delete to authenticated using (public.is_admin());
+
+-- Purge automatique des demandes sans échange depuis 3 ans
+create or replace function public.purge_old_requests()
+returns integer
+language sql
+security definer
+set search_path = public
+as $$
+  with d as (
+    delete from public.diagnostic_requests where last_contact_at < now() - interval '3 years' returning 1
+  )
+  select count(*)::integer from d;
+$$;
+revoke all on function public.purge_old_requests() from public, anon, authenticated;
+
+-- Lancement chaque nuit à 3 h (UTC) grâce à l'extension pg_cron de Supabase.
+-- Si l'extension ne peut pas être activée, un avertissement s'affiche : activez « pg_cron » dans
+-- Supabase > Database > Extensions, puis relancez ce fichier.
+do $$
+begin
+  create extension if not exists pg_cron;
+  perform cron.schedule('purge-demandes', '0 3 * * *', 'select public.purge_old_requests()');
+exception when others then
+  raise warning 'Purge automatique non programmée (%). Activez pg_cron puis relancez ce fichier.', sqlerrm;
+end;
+$$;
 
 -- 5. Poste de travail de l'administrateur : suivi interne et notes.
 -- Tables séparées : le client qui voit sa demande ne voit jamais le montant du devis ni vos notes.

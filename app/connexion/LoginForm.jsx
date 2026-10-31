@@ -17,7 +17,11 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    params.get('erreur') === 'lien'
+      ? 'Ce lien de confirmation a expiré ou a déjà été utilisé. Connectez-vous, ou créez à nouveau votre espace pour recevoir un nouveau lien.'
+      : ''
+  );
   const [info, setInfo] = useState('');
   // N'accepte qu'un chemin interne, pour éviter une redirection vers un autre site
   const suite = params.get('suite') || '';

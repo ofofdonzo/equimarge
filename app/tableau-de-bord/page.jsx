@@ -8,14 +8,14 @@ export const metadata = { title: 'Mon espace — Equimarge', robots: { index: fa
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect('/connexion?suite=/tableau-de-bord');
 
   const [{ data: products }, { data: settings }, { data: requests }, { data: isAdmin }] = await Promise.all([
-    supabase.from('products').select('id,name,price,cost,quantity').order('created_at'),
+    supabase.from('products').select('id,name,price,cost,quantity').order('created_at').limit(500),
     supabase.from('settings').select('company,fixed_costs').eq('user_id', user.id).maybeSingle(),
     supabase.from('diagnostic_requests').select('id,offer,status,created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.rpc('is_admin'),

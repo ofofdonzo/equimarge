@@ -3,8 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { AUTOMATION, COMPLIANCE, STATUSES, poleOf } from '@/components/offers';
 import { AGENTS } from '@/components/agents';
+import Alerts, { showLocalNotification } from './Alerts';
 import {
-  Alert, ArrowLeft, Bell, Bot, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
+  Alert, ArrowLeft, Bot, Calendar, Check, Clock, Copy, External, Mail, Phone, Search, Wallet,
 } from '@/components/icons';
 
 // Poste de travail de l'administrateur : les demandes arrivent en direct, se traitent dans une fiche
@@ -104,27 +105,25 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   const [selected, setSelected] = useState(null);
   const [live, setLive] = useState(false);
   const [fresh, setFresh] = useState(() => new Set());
-  const [perm, setPerm] = useState('default');
   const [msg, setMsg] = useState('');
 
   // ---------- Temps réel ----------
+  // Page visible : le son et la ligne en surbrillance suffisent. Page en arrière-plan : notification système
+  // (même étiquette que la notification envoyée par le serveur, pour ne jamais l'afficher deux fois).
   const notify = useCallback((r) => {
     beep();
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const n = new Notification('Nouvelle demande — Equimarge', {
-          body: `${r.company} · ${r.offer}`,
-          tag: r.id,
-        });
-        n.onclick = () => { window.focus(); setSelected(r.id); n.close(); };
-      }
-    } catch {
-      // Notifications non prises en charge (certains navigateurs mobiles)
+    if (document.visibilityState !== 'visible') {
+      showLocalNotification('Nouvelle demande — Equimarge', `${r.company} · ${r.offer}`, r.id);
     }
   }, []);
 
+  // Ouverture depuis une notification : /admin?demande=… affiche directement la fiche.
   useEffect(() => {
-    if ('Notification' in window) setPerm(Notification.permission);
+    const id = new URLSearchParams(window.location.search).get('demande');
+    if (id) setSelected(id);
+  }, []);
+
+  useEffect(() => {
     const channel = supabase
       .channel('poste-de-travail')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'diagnostic_requests' }, (p) => {
@@ -147,11 +146,6 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
   useEffect(() => {
     document.title = (todoCount ? `(${todoCount}) ` : '') + 'Poste de travail — Equimarge';
   }, [todoCount]);
-
-  async function askPermission() {
-    if (!('Notification' in window)) return setMsg("Ce navigateur n'affiche pas les notifications.");
-    setPerm(await Notification.requestPermission());
-  }
 
   // ---------- Filtres et indicateurs ----------
   const due = (r) => OPEN(r) && tracking[r.id]?.next_action_at && tracking[r.id].next_action_at <= today();
@@ -191,11 +185,7 @@ export default function Workspace({ initialRequests, initialTracking, setupMissi
           <span className={'live' + (live ? ' on' : '')} title="Les nouvelles demandes s'affichent sans recharger la page">
             {live ? 'En direct' : 'Connexion…'}
           </span>
-          {perm !== 'granted' && (
-            <button type="button" className="btn ghost sm" onClick={askPermission}>
-              <Bell size={16} /> Activer les alertes
-            </button>
-          )}
+          <Alerts supabase={supabase} />
         </div>
       </div>
 

@@ -146,6 +146,60 @@ begin
   end if;
 end $$;
 
--- 7. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
+-- 7. Notifications sur téléphone et ordinateur (appareils abonnés aux alertes du poste de travail).
+-- Réservé à l'administrateur ; le serveur les lit avec la clé « service_role » pour envoyer les alertes.
+create table if not exists public.push_subscriptions (
+  endpoint text primary key check (char_length(endpoint) <= 1000),
+  p256dh text not null check (char_length(p256dh) <= 200),
+  auth text not null check (char_length(auth) <= 100),
+  device text check (device is null or char_length(device) <= 300),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.push_subscriptions enable row level security;
+drop policy if exists "admin gère ses appareils" on public.push_subscriptions;
+create policy "admin gère ses appareils" on public.push_subscriptions
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- 8. Alerte immédiate à chaque nouvelle demande : la base appelle /api/alerte-demande du site,
+-- qui envoie la notification (et l'e-mail si Resend est configuré).
+-- Le secret partagé est rangé dans le coffre-fort de Supabase (Vault), jamais dans ce fichier :
+--   select vault.create_secret('LA-MÊME-PHRASE-QUE-WEBHOOK_SECRET-DANS-NETLIFY', 'equimarge_webhook_secret');
+-- Sans ce secret, le déclencheur ne fait rien (la demande est toujours enregistrée).
+-- N'utilisez pas en plus un « Database Webhook » du tableau de bord : vous recevriez chaque alerte deux fois.
+create extension if not exists pg_net;
+
+create or replace function public.alerte_nouvelle_demande()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  secret text;
+begin
+  select decrypted_secret into secret from vault.decrypted_secrets where name = 'equimarge_webhook_secret' limit 1;
+  if secret is not null then
+    perform net.http_post(
+      url := 'https://equimarge.netlify.app/api/alerte-demande',
+      body := jsonb_build_object('type', 'INSERT', 'table', 'diagnostic_requests', 'record', to_jsonb(new)),
+      headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', secret),
+      timeout_milliseconds := 5000
+    );
+  end if;
+  return new;
+exception when others then
+  -- Une alerte en panne ne doit jamais empêcher un client d'envoyer sa demande.
+  return new;
+end;
+$$;
+revoke all on function public.alerte_nouvelle_demande() from public, anon, authenticated;
+
+drop trigger if exists alerte_nouvelle_demande on public.diagnostic_requests;
+create trigger alerte_nouvelle_demande
+  after insert on public.diagnostic_requests
+  for each row execute function public.alerte_nouvelle_demande();
+
+-- 9. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
 -- Remplacez l'e-mail puis exécutez cette ligne seule :
 -- insert into public.admins (user_id) select id from auth.users where email = 'contact@equimarge.fr';

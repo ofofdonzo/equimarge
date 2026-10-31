@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Workspace from './Workspace';
+import Agents from './Agents';
 
 // Le manifeste rend le poste de travail installable (écran d'accueil de l'iPhone, appli sur ordinateur),
 // ce qui permet les notifications sur iPhone.
@@ -41,6 +42,8 @@ export default async function Page() {
       initialRequests={requests || []}
       initialTracking={tracking || []}
       setupMissing={Boolean(trackingError)}
-    />
+    >
+      <Agents />
+    </Workspace>
   );
 }

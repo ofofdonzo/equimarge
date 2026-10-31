@@ -28,7 +28,7 @@ Comptez une heure. Tout se fait depuis un navigateur, sur ordinateur de préfér
 ### 3. Hébergement (Netlify)
 1. Créez un compte sur netlify.com **avec votre compte GitHub**.
 2. **Add new site** > **Import an existing project** > GitHub > choisissez `equimarge`. Les réglages de build sont lus dans `netlify.toml`.
-3. (Facultatif) Le site utilise par défaut le projet Supabase d'Equimarge, inscrit dans `lib/supabase/config.js`. Pour un autre projet, ajoutez dans **Site configuration** > **Environment variables** `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (valeurs notées à l'étape 1.3).
+3. **Obligatoire** : dans **Site configuration** > **Environment variables**, ajoutez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` (valeurs notées à l'étape 1.3), pour tous les contextes de déploiement. Sans elles, le déploiement s'arrête avec un message d'erreur et l'ancienne version du site reste en ligne.
 4. **Deploy**. Après 1 à 2 minutes, le site est en ligne sur une adresse `xxx.netlify.app`.
 
 ### 4. Relier Supabase au site

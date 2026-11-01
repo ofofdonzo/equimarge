@@ -20,7 +20,7 @@ export default function Page() {
       <h2>2. Espace gratuit</h2>
       <ul>
         <li>L'accès est gratuit et nécessite un compte. Vous êtes responsable de vos identifiants et des données que vous saisissez.</li>
-        <li>L'espace comprend le suivi de marge et des outils de conformité : auto-diagnostic, plan d'action, registre des traitements, cartographie des risques et export vers Excel.</li>
+        <li>L'espace comprend un auto-diagnostic de conformité gratuit et un outil de suivi de marge. Pendant une mission, il donne accès au dossier partagé avec Equimarge : demandes d'informations, dépôt de documents, livrables, plan d'action, registre des traitements et cartographie des risques, exportables vers Excel.</li>
         <li>Les calculs sont indicatifs et dépendent de vos saisies. Ils ne remplacent pas l'avis d'un expert-comptable.</li>
         <li>Les outils de conformité aident à organiser votre démarche. Ils ne constituent pas une consultation juridique et ne garantissent pas la conformité de votre entreprise, qui reste responsable de ses obligations.</li>
         <li>L'outil est fourni sans garantie de disponibilité permanente. Equimarge peut suspendre un compte utilisé de manière abusive.</li>
@@ -36,6 +36,7 @@ export default function Page() {
           juridiques et n'incluent pas la rédaction de contrats ou d'actes ; ces besoins sont orientés vers un avocat.
         </li>
         <li>La durée et les conditions de résiliation des prestations récurrentes (DPO externalisé, automatisation) sont fixées dans le devis.</li>
+        <li>Le client transmet dans son dossier les informations et documents nécessaires à la mission, et seulement ceux-là. Il s'abstient d'y déposer des données sensibles qui ne sont pas indispensables.</li>
       </ul>
 
       <h2>4. Prix et paiement</h2>

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
-// Onglets de l'espace client : suivi de marge et outils de conformité.
+// Onglets de l'espace client : dossier de conformité, puis suivi de marge.
 const TABS = [
-  { key: 'marges', href: '/tableau-de-bord', label: 'Marges' },
-  { key: 'conformite', href: '/tableau-de-bord/conformite', label: 'Conformité' },
+  { key: 'conformite', href: '/tableau-de-bord/conformite', label: 'Mon dossier conformité' },
+  { key: 'marges', href: '/tableau-de-bord', label: 'Suivi de marge' },
 ];
 
 export default function SpaceNav({ current }) {

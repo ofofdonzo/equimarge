@@ -13,11 +13,10 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 const TOOLS = [
-  'Auto-diagnostic sur six domaines, avec un score et les actions recommandées',
-  'Tableau de bord dynamique : graphiques, filtres par domaine, échéances',
-  "Plan d'action avec responsables, échéances et alertes de retard",
-  'Registre des traitements RGPD et cartographie des risques',
-  'Export vers Excel de tous vos tableaux',
+  'Auto-diagnostic gratuit sur six domaines, avec votre score',
+  'Pendant la mission : nos demandes d’informations, auxquelles vous répondez en ligne',
+  'Dépôt de vos documents dans un espace privé',
+  'Plan d’action, registre RGPD, risques et livrables à consulter et à exporter vers Excel',
 ];
 
 const STEPS = [
@@ -109,8 +108,8 @@ export default async function Page(props) {
       <section className="section">
         <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
           <div style={{ minWidth: 0, flex: '1 1 320px' }}>
-            <span className="eyebrow">Outils gratuits</span>
-            <h2 style={{ margin: '6px 0 8px' }}>Pilotez votre conformité depuis votre espace</h2>
+            <span className="eyebrow">Votre dossier en ligne</span>
+            <h2 style={{ margin: '6px 0 8px' }}>Vous transmettez, nous réalisons, vous suivez</h2>
             <ul className="checks" style={{ marginTop: 0 }}>
               {TOOLS.map((t) => (
                 <li key={t}><Check size={16} />{t}</li>
@@ -118,7 +117,7 @@ export default async function Page(props) {
             </ul>
           </div>
           <Link href="/connexion?mode=inscription&suite=/tableau-de-bord/conformite" className="btn lg">
-            Créer mon espace gratuit <ArrowRight size={18} />
+            Auto-diagnostic gratuit <ArrowRight size={18} />
           </Link>
         </div>
       </section>

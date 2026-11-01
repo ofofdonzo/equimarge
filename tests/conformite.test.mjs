@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { actionStats, DOMAINS, domainScores, globalScore, QUESTIONS, riskLevel, scoreLevel } from '../lib/conformite.mjs';
+import { actionStats, DOMAINS, domainScores, fileSize, globalScore, isMission, QUESTIONS, riskLevel, scoreLevel, storageName } from '../lib/conformite.mjs';
 
 test('chaque question a une clé unique, un domaine connu et une action', () => {
   const keys = new Set(QUESTIONS.map((q) => q.key));
@@ -48,4 +48,14 @@ test('actionStats compte les statuts et les retards', () => {
   assert.deepEqual(st.byStatus, { 'À faire': 2, 'En cours': 1, 'Terminé': 1 });
   assert.equal(st.late, 1);
   assert.equal(st.open, 3);
+});
+
+test('storageName produit un nom de fichier sûr', () => {
+  assert.equal(storageName('Contrat signé (v2).PDF'), 'Contrat-signe-v2-.PDF');
+  assert.equal(storageName('../../etc/passwd'), 'etc-passwd');
+  assert.equal(storageName('  '), 'document');
+  assert.equal(storageName('a'.repeat(300) + '.pdf').length, 100);
+  assert.equal(fileSize(2048), '2 Ko');
+  assert.equal(isMission({ status: 'Auto-diagnostic' }), false);
+  assert.equal(isMission({ status: 'En cours' }), true);
 });

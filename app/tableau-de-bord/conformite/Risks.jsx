@@ -4,7 +4,8 @@ import { DOMAINS, RISK_STATUSES, riskLevel } from '@/lib/conformite.mjs';
 
 const SCALE = [1, 2, 3, 4, 5];
 
-export default function Risks({ risks, domain, onAdd, onUpdate, onRemove }) {
+// readOnly : le client consulte la cartographie établie par Equimarge sans pouvoir la modifier.
+export default function Risks({ risks, domain, readOnly = false, onAdd, onUpdate, onRemove }) {
   const rows = risks.filter((r) => !domain || r.domain === domain);
   const set = (id, field, number) => (e) => onUpdate(id, { [field]: number ? Number(e.target.value) : e.target.value });
 
@@ -12,13 +13,15 @@ export default function Risks({ risks, domain, onAdd, onUpdate, onRemove }) {
     <section className="panel">
       <div className="panel-head">
         <h2>Cartographie des risques</h2>
-        <button
-          className="btn ghost sm"
-          type="button"
-          onClick={() => onAdd({ domain: domain || 'rgpd', title: '', probability: 3, impact: 3, measure: '', status: 'Ouvert' })}
-        >
-          <Plus size={16} />Ajouter un risque
-        </button>
+        {!readOnly && (
+          <button
+            className="btn ghost sm"
+            type="button"
+            onClick={() => onAdd({ domain: domain || 'rgpd', title: '', probability: 3, impact: 3, measure: '', status: 'Ouvert' })}
+          >
+            <Plus size={16} />Ajouter un risque
+          </button>
+        )}
       </div>
       <p className="note" style={{ marginTop: 0 }}>
         Probabilité et impact de 1 (faible) à 5 (très fort). Score égal à probabilité × impact : de 1 à 6 faible, de 8 à
@@ -27,11 +30,12 @@ export default function Risks({ risks, domain, onAdd, onUpdate, onRemove }) {
       {rows.length === 0 ? (
         <div className="empty"><p className="note">Aucun risque recensé{domain ? ' pour ce domaine' : ''}.</p></div>
       ) : (
+        <fieldset className="plain" disabled={readOnly}>
         <div className="scroll">
           <table className="tbl-wide tbl-form">
             <thead>
               <tr>
-                <th className="col-main">Risque</th><th>Domaine</th><th>Probabilité</th><th>Impact</th><th>Score</th><th className="col-mid">Mesure de maîtrise</th><th>Statut</th><th></th>
+                <th className="col-main">Risque</th><th>Domaine</th><th>Probabilité</th><th>Impact</th><th>Score</th><th className="col-mid">Mesure de maîtrise</th><th>Statut</th>{!readOnly && <th></th>}
               </tr>
             </thead>
             <tbody>
@@ -62,13 +66,16 @@ export default function Risks({ risks, domain, onAdd, onUpdate, onRemove }) {
                         {RISK_STATUSES.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
-                    <td><button className="del" type="button" aria-label={`Supprimer ${r.title || 'le risque'}`} onClick={() => onRemove(r.id)}>×</button></td>
+                    {!readOnly && (
+                      <td><button className="del" type="button" aria-label={`Supprimer ${r.title || 'le risque'}`} onClick={() => onRemove(r.id)}>×</button></td>
+                    )}
                   </tr>
                 );
               })}
             </tbody>
           </table>
         </div>
+        </fieldset>
       )}
     </section>
   );

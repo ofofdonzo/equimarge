@@ -26,7 +26,7 @@ export default function LoginForm() {
   const [info, setInfo] = useState('');
   // N'accepte qu'un chemin interne, pour éviter une redirection vers un autre site
   const suite = params.get('suite') || '';
-  const next = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord';
+  const next = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord/conformite';
 
   async function submit(e) {
     e.preventDefault();
@@ -71,15 +71,15 @@ export default function LoginForm() {
       <div>
         <span className="eyebrow">{signup ? 'Inscription gratuite' : 'Connexion'}</span>
         <h1>{signup ? 'Créer votre espace' : 'Accéder à votre espace'}</h1>
-        <p className="lead">Vos chiffres restent privés : vous seul y avez accès.</p>
+        <p className="lead">Votre dossier de conformité et votre suivi de marge, au même endroit.</p>
         <ul className="benefits">
+          <li>
+            <span className="ic"><Shield /></span>
+            <div><b>Votre dossier de conformité</b><span>Auto-diagnostic gratuit, puis demandes d’informations, documents et livrables de votre mission.</span></div>
+          </li>
           <li>
             <span className="ic"><BarChart /></span>
             <div><b>La marge de chaque produit</b><span>Taux de marque, marge par ligne, alertes et seuil de rentabilité.</span></div>
-          </li>
-          <li>
-            <span className="ic"><Shield /></span>
-            <div><b>Vos outils de conformité</b><span>Auto-diagnostic, plan d’action, registre RGPD, risques et export Excel.</span></div>
           </li>
           <li>
             <span className="ic"><Lock /></span>

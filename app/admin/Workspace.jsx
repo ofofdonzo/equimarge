@@ -1,5 +1,6 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { AUTOMATION, COMPLIANCE, STATUSES, poleOf } from '@/components/offers';
 import Alerts, { showLocalNotification } from './Alerts';
@@ -166,7 +167,19 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status } : x)));
     // .select() renvoie la ligne modifiée : une liste vide signifie que la base a refusé la mise à jour
     const { data, error } = await supabase.from('diagnostic_requests').update({ status }).eq('id', id).select('id');
-    if (error || !data?.length) { setRows(prev); setMsg('Statut non enregistré : ' + (error?.message || 'modification refusée.')); } else setMsg('');
+    if (error || !data?.length) { setRows(prev); setMsg('Statut non enregistré : ' + (error?.message || 'modification refusée.')); return; }
+    setMsg('');
+    // Devis gagné : le dossier du client s'ouvre pour démarrer la mission
+    const row = prev.find((x) => x.id === id);
+    if (status === 'Gagnée' && row && !row.dossier_id) await openDossier(row);
+  }
+
+  // Ouvre (ou retrouve) le dossier client de la demande : même compte, sinon même e-mail, sinon nouveau
+  async function openDossier(r) {
+    const { data, error } = await supabase.rpc('open_dossier_from_request', { r: r.id });
+    if (error) { setMsg('Dossier client non ouvert : ' + error.message); return null; }
+    setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, dossier_id: data } : x)));
+    return data;
   }
 
   // Droit à l'effacement (RGPD) : suppression définitive, avec le suivi et les notes
@@ -274,6 +287,7 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
               onBack={() => setSelected(null)}
               onStatus={(s) => setStatus(current.id, s)}
               onDelete={() => remove(current)}
+              onOpenDossier={() => openDossier(current)}
               onTracking={(t) => setTracking((m) => ({ ...m, [current.id]: t }))}
             />
           ) : (
@@ -294,7 +308,7 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
   );
 }
 
-function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTracking, onDelete }) {
+function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTracking, onDelete, onOpenDossier }) {
   const [amount, setAmount] = useState(t?.amount ?? '');
   const [nextAction, setNextAction] = useState(t?.next_action ?? '');
   const [nextAt, setNextAt] = useState(t?.next_action_at ?? '');
@@ -383,6 +397,22 @@ function RequestCard({ r, t, supabase, setupMissing, onBack, onStatus, onTrackin
       </p>
 
       {err && <p className="err" role="alert">{err}</p>}
+
+      <div className="dossier-box">
+        <div>
+          <h3 className="mini" style={{ marginBottom: 2 }}>Dossier client</h3>
+          <p className="note" style={{ margin: 0 }}>
+            {r.dossier_id
+              ? 'Plan d’action, registre, demandes d’informations et documents de ce client.'
+              : 'À ouvrir quand la mission démarre (automatique quand la demande passe en « Gagnée »).'}
+          </p>
+        </div>
+        {r.dossier_id ? (
+          <Link className="btn sm" href={`/admin/clients/${r.dossier_id}`}>Ouvrir le dossier client</Link>
+        ) : (
+          <button type="button" className="btn ghost sm" onClick={onOpenDossier}>Ouvrir un dossier client</button>
+        )}
+      </div>
 
       <dl className="facts">
         <div><dt>Contact</dt><dd>{r.contact_name}</dd></div>

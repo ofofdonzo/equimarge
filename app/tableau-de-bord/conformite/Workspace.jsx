@@ -2,28 +2,40 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Download } from '@/components/icons';
-import { DOMAINS, domainScores, todayISO } from '@/lib/conformite.mjs';
+import { ArrowRight, Download } from '@/components/icons';
+import { DOMAINS, domainScores, isMission, MAX_FILE_SIZE, storageName, todayISO } from '@/lib/conformite.mjs';
 import Overview from './Overview';
 import Questionnaire from './Questionnaire';
 import Actions from './Actions';
 import Register from './Register';
 import Risks from './Risks';
+import InfoRequests from './InfoRequests';
+import Documents from './Documents';
 import { downloadWorkbook } from './excel';
 
-const TABS = [
-  { key: 'bord', label: 'Tableau de bord' },
-  { key: 'diagnostic', label: 'Auto-diagnostic' },
-  { key: 'actions', label: 'Plan d’action' },
-  { key: 'registre', label: 'Registre RGPD' },
-  { key: 'risques', label: 'Risques' },
-];
+const TAB_LABELS = {
+  bord: 'Tableau de bord',
+  infos: 'Demandes d’informations',
+  documents: 'Documents',
+  diagnostic: 'Auto-diagnostic',
+  actions: 'Plan d’action',
+  registre: 'Registre RGPD',
+  risques: 'Risques',
+};
+// Onglets selon le rôle : Equimarge (admin) réalise la mission ; le client répond et suit l'avancement.
+function tabsFor(role, mission) {
+  if (role === 'admin') return ['bord', 'infos', 'documents', 'diagnostic', 'actions', 'registre', 'risques'];
+  if (!mission) return ['bord', 'diagnostic'];
+  return ['bord', 'infos', 'documents', 'actions', 'registre', 'risques', 'diagnostic'];
+}
+const FILTERED_TABS = new Set(['bord', 'diagnostic', 'actions', 'risques']);
 
-// Table de la base et nombre maximal de lignes (mêmes limites que supabase/schema.sql)
+// Table de la base et nombre maximal de lignes par dossier (mêmes limites que supabase/schema.sql)
 const TABLES = {
-  actions: { table: 'compliance_actions', max: 500 },
-  records: { table: 'rgpd_records', max: 300 },
-  risks: { table: 'compliance_risks', max: 300 },
+  actions: { table: 'dossier_actions', max: 500 },
+  records: { table: 'dossier_records', max: 300 },
+  risks: { table: 'dossier_risks', max: 300 },
+  infos: { table: 'dossier_info_requests', max: 300 },
 };
 
 function newId() {
@@ -35,13 +47,22 @@ function newId() {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 
-export default function Workspace({ userId, email, initial, setupMissing = false }) {
-  // Sans compte (aperçu), rien n'est enregistré.
-  const supabase = useMemo(() => (userId ? createClient() : null), [userId]);
-  const [tab, setTab] = useState('bord');
+// offline : aperçu sans base (rien n'est enregistré).
+export default function Workspace({ role = 'client', dossier, initial, setupMissing = false, offline = false }) {
+  const supabase = useMemo(() => (offline ? null : createClient()), [offline]);
+  const admin = role === 'admin';
+  const mission = isMission(dossier);
+  const tabs = tabsFor(role, mission);
+  const [tab, setTab] = useState(tabs[0]);
   const [domain, setDomain] = useState('');
   const [answers, setAnswers] = useState(initial.answers);
-  const [lists, setLists] = useState({ actions: initial.actions, records: initial.records, risks: initial.risks });
+  const [lists, setLists] = useState({
+    actions: initial.actions,
+    records: initial.records,
+    risks: initial.risks,
+    infos: initial.infos,
+    documents: initial.documents,
+  });
   const [saveState, setSaveState] = useState('Enregistré');
   const today = useMemo(() => todayISO(), []);
   const scores = useMemo(() => domainScores(answers), [answers]);
@@ -57,11 +78,13 @@ export default function Workspace({ userId, email, initial, setupMissing = false
     pending.current += 1;
     setSaveState('Enregistrement…');
   }
-  function end(error) {
+  function end(error, message) {
     if (error) {
-      failure.current = error.message?.includes('limite_de_lignes')
-        ? 'Limite de lignes atteinte pour ce compte.'
-        : "Échec de l'enregistrement. Vérifiez votre connexion.";
+      failure.current =
+        message ||
+        (error.message?.includes('limite_de_lignes')
+          ? 'Limite de lignes atteinte pour ce dossier.'
+          : "Échec de l'enregistrement. Vérifiez votre connexion.");
     }
     pending.current -= 1;
     if (pending.current === 0) {
@@ -94,7 +117,7 @@ export default function Workspace({ userId, email, initial, setupMissing = false
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
 
-  // Cliquer à nouveau sur la réponse choisie l'efface.
+  // ---------- Auto-diagnostic : cliquer à nouveau sur la réponse choisie l'efface ----------
   function answer(question, value) {
     const next = answers[question] === value ? null : value;
     setAnswers((a) => {
@@ -105,18 +128,19 @@ export default function Workspace({ userId, email, initial, setupMissing = false
     });
     schedule('q:' + question, () =>
       next
-        ? supabase.from('compliance_answers').upsert({ user_id: userId, question, answer: next, updated_at: new Date().toISOString() })
-        : supabase.from('compliance_answers').delete().eq('question', question)
+        ? supabase.from('dossier_answers').upsert({ dossier_id: dossier.id, question, answer: next, updated_at: new Date().toISOString() })
+        : supabase.from('dossier_answers').delete().eq('dossier_id', dossier.id).eq('question', question)
     );
   }
 
+  // ---------- Lignes des tableaux (réservé à Equimarge) ----------
   async function add(kind, rows) {
     const { table, max } = TABLES[kind];
     if (lists[kind].length + rows.length > max) {
       setSaveState(`Limite de ${max} lignes atteinte.`);
       return null;
     }
-    const full = rows.map((r) => ({ id: newId(), ...r }));
+    const full = rows.map((r) => ({ id: newId(), dossier_id: dossier.id, ...r }));
     setLists((l) => ({ ...l, [kind]: [...l[kind], ...full] }));
     if (!supabase) return full[0];
     begin();
@@ -172,51 +196,100 @@ export default function Workspace({ userId, email, initial, setupMissing = false
     );
   }
 
+  // ---------- Réponse du client à une demande d'informations ----------
+  async function answerInfo(id, text) {
+    const patch = { response: text, status: 'Fourni', answered_at: new Date().toISOString() };
+    if (supabase) {
+      begin();
+      const { error } = await supabase.rpc('answer_info_request', { i: id, reply: text });
+      end(error, error && 'Réponse non envoyée. Réessayez.');
+      if (error) return;
+    }
+    setLists((l) => ({ ...l, infos: l.infos.map((r) => (r.id === id ? { ...r, ...patch } : r)) }));
+  }
+
+  // ---------- Documents (espace de stockage privé « dossiers ») ----------
+  async function upload(file, { kind = admin ? 'Livrable' : 'Client', requestId = null } = {}) {
+    if (file.size > MAX_FILE_SIZE) return setSaveState('Fichier trop lourd : 10 Mo au plus.');
+    const id = newId();
+    const row = {
+      id,
+      dossier_id: dossier.id,
+      info_request_id: requestId,
+      kind,
+      name: file.name.slice(0, 200) || 'document',
+      path: `${dossier.id}/${id}-${storageName(file.name)}`,
+      size: file.size,
+    };
+    if (supabase) {
+      begin();
+      const { error: sent } = await supabase.storage.from('dossiers').upload(row.path, file, { contentType: file.type || undefined });
+      if (sent) return end(sent, 'Document non envoyé : vérifiez son format (PDF, Word, Excel, image, texte).');
+      const { error } = await supabase.from('dossier_documents').insert(row);
+      if (error) {
+        if (admin) await supabase.storage.from('dossiers').remove([row.path]);
+        return end(error, 'Document non enregistré. Réessayez.');
+      }
+      end(null);
+    }
+    setLists((l) => ({ ...l, documents: [...l.documents, { ...row, created_at: new Date().toISOString() }] }));
+  }
+
+  async function openDoc(doc) {
+    if (!supabase) return setSaveState('Aperçu : les documents ne sont pas téléchargeables.');
+    const { data, error } = await supabase.storage.from('dossiers').createSignedUrl(doc.path, 60, { download: doc.name });
+    if (error) return setSaveState('Téléchargement impossible : ' + error.message);
+    window.location.assign(data.signedUrl);
+  }
+
+  async function removeDoc(doc) {
+    if (!window.confirm(`Supprimer définitivement « ${doc.name} » ?`)) return;
+    if (supabase) {
+      begin();
+      const { error: e1 } = await supabase.storage.from('dossiers').remove([doc.path]);
+      const { error: e2 } = e1 ? { error: e1 } : await supabase.from('dossier_documents').delete().eq('id', doc.id);
+      end(e2, e2 && 'Suppression impossible : ' + e2.message);
+      if (e2) return;
+    }
+    setLists((l) => ({ ...l, documents: l.documents.filter((d) => d.id !== doc.id) }));
+  }
+
   const saveClass = saveState === 'Enregistré' ? 'save' : saveState === 'Enregistrement…' ? 'save busy' : 'save bad';
   const filtered = (list) => list.filter((x) => !domain || x.domain === domain);
+  const pendingInfos = lists.infos.filter((i) => i.status === 'À fournir').length;
 
   return (
     <div className="stack">
-      <div>
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="row" style={{ gap: 8, minWidth: 0 }}>
-            <span className="eyebrow">Espace conformité</span>
-            {email && <span className="note">{email}</span>}
-          </span>
-          <span className={saveClass} aria-live="polite">{supabase ? saveState : 'Aperçu : rien n’est enregistré'}</span>
-        </div>
-        <h1>Pilotez votre conformité</h1>
-        <p className="lead" style={{ marginBottom: 0 }}>
-          Évaluez-vous domaine par domaine, suivez votre plan d’action, tenez votre registre RGPD et votre cartographie
-          des risques. Tout s’enregistre au fil de la saisie et s’exporte vers Excel.
-        </p>
+      <div className="row" style={{ justifyContent: 'flex-end' }}>
+        <span className={saveClass} aria-live="polite">{supabase ? saveState : 'Aperçu : rien n’est enregistré'}</span>
       </div>
 
       {setupMissing && (
         <p className="err" role="alert">
-          Les tables de l’espace conformité n’existent pas encore dans la base : relancez le fichier supabase/schema.sql
-          dans Supabase (SQL Editor), puis rechargez la page.
+          Les tables des dossiers n’existent pas encore dans la base : relancez le fichier supabase/schema.sql dans
+          Supabase (SQL Editor), puis rechargez la page.
         </p>
       )}
 
       <div className="ws-bar">
-        <div className="tabs" role="tablist" aria-label="Outils de conformité">
-          {TABS.map((t) => (
-            <button key={t.key} type="button" role="tab" id={`tab-${t.key}`} aria-selected={tab === t.key} aria-controls="ws-panel" onClick={() => setTab(t.key)}>
-              {t.label}
+        <div className="tabs" role="tablist" aria-label="Outils du dossier">
+          {tabs.map((t) => (
+            <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={tab === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
+              {TAB_LABELS[t]}
+              {t === 'infos' && pendingInfos > 0 && <span className="tab-count">{pendingInfos}</span>}
             </button>
           ))}
         </div>
         <button
           type="button"
           className="btn ghost sm"
-          onClick={() => downloadWorkbook({ answers, actions: lists.actions, records: lists.records, risks: lists.risks })}
+          onClick={() => downloadWorkbook({ answers, ...lists }, dossier.company)}
         >
           <Download size={16} />Exporter vers Excel
         </button>
       </div>
 
-      {tab !== 'registre' && (
+      {FILTERED_TABS.has(tab) && (
         <div className="chips" role="group" aria-label="Filtrer par domaine">
           <button type="button" aria-pressed={domain === ''} onClick={() => setDomain('')}>Tous les domaines</button>
           {DOMAINS.map((d) => (
@@ -230,21 +303,50 @@ export default function Workspace({ userId, email, initial, setupMissing = false
           <Overview
             scores={scores}
             domain={domain}
+            mission={mission || admin}
             actions={filtered(lists.actions)}
             risks={filtered(lists.risks)}
+            pendingInfos={pendingInfos}
+            deliverables={lists.documents.filter((d) => d.kind === 'Livrable').length}
             today={today}
             onPickDomain={setDomain}
             onOpen={setTab}
           />
         )}
         {tab === 'diagnostic' && (
-          <Questionnaire answers={answers} scores={scores} domain={domain} actions={lists.actions} onAnswer={answer} onAddActions={addRecommended} />
+          <Questionnaire
+            answers={answers}
+            scores={scores}
+            domain={domain}
+            actions={lists.actions}
+            canPlan={admin}
+            onAnswer={answer}
+            onAddActions={addRecommended}
+          />
+        )}
+        {tab === 'infos' && (
+          <InfoRequests
+            items={lists.infos}
+            documents={lists.documents}
+            role={role}
+            today={today}
+            onAdd={(row) => add('infos', [row])}
+            onUpdate={(id, patch) => update('infos', id, patch)}
+            onRemove={(id) => remove('infos', id)}
+            onAnswer={answerInfo}
+            onUpload={upload}
+            onOpenDoc={openDoc}
+          />
+        )}
+        {tab === 'documents' && (
+          <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
         )}
         {tab === 'actions' && (
           <Actions
             actions={lists.actions}
             domain={domain}
             today={today}
+            readOnly={!admin}
             onAdd={(row) => add('actions', [row])}
             onUpdate={(id, patch) => update('actions', id, patch)}
             onRemove={(id) => remove('actions', id)}
@@ -253,6 +355,7 @@ export default function Workspace({ userId, email, initial, setupMissing = false
         {tab === 'registre' && (
           <Register
             records={lists.records}
+            readOnly={!admin}
             onAdd={(row) => add('records', [row])}
             onUpdate={(id, patch) => update('records', id, patch)}
             onRemove={(id) => remove('records', id)}
@@ -262,6 +365,7 @@ export default function Workspace({ userId, email, initial, setupMissing = false
           <Risks
             risks={lists.risks}
             domain={domain}
+            readOnly={!admin}
             onAdd={(row) => add('risks', [row])}
             onUpdate={(id, patch) => update('risks', id, patch)}
             onRemove={(id) => remove('risks', id)}
@@ -269,10 +373,23 @@ export default function Workspace({ userId, email, initial, setupMissing = false
         )}
       </div>
 
+      {!admin && !mission && (
+        <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
+          <div style={{ minWidth: 0, flex: '1 1 300px' }}>
+            <h2 style={{ marginBottom: 4 }}>Confiez votre mise en conformité à Equimarge</h2>
+            <p className="note" style={{ margin: 0 }}>
+              Vous nous transmettez les informations, nous réalisons registre, procédures et plan d’action, et vous suivez
+              l’avancement ici.
+            </p>
+          </div>
+          <Link className="btn" href="/conformite#devis">Demander un devis <ArrowRight size={18} /></Link>
+        </div>
+      )}
+
       <p className="note" style={{ margin: 0 }}>
-        Ces outils vous aident à organiser votre conformité ; ils ne constituent pas une consultation juridique et ne
-        garantissent pas la conformité de votre entreprise.{' '}
-        <Link href="/conformite#devis">Être accompagné par Equimarge</Link>
+        {admin
+          ? 'Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, plan, registre et risques (en lecture seule).'
+          : 'Ces outils accompagnent la mission d’Equimarge ; ils ne constituent pas une consultation juridique.'}
       </p>
     </div>
   );

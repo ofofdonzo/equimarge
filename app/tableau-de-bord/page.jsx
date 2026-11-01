@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Shield } from '@/components/icons';
+import SpaceNav from '@/components/SpaceNav';
 import Dashboard from './Dashboard';
 
 export const metadata = { title: 'Mon espace — Equimarge', robots: { index: false } };
@@ -23,6 +24,7 @@ export default async function Page() {
 
   return (
     <div className="stack">
+      <SpaceNav current="marges" />
       {isAdmin && (
         <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
           <span className="row" style={{ gap: 10 }}><Shield /> Vous êtes administrateur.</span>

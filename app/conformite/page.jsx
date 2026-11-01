@@ -12,6 +12,14 @@ export const metadata = {
 };
 export const dynamic = 'force-dynamic';
 
+const TOOLS = [
+  'Auto-diagnostic sur six domaines, avec un score et les actions recommandées',
+  'Tableau de bord dynamique : graphiques, filtres par domaine, échéances',
+  "Plan d'action avec responsables, échéances et alertes de retard",
+  'Registre des traitements RGPD et cartographie des risques',
+  'Export vers Excel de tous vos tableaux',
+];
+
 const STEPS = [
   { n: '01', title: 'État des lieux', text: 'Entretiens et revue de vos documents pour mesurer les écarts avec vos obligations.', Icon: Search },
   { n: '02', title: "Plan d'action", text: 'Les écarts classés par priorité, avec un calendrier réaliste pour vos équipes.', Icon: ClipboardList },
@@ -95,6 +103,23 @@ export default async function Page(props) {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
+          <div style={{ minWidth: 0, flex: '1 1 320px' }}>
+            <span className="eyebrow">Outils gratuits</span>
+            <h2 style={{ margin: '6px 0 8px' }}>Pilotez votre conformité depuis votre espace</h2>
+            <ul className="checks" style={{ marginTop: 0 }}>
+              {TOOLS.map((t) => (
+                <li key={t}><Check size={16} />{t}</li>
+              ))}
+            </ul>
+          </div>
+          <Link href="/connexion?mode=inscription&suite=/tableau-de-bord/conformite" className="btn lg">
+            Créer mon espace gratuit <ArrowRight size={18} />
+          </Link>
         </div>
       </section>
 

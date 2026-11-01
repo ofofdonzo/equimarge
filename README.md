@@ -4,6 +4,7 @@ Site et application pour PME, en trois pôles : mise en conformité (sur devis),
 
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
+- **Mon espace conformité** (`/tableau-de-bord/conformite`) : tableau de bord avec graphiques et filtres par domaine, auto-diagnostic (44 questions sur six domaines, avec actions recommandées), plan d'action, registre des traitements RGPD, cartographie des risques et export vers Excel. Les questions se modifient dans `lib/conformite.mjs`.
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
 - **Conformité** (`/conformite`) : qui est concerné par quelle obligation, domaines d'intervention (RGPD, DPO externalisé, IA, anti-blanchiment, anticorruption, procédures, droit social), démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
 - **Automatisation** (`/automatisation`) : les « étages » d'agents IA (mails et appels manqués, factures et relances, planning et achats, superviseur et rapport du soir) et le formulaire de devis (formule « Automatisation »).
@@ -51,7 +52,7 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr`, définissez
 - Après l'immatriculation de la SASU, complétez `app/mentions-legales/page.jsx` et `app/confidentialite/page.jsx` : retirez « en cours de constitution », ajoutez l'adresse complète du siège, le SIREN, le capital social, « RCS Paris » et le n° de TVA intracommunautaire.
 - Faites relire `app/conditions-generales/page.jsx` avant la première vente (prix, délais de paiement, responsabilité). Si la SASU relève de la franchise en base de TVA, indiquez « TVA non applicable, art. 293 B du CGI » sur les devis et factures.
 - Chaque e-mail de prospection doit dire d'où viennent les coordonnées du destinataire et lui permettre de refuser tout nouvel envoi (voir la politique de confidentialité).
-- Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données).
+- Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données). C'est nécessaire pour l'espace conformité : tant que ses tables n'existent pas, la page l'indique et rien ne s'enregistre.
 - La purge automatique des demandes de plus de 3 ans utilise l'extension **pg_cron**. Si l'exécution du fichier affiche « Purge automatique non programmée », activez `pg_cron` dans Supabase > **Database** > **Extensions**, puis relancez le fichier.
 - Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.
 - Supabase envoie les e-mails de confirmation avec un expéditeur générique et une limite d'envois par heure. Pour un volume réel, branchez un service d'e-mail (Supabase > Authentication > SMTP Settings, ex. Brevo, gratuit jusqu'à 300 e-mails/jour).

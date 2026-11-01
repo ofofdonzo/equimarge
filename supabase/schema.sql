@@ -301,6 +301,112 @@ create trigger alerte_nouvelle_demande
   after insert on public.diagnostic_requests
   for each row execute function public.alerte_nouvelle_demande();
 
--- 9. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
+-- 9. Espace conformité de chaque client : auto-diagnostic, plan d'action, registre RGPD, risques.
+-- Chacun ne voit et ne modifie que ses propres lignes. Les clés de domaine et de question
+-- correspondent à lib/conformite.mjs.
+
+-- Nombre maximal de lignes par compte, passé en argument du déclencheur
+create or replace function public.limit_rows()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n integer;
+  max_rows integer := tg_argv[0]::integer;
+begin
+  execute format('select count(*) from public.%I where user_id = $1', tg_table_name) into n using new.user_id;
+  if n >= max_rows then
+    raise exception 'limite_de_lignes' using hint = format('%s lignes au maximum par compte', max_rows);
+  end if;
+  return new;
+end;
+$$;
+
+create table if not exists public.compliance_answers (
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  question text not null check (char_length(question) <= 60),
+  answer text not null check (answer in ('oui','partiel','non','na')),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, question)
+);
+alter table public.compliance_answers enable row level security;
+drop policy if exists "chacun gère ses réponses" on public.compliance_answers;
+create policy "chacun gère ses réponses" on public.compliance_answers
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop trigger if exists compliance_answers_limit on public.compliance_answers;
+create trigger compliance_answers_limit before insert on public.compliance_answers
+  for each row execute function public.limit_rows('200');
+
+create table if not exists public.compliance_actions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  domain text not null check (char_length(domain) <= 30),
+  title text not null default '' check (char_length(title) <= 300),
+  owner text not null default '' check (char_length(owner) <= 120),
+  due_date date,
+  priority text not null default 'Moyenne' check (priority in ('Haute','Moyenne','Basse')),
+  status text not null default 'À faire' check (status in ('À faire','En cours','Terminé')),
+  source text check (source is null or char_length(source) <= 60),
+  created_at timestamptz not null default now()
+);
+create index if not exists compliance_actions_user_idx on public.compliance_actions(user_id, created_at);
+alter table public.compliance_actions enable row level security;
+drop policy if exists "chacun gère son plan d'action" on public.compliance_actions;
+create policy "chacun gère son plan d'action" on public.compliance_actions
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop trigger if exists compliance_actions_limit on public.compliance_actions;
+create trigger compliance_actions_limit before insert on public.compliance_actions
+  for each row execute function public.limit_rows('500');
+
+-- Registre des activités de traitement (article 30 du RGPD)
+create table if not exists public.rgpd_records (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null default '' check (char_length(name) <= 200),
+  purpose text not null default '' check (char_length(purpose) <= 1000),
+  legal_basis text not null default 'Contrat' check (legal_basis in
+    ('Consentement','Contrat','Obligation légale','Sauvegarde des intérêts vitaux','Mission d’intérêt public','Intérêt légitime')),
+  data_subjects text not null default '' check (char_length(data_subjects) <= 500),
+  data_categories text not null default '' check (char_length(data_categories) <= 1000),
+  sensitive boolean not null default false,
+  recipients text not null default '' check (char_length(recipients) <= 1000),
+  transfers text not null default '' check (char_length(transfers) <= 500),
+  retention text not null default '' check (char_length(retention) <= 500),
+  security text not null default '' check (char_length(security) <= 1000),
+  created_at timestamptz not null default now()
+);
+create index if not exists rgpd_records_user_idx on public.rgpd_records(user_id, created_at);
+alter table public.rgpd_records enable row level security;
+drop policy if exists "chacun gère son registre" on public.rgpd_records;
+create policy "chacun gère son registre" on public.rgpd_records
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop trigger if exists rgpd_records_limit on public.rgpd_records;
+create trigger rgpd_records_limit before insert on public.rgpd_records
+  for each row execute function public.limit_rows('300');
+
+-- Cartographie des risques (probabilité × impact, de 1 à 5)
+create table if not exists public.compliance_risks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  domain text not null check (char_length(domain) <= 30),
+  title text not null default '' check (char_length(title) <= 300),
+  probability smallint not null default 3 check (probability between 1 and 5),
+  impact smallint not null default 3 check (impact between 1 and 5),
+  measure text not null default '' check (char_length(measure) <= 1000),
+  status text not null default 'Ouvert' check (status in ('Ouvert','Maîtrisé')),
+  created_at timestamptz not null default now()
+);
+create index if not exists compliance_risks_user_idx on public.compliance_risks(user_id, created_at);
+alter table public.compliance_risks enable row level security;
+drop policy if exists "chacun gère ses risques" on public.compliance_risks;
+create policy "chacun gère ses risques" on public.compliance_risks
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop trigger if exists compliance_risks_limit on public.compliance_risks;
+create trigger compliance_risks_limit before insert on public.compliance_risks
+  for each row execute function public.limit_rows('300');
+
+-- 10. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
 -- Remplacez l'e-mail puis exécutez cette ligne seule :
 -- insert into public.admins (user_id) select id from auth.users where email = 'contact@equimarge.fr';

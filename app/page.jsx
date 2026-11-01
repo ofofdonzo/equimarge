@@ -107,9 +107,10 @@ export default function Home() {
             Sécurisez votre <span className="grad-text">conformité</span>, maîtrisez vos marges
           </h1>
           <p className="lead">
-            Equimarge accompagne les PME sur trois terrains : la mise en conformité de l'entreprise (procédures internes,
-            RGPD, anti-blanchiment, anticorruption, droit social), le suivi de la marge de chaque produit, avec un outil
-            gratuit et un diagnostic sur mesure, et l'automatisation des tâches répétitives par des agents IA.
+            Equimarge accompagne les PME sur trois terrains : la mise en conformité de l'entreprise (RGPD et DPO
+            externalisé, intelligence artificielle, anti-blanchiment, anticorruption, procédures internes, droit social),
+            le suivi de la marge de chaque produit, avec un outil gratuit et un diagnostic sur mesure, et
+            l'automatisation des tâches répétitives par des agents IA.
           </p>
           <div className="row">
             <Link href="/conformite#devis" className="btn lg">
@@ -193,7 +194,7 @@ export default function Home() {
       <section className="section" id="conformite">
         <div className="section-head center">
           <span className="eyebrow">Pôle conformité</span>
-          <h2>Cinq domaines d'intervention</h2>
+          <h2>Nos domaines d'intervention</h2>
           <p>Sur devis, selon votre taille et votre secteur. Réponse sous 48&nbsp;h ouvrées.</p>
         </div>
         <div className="grid3 grid-center">

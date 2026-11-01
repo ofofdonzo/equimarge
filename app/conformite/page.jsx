@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { COMPLIANCE } from '@/components/offers';
+import { COMPLIANCE, OBLIGATIONS } from '@/components/offers';
 import { ArrowRight, Check, ClipboardList, DOMAIN_ICONS, Search, Shield, TrendUp } from '@/components/icons';
 import RequestForm from '@/components/RequestForm';
 
 export const metadata = {
   title: 'Mise en conformité des PME — Equimarge',
   description:
-    'Audit et accompagnement à la mise en conformité des PME : politiques et procédures internes, RGPD, anti-blanchiment (LCB-FT), anticorruption (Sapin II), droit social. Sur devis.',
+    'Audit et accompagnement à la mise en conformité : RGPD, DPO externalisé, intelligence artificielle (AI Act), anti-blanchiment (LCB-FT), anticorruption (Sapin II), procédures internes, droit social. Sur devis.',
   alternates: { canonical: '/conformite' },
 };
 export const dynamic = 'force-dynamic';
@@ -36,16 +36,38 @@ export default async function Page(props) {
           Mettez votre entreprise <span className="grad-text">en conformité</span>, étape par étape
         </h1>
         <p className="lead">
-          Audit et accompagnement pour mettre en place vos politiques et procédures internes et répondre à vos
-          obligations : RGPD, anti-blanchiment, anticorruption, droit social. Tarif sur devis, réponse sous 48&nbsp;h ouvrées.
+          Audit et accompagnement pour répondre à vos obligations : RGPD et délégué à la protection des données (DPO)
+          externalisé, intelligence artificielle, anti-blanchiment, anticorruption, procédures internes, droit social.
+          Tarif sur devis, réponse sous 48&nbsp;h ouvrées.
         </p>
         <div className="row">
           <a href="#devis" className="btn lg">
             Demander un devis <ArrowRight size={18} />
           </a>
-          <a href="#domaines" className="btn ghost lg">
-            Voir les domaines
+          <a href="#concerne" className="btn ghost lg">
+            Qui est concerné ?
           </a>
+        </div>
+      </section>
+
+      <section className="section" id="concerne">
+        <div className="section-head">
+          <span className="eyebrow">Vos obligations</span>
+          <h2>Qui est concerné par quoi</h2>
+          <p>Repérez votre situation, puis demandez un devis sur le domaine correspondant.</p>
+        </div>
+        <div className="grid2">
+          {OBLIGATIONS.map((o) => {
+            const Icon = DOMAIN_ICONS[o.key];
+            return (
+              <Link key={o.key} href={`/conformite?domaine=${o.key}#devis`} className="feature domain-card">
+                <div className="feature-icon"><Icon size={22} /></div>
+                <h3>{o.who}</h3>
+                <p className="note">{o.what}</p>
+                <span className="domain-link">Demander un devis <ArrowRight size={16} /></span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -93,8 +115,8 @@ export default async function Page(props) {
         </ol>
         <p className="panel note" style={{ margin: 0 }}>
           <b>À savoir :</b> Equimarge intervient en audit et en accompagnement opérationnel. Ses missions ne constituent
-          pas des consultations juridiques ; lorsqu'une question relève du conseil juridique, nous vous orientons vers un
-          avocat.
+          pas des consultations juridiques et n'incluent pas la rédaction de contrats ; lorsqu'une question relève du
+          conseil juridique, nous vous orientons vers un avocat.
         </p>
       </section>
 

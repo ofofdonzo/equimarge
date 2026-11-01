@@ -53,7 +53,7 @@ export const ArrowLeft = icon(<><path d="M19 12H5" /><path d="m11 6-6 6 6 6" /><
 export const External = icon(<><path d="M14 4h6v6" /><path d="M20 4 11 13" /><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" /></>);
 
 // Icône de chaque domaine de conformité (clés de COMPLIANCE dans components/offers.js)
-export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, lcbft: Search, sapin: Scale, social: Users };
+export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, dpo: Lock, ia: Bot, lcbft: Search, sapin: Scale, social: Users };
 
 // Icône de chaque étage d'automatisation (clés de AUTOMATION dans components/offers.js)
 export const FLOOR_ICONS = { messages: Mail, factures: Receipt, planning: Calendar, superviseur: Bot };

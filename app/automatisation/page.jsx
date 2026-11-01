@@ -21,9 +21,10 @@ const STEPS = [
 
 const GUARANTEES = [
   "Rien n'est envoyé ni payé sans votre validation : les agents préparent, vous décidez.",
-  'Vos données restent dans vos outils (messagerie, agenda, logiciel de facturation).',
+  'Vos données restent dans vos outils (messagerie, agenda, logiciel de facturation) ; les services d’IA utilisés et le lieu de traitement sont indiqués avant la mise en place.',
+  'Un contrat de sous-traitance (article 28 du RGPD) est signé avec vous avant tout accès à vos données.',
   'Chaque agent est cadré par écrit : ce qu’il peut faire, ce qu’il ne fait jamais.',
-  'Mise en place conforme au RGPD et documentée au regard du règlement européen sur l’IA.',
+  'Les personnes qui échangent avec un agent sont informées qu’il s’agit d’une IA, comme l’exige le règlement européen sur l’IA.',
 ];
 
 // Les étages, du haut vers le bas, comme un immeuble
@@ -138,6 +139,10 @@ export default async function Page(props) {
               <li key={g}><Check size={16} />{g}</li>
             ))}
           </ul>
+          <p className="note" style={{ marginBottom: 0 }}>
+            Vous utilisez déjà l’IA dans votre entreprise ?{' '}
+            <Link href="/conformite?domaine=ia#devis">Faites vérifier vos usages au regard de l’AI Act</Link>.
+          </p>
         </div>
       </section>
 

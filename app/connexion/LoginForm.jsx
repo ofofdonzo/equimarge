@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { BarChart, Check, Lock } from '@/components/icons';
@@ -111,6 +112,13 @@ export default function LoginForm() {
         <button className="btn lg block" type="submit" disabled={busy}>
           {busy ? 'Un instant…' : signup ? 'Créer mon espace' : 'Se connecter'}
         </button>
+        {signup && (
+          <p className="note" style={{ margin: 0 }}>
+            Espace réservé aux professionnels. En le créant, vous acceptez les{' '}
+            <Link href="/conditions-generales">conditions générales</Link>. Vos données sont traitées selon la{' '}
+            <Link href="/confidentialite">politique de confidentialité</Link>.
+          </p>
+        )}
       </form>
     </div>
   );

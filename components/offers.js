@@ -27,21 +27,27 @@ export const OFFERS = [
 export const COMPLIANCE_OFFER = 'Conformité';
 export const COMPLIANCE = [
   {
-    key: 'procedures',
-    id: 'Politiques et procédures internes',
-    intro: 'Formaliser vos règles de fonctionnement pour sécuriser les décisions et les contrôles.',
-    items: ['État des lieux de vos pratiques', 'Formalisation des politiques et procédures', 'Mise en place des contrôles et du suivi'],
-  },
-  {
     key: 'rgpd',
     id: 'RGPD',
     intro: 'Mettre en ordre le traitement des données personnelles de vos clients, salariés et prospects.',
-    items: ['Cartographie des traitements et registre', "Mentions d'information et gestion des demandes", 'Encadrement des sous-traitants et de la sécurité'],
+    items: ['Cartographie des traitements et registre', "Mentions d'information et gestion des demandes", 'Revue des contrats de sous-traitance et de la sécurité'],
+  },
+  {
+    key: 'dpo',
+    id: 'DPO externalisé',
+    intro: 'Un délégué à la protection des données externe, désigné auprès de la CNIL : obligatoire pour les organismes publics et certaines entreprises.',
+    items: ['Désignation auprès de la CNIL et point de contact unique', 'Registre, demandes de droits et violations de données', 'Sensibilisation des équipes et rapport annuel'],
+  },
+  {
+    key: 'ia',
+    id: 'Intelligence artificielle (AI Act)',
+    intro: "Encadrer l'usage de l'IA : le règlement européen impose déjà de former vos équipes et d'informer les personnes qui échangent avec une IA.",
+    items: ["Inventaire des outils d'IA et classement des risques", "Charte d'usage et formation des équipes", 'Transparence envers clients et salariés, RGPD des outils'],
   },
   {
     key: 'lcbft',
     id: 'Anti-blanchiment (LCB-FT)',
-    intro: 'Organiser le dispositif de lutte contre le blanchiment et le financement du terrorisme des professions assujetties.',
+    intro: "Organiser le dispositif anti-blanchiment des professions assujetties : agences immobilières, intermédiaires d'assurance, experts-comptables, domiciliataires…",
     items: ['Classification des risques', 'Procédures de vigilance sur les clients', 'Contrôle interne et sensibilisation des équipes'],
   },
   {
@@ -49,6 +55,12 @@ export const COMPLIANCE = [
     id: 'Anticorruption (Sapin II)',
     intro: "Prévenir la corruption et le trafic d'influence, une exigence croissante des grands donneurs d'ordre envers leurs fournisseurs.",
     items: ['Cartographie des risques de corruption', "Code de conduite et dispositif d'alerte", 'Évaluation des tiers et contrôles'],
+  },
+  {
+    key: 'procedures',
+    id: 'Politiques et procédures internes',
+    intro: 'Formaliser vos règles de fonctionnement pour sécuriser les décisions et les contrôles.',
+    items: ['État des lieux de vos pratiques', 'Formalisation des politiques et procédures', 'Mise en place des contrôles et du suivi'],
   },
   {
     key: 'social',
@@ -66,7 +78,7 @@ export const AUTOMATION = [
     key: 'messages',
     floor: 'Étage 1',
     id: 'Mails, messages et appels manqués',
-    intro: "Chaque demande reçoit une réponse, même à 2 h du matin : tri, réponses préparées, rappels des appels manqués.",
+    intro: 'Chaque demande est triée et sa réponse préparée, même à 2 h du matin : vous la relisez et l’envoyez.',
     items: ['Tri et classement de la boîte de réception', 'Réponses préparées, validées par vous', 'Appels manqués transformés en tâches'],
   },
   {
@@ -106,7 +118,48 @@ export const SECTORS = [
   'Artisanat / BTP',
   'Industrie',
   'Services aux entreprises',
+  'Immobilier (agence, gestion)',
+  'Assurance / courtage',
+  'Professions du chiffre et du droit',
+  'Santé / médico-social',
+  'Association / fondation',
+  'Logement social',
+  'Collectivité / établissement public',
   'Autre',
+];
+
+// Qui est concerné par quelle obligation (page /conformite). `key` renvoie au domaine du devis.
+export const OBLIGATIONS = [
+  {
+    key: 'rgpd',
+    who: 'Toute entreprise ou association',
+    what: 'RGPD : registre des traitements, information des personnes, sécurité des données et contrats avec les sous-traitants.',
+  },
+  {
+    key: 'dpo',
+    who: 'Collectivités, établissements publics, offices HLM',
+    what: "Désignation obligatoire d'un délégué à la protection des données (DPO), qui peut être externe.",
+  },
+  {
+    key: 'lcbft',
+    who: "Agences immobilières, intermédiaires d'assurance, experts-comptables, domiciliataires…",
+    what: 'Dispositif anti-blanchiment : classification des risques, vigilance sur la clientèle, déclarations de soupçon à Tracfin, formation.',
+  },
+  {
+    key: 'sapin',
+    who: 'Entreprises de 500 salariés et plus, et plus de 100 M€ de chiffre d’affaires',
+    what: 'Programme anticorruption Sapin II. Leurs fournisseurs sont évalués dans ce cadre et reçoivent des questionnaires.',
+  },
+  {
+    key: 'ia',
+    who: "Toute entreprise qui utilise l'IA",
+    what: "Règlement européen sur l'IA : maîtrise de l'IA par les équipes et transparence envers les personnes concernées.",
+  },
+  {
+    key: 'social',
+    who: 'Tout employeur',
+    what: 'Document unique d’évaluation des risques dès le premier salarié, règlement intérieur à partir de 50 salariés, affichages et registres.',
+  },
 ];
 
 export const REVENUE_BANDS = ['Moins de 500 k€', '500 k€ à 2 M€', '2 à 10 M€', 'Plus de 10 M€'];

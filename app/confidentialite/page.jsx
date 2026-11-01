@@ -15,6 +15,7 @@ export default function Page() {
       <ul>
         <li><b>Compte utilisateur</b> (e-mail, mot de passe chiffré) : vous donner accès à votre espace. Base légale : exécution du contrat (<Link href="/conditions-generales">conditions générales</Link>).</li>
         <li><b>Données de marge</b> (produits, prix, coûts, quantités, charges fixes) : calculer vos indicateurs. Base légale : exécution du contrat.</li>
+        <li><b>Espace conformité</b> (réponses à l'auto-diagnostic, plan d'action et responsables désignés, registre des traitements, cartographie des risques) : vous fournir les outils de conformité. Base légale : exécution du contrat.</li>
         <li><b>Demandes de diagnostic et de devis</b> (entreprise, contact, domaines concernés, message) : vous recontacter et établir un devis. Base légale : mesures précontractuelles prises à votre demande. L'adresse e-mail sert aussi à limiter le nombre d'envois par heure, pour protéger le formulaire contre les abus (intérêt légitime).</li>
         <li><b>Suivi de la relation</b> (statut de la demande, notes internes, montant du devis, prochaine action) : gérer nos échanges et nos missions. Base légale : mesures précontractuelles, puis exécution du contrat.</li>
         <li>
@@ -47,7 +48,7 @@ export default function Page() {
 
       <h2>Durée de conservation</h2>
       <ul>
-        <li>Données du compte et de marge : tant que le compte est actif, puis suppression sous 30 jours après sa clôture.</li>
+        <li>Données du compte, de marge et de l'espace conformité : tant que le compte est actif, puis suppression sous 30 jours après sa clôture.</li>
         <li>Demandes de diagnostic ou de devis et leur suivi : 3 ans à compter du dernier échange, puis suppression automatique.</li>
         <li>Prospects : 3 ans à compter du dernier contact venant de vous. Si vous refusez nos messages, seules les données nécessaires pour ne plus vous écrire sont conservées.</li>
         <li>Documents d'une mission (devis, factures) : 10 ans, durée imposée par le Code de commerce.</li>

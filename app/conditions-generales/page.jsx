@@ -20,7 +20,9 @@ export default function Page() {
       <h2>2. Espace gratuit</h2>
       <ul>
         <li>L'accès est gratuit et nécessite un compte. Vous êtes responsable de vos identifiants et des données que vous saisissez.</li>
+        <li>L'espace comprend le suivi de marge et des outils de conformité : auto-diagnostic, plan d'action, registre des traitements, cartographie des risques et export vers Excel.</li>
         <li>Les calculs sont indicatifs et dépendent de vos saisies. Ils ne remplacent pas l'avis d'un expert-comptable.</li>
+        <li>Les outils de conformité aident à organiser votre démarche. Ils ne constituent pas une consultation juridique et ne garantissent pas la conformité de votre entreprise, qui reste responsable de ses obligations.</li>
         <li>L'outil est fourni sans garantie de disponibilité permanente. Equimarge peut suspendre un compte utilisé de manière abusive.</li>
         <li>Vous pouvez clôturer votre compte à tout moment en écrivant à contact@equimarge.fr ; vos données sont alors supprimées sous 30 jours.</li>
       </ul>

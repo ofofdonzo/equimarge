@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { BarChart, Check, Lock } from '@/components/icons';
+import { BarChart, Check, Lock, Shield } from '@/components/icons';
 
 const MESSAGES = {
   'Invalid login credentials': 'E-mail ou mot de passe incorrect.',
@@ -76,6 +76,10 @@ export default function LoginForm() {
           <li>
             <span className="ic"><BarChart /></span>
             <div><b>La marge de chaque produit</b><span>Taux de marque, marge par ligne, alertes et seuil de rentabilité.</span></div>
+          </li>
+          <li>
+            <span className="ic"><Shield /></span>
+            <div><b>Vos outils de conformité</b><span>Auto-diagnostic, plan d’action, registre RGPD, risques et export Excel.</span></div>
           </li>
           <li>
             <span className="ic"><Lock /></span>

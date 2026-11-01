@@ -5,14 +5,15 @@ import { ANSWERS, DOMAINS, QUESTIONS, scoreLevel } from '@/lib/conformite.mjs';
 const pct = (v) => (v === null ? '–' : `${Math.round(v * 100)} %`);
 const needsAction = (a) => a === 'non' || a === 'partiel';
 
-export default function Questionnaire({ answers, scores, domain, actions, onAnswer, onAddActions }) {
+// canPlan : seul Equimarge ajoute des actions au plan ; le client voit l'action recommandée.
+export default function Questionnaire({ answers, scores, domain, actions, canPlan = false, onAnswer, onAddActions }) {
   const inPlan = new Set(actions.map((a) => a.source).filter(Boolean));
 
   return (
     <div className="stack">
       <p className="note" style={{ margin: 0 }}>
         Répondez « Non concerné » quand une question ne s’applique pas : elle ne compte pas dans le score. Cliquez à
-        nouveau sur une réponse pour l’effacer.
+        nouveau sur une réponse pour l’effacer.{!canPlan && ' Vos réponses sont visibles par Equimarge pour préparer votre accompagnement.'}
       </p>
       {DOMAINS.filter((d) => !domain || d.key === domain).map((d) => {
         const qs = QUESTIONS.filter((q) => q.domain === d.key);
@@ -52,7 +53,7 @@ export default function Questionnaire({ answers, scores, domain, actions, onAnsw
                       <span>Action recommandée : {q.action}</span>
                       {inPlan.has(q.key) ? (
                         <span className="pill ok">Dans le plan d’action</span>
-                      ) : (
+                      ) : !canPlan ? null : (
                         <button type="button" className="btn ghost sm" onClick={() => onAddActions([q])}>
                           <Plus size={14} />Ajouter au plan
                         </button>
@@ -62,7 +63,7 @@ export default function Questionnaire({ answers, scores, domain, actions, onAnsw
                 </div>
               );
             })}
-            {missing.length > 1 && (
+            {canPlan && missing.length > 1 && (
               <div className="row" style={{ marginTop: 14 }}>
                 <button type="button" className="btn sm" onClick={() => onAddActions(missing)}>
                   <Plus size={14} />Ajouter les {missing.length} actions recommandées au plan

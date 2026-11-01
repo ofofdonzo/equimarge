@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import Workspace from './Workspace';
 import Agents from './Agents';
+import AdminNav from '@/components/AdminNav';
 
 // Le manifeste rend le poste de travail installable (écran d'accueil de l'iPhone, appli sur ordinateur),
 // ce qui permet les notifications sur iPhone.
@@ -40,13 +41,16 @@ export default async function Page({ searchParams }) {
   const { demande } = (await searchParams) || {};
 
   return (
-    <Workspace
-      initialRequests={requests || []}
-      initialTracking={tracking || []}
-      initialSelected={typeof demande === 'string' && (requests || []).some((r) => r.id === demande) ? demande : null}
-      setupMissing={Boolean(trackingError)}
-    >
-      <Agents />
-    </Workspace>
+    <div className="stack">
+      <AdminNav current="demandes" />
+      <Workspace
+        initialRequests={requests || []}
+        initialTracking={tracking || []}
+        initialSelected={typeof demande === 'string' && (requests || []).some((r) => r.id === demande) ? demande : null}
+        setupMissing={Boolean(trackingError)}
+      >
+        <Agents />
+      </Workspace>
+    </div>
   );
 }

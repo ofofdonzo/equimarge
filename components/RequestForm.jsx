@@ -14,12 +14,12 @@ const QUOTE_KINDS = {
   automatisation: { offer: AUTOMATION_OFFER, list: AUTOMATION, icons: FLOOR_ICONS, legend: 'Tâches à automatiser', what: 'au moins une tâche à automatiser' },
 };
 
-export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, defaultTopics = [] }) {
+export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, defaultTopics = [], defaultSector = SECTORS[0] }) {
   const quote = QUOTE_KINDS[kind];
   const compliance = Boolean(quote);
   const [f, setF] = useState({
     offer: quote ? quote.offer : defaultOffer, topics: defaultTopics,
-    company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
+    company: '', siren: '', sector: SECTORS.includes(defaultSector) ? defaultSector : SECTORS[0], revenue_band: REVENUE_BANDS[0],
     contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false, website: '',
   });
   const [busy, setBusy] = useState(false);

@@ -165,3 +165,15 @@ export const OBLIGATIONS = [
 export const REVENUE_BANDS = ['Moins de 500 k€', '500 k€ à 2 M€', '2 à 10 M€', 'Plus de 10 M€'];
 
 export const STATUSES = ['Nouvelle', 'Contactée', 'Devis envoyé', 'Gagnée', 'Perdue'];
+
+// Prestations proposées à l'ouverture d'un dossier client (modifiables librement dans la fiche)
+export const MISSIONS = [
+  'Mise en conformité RGPD',
+  'DPO externalisé',
+  'Conformité d’un intermédiaire d’assurance',
+  'Anti-blanchiment (LCB-FT)',
+  'Intelligence artificielle (AI Act)',
+  'Anticorruption (Sapin II)',
+  'Procédures internes',
+  'Droit social',
+];

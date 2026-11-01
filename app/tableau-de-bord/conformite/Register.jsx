@@ -20,7 +20,8 @@ const EMPTY = {
   sensitive: false, recipients: '', transfers: '', retention: '', security: '',
 };
 
-export default function Register({ records, onAdd, onUpdate, onRemove }) {
+// readOnly : le client consulte le registre tenu par Equimarge sans pouvoir le modifier.
+export default function Register({ records, readOnly = false, onAdd, onUpdate, onRemove }) {
   const [open, setOpen] = useState(null);
 
   async function add() {
@@ -32,14 +33,18 @@ export default function Register({ records, onAdd, onUpdate, onRemove }) {
     <section className="panel">
       <div className="panel-head">
         <h2>Registre des activités de traitement</h2>
-        <button className="btn ghost sm" type="button" onClick={add}><Plus size={16} />Ajouter un traitement</button>
+        {!readOnly && <button className="btn ghost sm" type="button" onClick={add}><Plus size={16} />Ajouter un traitement</button>}
       </div>
       <p className="note" style={{ marginTop: 0 }}>
         Une fiche par traitement de données personnelles (article 30 du RGPD) : gestion des clients, paie, prospection,
         vidéoprotection… La CNIL peut demander ce registre lors d’un contrôle.
       </p>
       {records.length === 0 ? (
-        <div className="empty"><p className="note">Aucun traitement recensé. Commencez par celui que vous utilisez le plus.</p></div>
+        <div className="empty">
+          <p className="note">
+            {readOnly ? 'Equimarge n’a pas encore établi votre registre.' : 'Aucun traitement recensé. Commencez par celui que vous utilisez le plus.'}
+          </p>
+        </div>
       ) : (
         <div className="stack" style={{ gap: 10 }}>
           {records.map((r) => (
@@ -51,7 +56,7 @@ export default function Register({ records, onAdd, onUpdate, onRemove }) {
                   <span className="pill none">{r.legal_basis}</span>
                 </span>
               </summary>
-              <div className="grid2 record-body">
+              <fieldset className="plain grid2 record-body" disabled={readOnly}>
                 {FIELDS.map((f) => (
                   <div key={f.key} className="field">
                     <label htmlFor={`${f.key}-${r.id}`}>{f.label}</label>
@@ -72,10 +77,12 @@ export default function Register({ records, onAdd, onUpdate, onRemove }) {
                   <input type="checkbox" checked={r.sensitive} onChange={(e) => onUpdate(r.id, { sensitive: e.target.checked })} />
                   <span>Données sensibles (santé, opinions, origine, biométrie…) ou relatives aux infractions</span>
                 </label>
-              </div>
-              <div className="row" style={{ justifyContent: 'flex-end', paddingBottom: 14 }}>
-                <button type="button" className="link-btn" onClick={() => onRemove(r.id)}>Supprimer ce traitement</button>
-              </div>
+              </fieldset>
+              {!readOnly && (
+                <div className="row" style={{ justifyContent: 'flex-end', paddingBottom: 14 }}>
+                  <button type="button" className="link-btn" onClick={() => onRemove(r.id)}>Supprimer ce traitement</button>
+                </div>
+              )}
             </details>
           ))}
         </div>

@@ -1,10 +1,10 @@
 import { buildXlsx } from '@/lib/xlsx.mjs';
-import { ANSWERS, domainLabel, domainScores, globalScore, isLate, QUESTIONS, riskLevel, scoreLevel, todayISO } from '@/lib/conformite.mjs';
+import { ANSWERS, domainLabel, domainScores, globalScore, isLate, QUESTIONS, riskLevel, scoreLevel, storageName, todayISO } from '@/lib/conformite.mjs';
 
 const pct = (v) => (v === null ? '' : { value: Math.round(v * 100) / 100, format: 'pct' });
 
-// Classeur Excel de tout l'espace conformité : une feuille par outil, avec filtres automatiques.
-export function workbookSheets({ answers, actions, records, risks }, today = todayISO()) {
+// Classeur Excel du dossier : une feuille par outil, avec filtres automatiques.
+export function workbookSheets({ answers, actions, records, risks, infos = [], documents = [] }, today = todayISO()) {
   const scores = domainScores(answers);
   const all = globalScore(scores);
   return [
@@ -55,10 +55,26 @@ export function workbookSheets({ answers, actions, records, risks }, today = tod
         }),
       ],
     },
+    {
+      name: 'Demandes d’informations',
+      widths: [44, 44, 12, 12, 60],
+      rows: [
+        ['Demande', 'Précisions', 'Échéance', 'Statut', 'Réponse du client'],
+        ...infos.map((i) => [i.title, i.details, i.due_date || '', i.status, i.response]),
+      ],
+    },
+    {
+      name: 'Documents',
+      widths: [44, 18, 12, 12],
+      rows: [
+        ['Document', 'Origine', 'Date', 'Taille (Ko)'],
+        ...documents.map((d) => [d.name, d.kind === 'Livrable' ? 'Livrable Equimarge' : 'Client', (d.created_at || '').slice(0, 10), Math.round(d.size / 1024)]),
+      ],
+    },
   ];
 }
 
-export function downloadWorkbook(data) {
+export function downloadWorkbook(data, company = '') {
   const today = todayISO();
   const blob = new Blob([buildXlsx(workbookSheets(data, today))], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -66,7 +82,7 @@ export function downloadWorkbook(data) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `equimarge-conformite-${today}.xlsx`;
+  a.download = `conformite-${company ? storageName(company).toLowerCase() + '-' : ''}${today}.xlsx`;
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -10,9 +10,9 @@ import { siteUrl } from '@/lib/site';
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-inter' });
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap', variable: '--font-jakarta' });
 
-const TITLE = 'Equimarge — conformité, marges et automatisation des PME';
+const TITLE = 'Equimarge — conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
 const DESCRIPTION =
-  'Mise en conformité des PME (RGPD et DPO externalisé, AI Act, anti-blanchiment, anticorruption, procédures internes, droit social), diagnostic et suivi de marge gratuit, automatisation des tâches répétitives par agents IA.';
+  'Equimarge réalise la mise en conformité des PME et des intermédiaires d’assurance : RGPD, DPO externalisé, anti-blanchiment, IA, anticorruption, droit social. Dossier suivi en ligne. Aussi : diagnostic de marge et automatisation.';
 
 export function generateMetadata() {
   return {
@@ -51,12 +51,11 @@ export default function RootLayout({ children }) {
               <Link href="/conformite" className="nav-link">
                 Conformité
               </Link>
-              <Link href="/#marges" className="nav-link hide-xs">
-                Marges
+              <Link href="/intermediaires-assurance" className="nav-link">
+                Assurance
               </Link>
-              <Link href="/automatisation" className="nav-link">
-                <span className="hide-xs">Automatisation</span>
-                <span className="show-xs" aria-hidden="true">IA</span>
+              <Link href="/#services" className="nav-link hide-xs">
+                Autres services
               </Link>
               <AuthNav />
             </nav>
@@ -74,10 +73,11 @@ export default function RootLayout({ children }) {
                   Equi<span>marge</span>
                 </span>
               </Link>
-              <p>Conformité, marges et automatisation des PME.</p>
+              <p>Conformité des PME et des intermédiaires d’assurance.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
               <Link href="/conformite">Conformité</Link>
+              <Link href="/intermediaires-assurance">Intermédiaires d’assurance</Link>
               <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/automatisation">Automatisation IA</Link>
               <Link href="/mentions-legales">Mentions légales</Link>

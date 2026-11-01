@@ -1,6 +1,6 @@
 'use client';
 import { Fragment } from 'react';
-import { Alert, Calendar, ClipboardList, Shield } from '@/components/icons';
+import { Alert, Calendar, ClipboardList, Mail, Shield } from '@/components/icons';
 import { actionStats, domainLabel, globalScore, isLate, riskLevel, scoreLevel } from '@/lib/conformite.mjs';
 
 const pct = (v) => (v === null || v === undefined ? '–' : `${Math.round(v * 100)} %`);
@@ -14,7 +14,8 @@ const LEVELS = [
   { state: 'bad', label: 'Élevé (15 à 25)' },
 ];
 
-export default function Overview({ scores, domain, actions, risks, today, onPickDomain, onOpen }) {
+// mission : dossier accompagné par Equimarge (plan, risques, demandes) ; sinon, simple auto-diagnostic.
+export default function Overview({ scores, domain, mission, actions, risks, pendingInfos = 0, deliverables = 0, today, onPickDomain, onOpen }) {
   const shown = domain ? scores.filter((s) => s.key === domain) : scores;
   const score = domain ? shown[0]?.score ?? null : globalScore(scores);
   const level = scoreLevel(score);
@@ -23,6 +24,8 @@ export default function Overview({ scores, domain, actions, risks, today, onPick
   const st = actionStats(actions, today);
   const openRisks = risks.filter((r) => r.status !== 'Maîtrisé');
   const highRisks = openRisks.filter((r) => riskLevel(r.probability, r.impact).state === 'bad').length;
+  const evaluated = shown.filter((s) => s.score !== null);
+  const compliant = evaluated.filter((s) => scoreLevel(s.score).state === 'ok').length;
   const upcoming = actions
     .filter((a) => a.status !== 'Terminé')
     .sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'))
@@ -41,27 +44,54 @@ export default function Overview({ scores, domain, actions, risks, today, onPick
           <b>{pct(score)}</b>
           <span className={'pill ' + level.state}>{level.label}</span>
         </div>
-        <div className="kpi">
-          <span className="kpi-icon"><ClipboardList size={18} /></span>
-          <small>Questions répondues</small>
-          <b>{answered} / {total}</b>
-          <button type="button" className="link-btn" onClick={() => onOpen('diagnostic')}>Répondre</button>
-        </div>
-        <div className="kpi">
-          <span className="kpi-icon"><Calendar size={18} /></span>
-          <small>Actions ouvertes</small>
-          <b>{st.open}</b>
-          <span className={st.late ? 'pill bad' : 'note'}>{st.late ? `${st.late} en retard` : 'Aucune en retard'}</span>
-        </div>
-        <div className="kpi">
-          <span className="kpi-icon"><Alert size={18} /></span>
-          <small>Risques élevés ouverts</small>
-          <b className={highRisks ? 'neg' : undefined}>{highRisks}</b>
-          <span className="note">sur {openRisks.length} risque{openRisks.length > 1 ? 's' : ''} ouvert{openRisks.length > 1 ? 's' : ''}</span>
-        </div>
+        {mission ? (
+          <>
+            <div className="kpi">
+              <span className="kpi-icon"><Mail size={18} /></span>
+              <small>Informations à fournir</small>
+              <b className={pendingInfos ? 'neg' : undefined}>{pendingInfos}</b>
+              <button type="button" className="link-btn" onClick={() => onOpen('infos')}>
+                {deliverables ? `${deliverables} livrable${deliverables > 1 ? 's' : ''} disponible${deliverables > 1 ? 's' : ''}` : 'Voir les demandes'}
+              </button>
+            </div>
+            <div className="kpi">
+              <span className="kpi-icon"><Calendar size={18} /></span>
+              <small>Actions ouvertes</small>
+              <b>{st.open}</b>
+              <span className={st.late ? 'pill bad' : 'note'}>{st.late ? `${st.late} en retard` : 'Aucune en retard'}</span>
+            </div>
+            <div className="kpi">
+              <span className="kpi-icon"><Alert size={18} /></span>
+              <small>Risques élevés ouverts</small>
+              <b className={highRisks ? 'neg' : undefined}>{highRisks}</b>
+              <span className="note">sur {openRisks.length} risque{openRisks.length > 1 ? 's' : ''} ouvert{openRisks.length > 1 ? 's' : ''}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="kpi">
+              <span className="kpi-icon"><ClipboardList size={18} /></span>
+              <small>Questions répondues</small>
+              <b>{answered} / {total}</b>
+              <button type="button" className="link-btn" onClick={() => onOpen('diagnostic')}>Répondre</button>
+            </div>
+            <div className="kpi">
+              <span className="kpi-icon"><Calendar size={18} /></span>
+              <small>Domaines conformes</small>
+              <b>{compliant} / {shown.length}</b>
+              <span className="note">{evaluated.length} évalué{evaluated.length > 1 ? 's' : ''}</span>
+            </div>
+            <div className="kpi">
+              <span className="kpi-icon"><Alert size={18} /></span>
+              <small>Domaines à traiter</small>
+              <b className={evaluated.length - compliant ? 'neg' : undefined}>{evaluated.length - compliant}</b>
+              <span className="note">score sous 80 %</span>
+            </div>
+          </>
+        )}
       </div>
 
-      <div className="grid2">
+      <div className={mission ? 'grid2' : undefined}>
         <section className="panel">
           <div className="panel-head">
             <h2>Score par domaine</h2>
@@ -89,6 +119,7 @@ export default function Overview({ scores, domain, actions, risks, today, onPick
           </div>
         </section>
 
+        {mission && (
         <section className="panel">
           <h2>Avancement du plan d’action</h2>
           {st.total === 0 ? (
@@ -114,8 +145,10 @@ export default function Overview({ scores, domain, actions, risks, today, onPick
             </>
           )}
         </section>
+        )}
       </div>
 
+      {mission && (
       <div className="grid2">
         <section className="panel">
           <div className="panel-head">
@@ -186,6 +219,7 @@ export default function Overview({ scores, domain, actions, risks, today, onPick
           )}
         </section>
       </div>
+      )}
     </div>
   );
 }

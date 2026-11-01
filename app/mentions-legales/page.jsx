@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export const metadata = { title: 'Mentions légales — Equimarge', alternates: { canonical: '/mentions-legales' } };
 
 // Société en cours de constitution : après l'immatriculation, remplacer « en cours de constitution »,
@@ -22,6 +24,11 @@ export default function Page() {
         Site : Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, États-Unis, téléphone : +1 415 691 1573.<br />
         Données : Supabase, 65 Chulia Street #38-02/03, OCBC Centre, Singapour 049513 ; serveurs situés dans l'Union
         européenne (région choisie à la création du projet).
+      </p>
+      <h2>Activité</h2>
+      <p>
+        Audit et accompagnement des entreprises en conformité, diagnostic de marge et automatisation, réservés aux
+        professionnels. Conditions d'utilisation et de vente : voir les <Link href="/conditions-generales">conditions générales</Link>.
       </p>
       <h2>Propriété intellectuelle</h2>
       <p>Les contenus du site (textes, logo, mise en page) sont la propriété d'Equimarge. Toute reproduction sans autorisation est interdite.</p>

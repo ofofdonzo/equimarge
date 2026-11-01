@@ -12,7 +12,7 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '
 
 const TITLE = 'Equimarge — conformité, marges et automatisation des PME';
 const DESCRIPTION =
-  'Mise en conformité des PME (procédures internes, RGPD, anti-blanchiment, anticorruption, droit social), diagnostic et suivi de marge gratuit, automatisation des tâches répétitives par agents IA.';
+  'Mise en conformité des PME (RGPD et DPO externalisé, AI Act, anti-blanchiment, anticorruption, procédures internes, droit social), diagnostic et suivi de marge gratuit, automatisation des tâches répétitives par agents IA.';
 
 export function generateMetadata() {
   return {
@@ -81,6 +81,7 @@ export default function RootLayout({ children }) {
               <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/automatisation">Automatisation IA</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/conditions-generales">Conditions générales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>
             </nav>

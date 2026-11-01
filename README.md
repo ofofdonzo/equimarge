@@ -5,10 +5,10 @@ Site et application pour PME, en trois pôles : mise en conformité (sur devis),
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
-- **Conformité** (`/conformite`) : domaines d'intervention, démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
+- **Conformité** (`/conformite`) : qui est concerné par quelle obligation, domaines d'intervention (RGPD, DPO externalisé, IA, anti-blanchiment, anticorruption, procédures, droit social), démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
 - **Automatisation** (`/automatisation`) : les « étages » d'agents IA (mails et appels manqués, factures et relances, planning et achats, superviseur et rapport du soir) et le formulaire de devis (formule « Automatisation »).
 - **Poste de travail** (`/admin`) : réservé à vous. S'installe comme une appli sur l'iPhone ou l'ordinateur. Les demandes arrivent en direct (son, compteur dans l'onglet) et une notification vous prévient même appli fermée. Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
-- **Mentions légales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
+- **Mentions légales**, **Conditions générales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
 Technique : Next.js 16 (site), Supabase (comptes et base de données, offre gratuite), Netlify (hébergement, offre gratuite).
 
@@ -49,6 +49,8 @@ Dans Netlify > site > **Domain management**, ajoutez `equimarge.fr`, définissez
 
 ### 7. Avant d'ouvrir au public
 - Après l'immatriculation de la SASU, complétez `app/mentions-legales/page.jsx` et `app/confidentialite/page.jsx` : retirez « en cours de constitution », ajoutez l'adresse complète du siège, le SIREN, le capital social, « RCS Paris » et le n° de TVA intracommunautaire.
+- Faites relire `app/conditions-generales/page.jsx` avant la première vente (prix, délais de paiement, responsabilité). Si la SASU relève de la franchise en base de TVA, indiquez « TVA non applicable, art. 293 B du CGI » sur les devis et factures.
+- Chaque e-mail de prospection doit dire d'où viennent les coordonnées du destinataire et lui permettre de refuser tout nouvel envoi (voir la politique de confidentialité).
 - Si vous avez exécuté `supabase/schema.sql` avant une mise à jour de ce fichier, exécutez-le à nouveau (il est relançable sans perte de données).
 - La purge automatique des demandes de plus de 3 ans utilise l'extension **pg_cron**. Si l'exécution du fichier affiche « Purge automatique non programmée », activez `pg_cron` dans Supabase > **Database** > **Extensions**, puis relancez le fichier.
 - Ajustez les formules, prix et domaines de conformité dans `components/offers.js`.

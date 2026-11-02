@@ -18,7 +18,10 @@ export default async function Page() {
   if (!user) redirect('/connexion?suite=/tableau-de-bord/conformite');
 
   // Dossier du client : le sien, celui qu'Equimarge a ouvert à son e-mail, ou un nouveau (auto-diagnostic)
-  const { data: id, error } = await supabase.rpc('my_dossier');
+  const [{ data: id, error }, { data: requests }] = await Promise.all([
+    supabase.rpc('my_dossier'),
+    supabase.from('diagnostic_requests').select('id,offer,status,created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+  ]);
   const loaded = id ? await loadDossier(supabase, id) : null;
 
   if (error || !loaded?.dossier) {
@@ -41,7 +44,6 @@ export default async function Page() {
       <div>
         <div className="row" style={{ gap: 8 }}>
           <span className="eyebrow">{mission ? 'Mon dossier' : 'Auto-diagnostic gratuit'}</span>
-          <span className="note">{user.email}</span>
           {mission && <span className={'pill ' + STATE[dossier.status]}>{dossier.status}</span>}
         </div>
         <h1>{mission ? `Votre mise en conformité${dossier.company ? ' · ' + dossier.company : ''}` : 'Évaluez votre conformité'}</h1>
@@ -52,6 +54,20 @@ export default async function Page() {
         </p>
       </div>
       <Workspace role="client" dossier={dossier} initial={initial} setupMissing={failed} />
+      {requests?.length > 0 && (
+        <section className="panel">
+          <h2>Vos demandes de devis</h2>
+          <ul className="due-list">
+            {requests.map((r) => (
+              <li key={r.id}>
+                <span className="due-date">{new Date(r.created_at).toLocaleDateString('fr-FR')}</span>
+                <span className="due-title"><b>{r.offer}</b></span>
+                <span className={'pill ' + (r.status === 'Gagnée' ? 'ok' : r.status === 'Perdue' ? 'bad' : 'none')}>{r.status}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

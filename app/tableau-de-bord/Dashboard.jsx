@@ -21,7 +21,7 @@ function Status({ tm }) {
   return <span className="pill ok">Saine</span>;
 }
 
-export default function Dashboard({ initialProducts, initialSettings, email, userId }) {
+export default function Dashboard({ initialProducts, initialSettings, userId }) {
   const supabase = useMemo(() => createClient(), []);
   const [products, setProducts] = useState(initialProducts);
   const [settings, setSettings] = useState(initialSettings);
@@ -125,18 +125,13 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
     <div className="stack">
       <div>
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <span className="row" style={{ gap: 8, minWidth: 0 }}>
-            <span className="eyebrow">Tableau de bord mensuel</span>
-            <span className="note">{email}</span>
-            <form action="/auth/deconnexion" method="post">
-              <button className="link-btn" type="submit">Se déconnecter</button>
-            </form>
-          </span>
-          <span className={saveClass} aria-live="polite">{saveState}</span>
+          <span className="eyebrow">Suivi de marge mensuel</span>
+          {products.length > 0 && <span className={saveClass} aria-live="polite">{saveState}</span>}
         </div>
         <h1>{settings.company ? `Les marges de ${settings.company}` : 'Où se fait votre marge'}</h1>
       </div>
 
+      {products.length > 0 && (
       <div className="kpis">
         <div className="kpi"><span className="kpi-icon"><Receipt size={18} /></span><small>Chiffre d'affaires HT</small><b>{eur(calc.CA)}</b></div>
         <div className="kpi"><span className="kpi-icon"><TrendUp size={18} /></span><small>Marge brute</small><b>{eur(calc.MB)}</b></div>
@@ -147,6 +142,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
           <b className={calc.res < 0 ? 'neg' : undefined}>{eur(calc.res)}</b>
         </div>
       </div>
+      )}
 
       <div className="panel">
         <div className="panel-head">
@@ -184,7 +180,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
         <p className="note" style={{ marginBottom: 0 }}>Repères : taux de marque sous 20 % = critique, entre 20 et 35 % = à surveiller. Ces seuils varient selon le secteur.</p>
       </div>
 
-      <div className="grid2">
+      <div className={products.length > 0 ? 'grid2' : undefined}>
         <div className="panel stack">
           <h2>Votre entreprise</h2>
           <div className="field">
@@ -195,6 +191,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
             <label htmlFor="fixed">Charges fixes mensuelles (€ HT) : loyer, salaires, abonnements</label>
             <input id="fixed" inputMode="decimal" maxLength={16} aria-invalid={bad(settings._fixed_costs)} value={settings._fixed_costs ?? settings.fixed_costs} onChange={(e) => updateSettings('fixed_costs', e.target.value)} />
           </div>
+          {products.length > 0 && (
           <div className="threshold">
             <span className="eyebrow">Seuil de rentabilité</span>
             <div className="big">
@@ -213,11 +210,12 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
               </>
             )}
           </div>
+          )}
         </div>
+        {products.length > 0 && (
         <div className="panel">
           <h2>Marge par ligne</h2>
           <div className="bars">
-            {calc.lines.length === 0 && <div className="empty"><p className="note">La répartition apparaîtra ici.</p></div>}
             {calc.lines.map((l) => (
               <div className="bar" key={l.id}>
                 <span title={l.name}>{l.name || 'Sans nom'}</span>
@@ -227,6 +225,7 @@ export default function Dashboard({ initialProducts, initialSettings, email, use
             ))}
           </div>
         </div>
+        )}
       </div>
 
       <div className="panel callout row" style={{ justifyContent: 'space-between' }}>

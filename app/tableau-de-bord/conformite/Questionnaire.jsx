@@ -25,8 +25,14 @@ export default function Questionnaire({ answers, scores, domain, actions, canPla
             <div className="panel-head">
               <h2>{d.label}</h2>
               <span className="row" style={{ gap: 8 }}>
-                <span className="note">{s.answered} / {s.total} réponses · {pct(s.score)}</span>
-                <span className={'pill ' + level.state}>{level.label}</span>
+                {s.answered === 0 ? (
+                  <span className="note">{s.total} questions</span>
+                ) : (
+                  <>
+                    <span className="note">{s.answered} / {s.total} réponses · {pct(s.score)}</span>
+                    <span className={'pill ' + level.state}>{level.label}</span>
+                  </>
+                )}
               </span>
             </div>
             {qs.map((q) => {

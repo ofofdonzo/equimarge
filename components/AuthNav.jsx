@@ -9,9 +9,14 @@ import { LogOut } from '@/components/icons';
 export default function AuthNav() {
   const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState(undefined);
+  const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null);
+      // L'administrateur va directement à son poste de travail
+      if (data.session) supabase.rpc('is_admin').then(({ data: isAdmin }) => setAdmin(Boolean(isAdmin)));
+    });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
     return () => data.subscription.unsubscribe();
   }, [supabase]);
@@ -25,8 +30,8 @@ export default function AuthNav() {
             <span className="hide-sm">Se déconnecter</span>
           </button>
         </form>
-        <Link href="/tableau-de-bord/conformite" className="btn sm">
-          Mon espace
+        <Link href={admin ? '/admin' : '/tableau-de-bord/conformite'} className="btn sm">
+          {admin ? 'Poste de travail' : 'Mon espace'}
         </Link>
       </>
     );

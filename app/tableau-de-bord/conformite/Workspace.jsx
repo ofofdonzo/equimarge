@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowRight, Download } from '@/components/icons';
-import { DOMAINS, domainScores, isMission, MAX_FILE_SIZE, storageName, todayISO } from '@/lib/conformite.mjs';
+import { DOMAINS, domainScores, globalScore, isMission, MAX_FILE_SIZE, scoreLevel, storageName, todayISO } from '@/lib/conformite.mjs';
 import Overview from './Overview';
 import Questionnaire from './Questionnaire';
 import Actions from './Actions';
@@ -22,13 +22,15 @@ const TAB_LABELS = {
   registre: 'Registre RGPD',
   risques: 'Risques',
 };
-// Onglets selon le rôle : Equimarge (admin) réalise la mission ; le client répond et suit l'avancement.
-function tabsFor(role, mission) {
+// Onglets selon le rôle : Equimarge (admin) réalise la mission et voit tout ; le client ne voit que
+// ce qui a déjà du contenu (le plan, le registre et les risques apparaissent quand Equimarge les a établis).
+function tabsFor(role, lists) {
   if (role === 'admin') return ['bord', 'infos', 'documents', 'diagnostic', 'actions', 'registre', 'risques'];
-  if (!mission) return ['bord', 'diagnostic'];
-  return ['bord', 'infos', 'documents', 'actions', 'registre', 'risques', 'diagnostic'];
+  const filled = { actions: lists.actions.length, registre: lists.records.length, risques: lists.risks.length };
+  return ['bord', 'infos', 'documents', 'actions', 'registre', 'risques', 'diagnostic'].filter((t) => !(t in filled) || filled[t] > 0);
 }
-const FILTERED_TABS = new Set(['bord', 'diagnostic', 'actions', 'risques']);
+// Filtre par domaine : seulement sur les listes longues (plan d'action, risques)
+const FILTERED_TABS = new Set(['actions', 'risques']);
 
 // Table de la base et nombre maximal de lignes par dossier (mêmes limites que supabase/schema.sql)
 const TABLES = {
@@ -52,8 +54,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
   const supabase = useMemo(() => (offline ? null : createClient()), [offline]);
   const admin = role === 'admin';
   const mission = isMission(dossier);
-  const tabs = tabsFor(role, mission);
-  const [tab, setTab] = useState(tabs[0]);
+  const [tab, setTab] = useState('bord');
   const [domain, setDomain] = useState('');
   const [answers, setAnswers] = useState(initial.answers);
   const [lists, setLists] = useState({
@@ -64,6 +65,8 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
     documents: initial.documents,
   });
   const [saveState, setSaveState] = useState('Enregistré');
+  // L'état d'enregistrement ne s'affiche qu'après la première modification
+  const [touched, setTouched] = useState(false);
   const today = useMemo(() => todayISO(), []);
   const scores = useMemo(() => domainScores(answers), [answers]);
 
@@ -76,6 +79,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
 
   function begin() {
     pending.current += 1;
+    setTouched(true);
     setSaveState('Enregistrement…');
   }
   function end(error, message) {
@@ -255,41 +259,70 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
   }
 
   const saveClass = saveState === 'Enregistré' ? 'save' : saveState === 'Enregistrement…' ? 'save busy' : 'save bad';
+  const status = !supabase ? (
+    <span className="save">Aperçu : rien n’est enregistré</span>
+  ) : touched || saveState !== 'Enregistré' ? (
+    <span className={saveClass} aria-live="polite">{saveState}</span>
+  ) : null;
   const filtered = (list) => list.filter((x) => !domain || x.domain === domain);
   const pendingInfos = lists.infos.filter((i) => i.status === 'À fournir').length;
+  const setupError = setupMissing && (
+    <p className="err" role="alert">
+      Les tables des dossiers n’existent pas encore dans la base : relancez le fichier supabase/schema.sql dans Supabase
+      (SQL Editor), puis rechargez la page.
+    </p>
+  );
+
+  // ---------- Client sans mission : un seul écran, le questionnaire guidé ----------
+  if (!admin && !mission) {
+    return (
+      <div className="stack">
+        {setupError}
+        <DiagnosticSummary scores={scores} status={status} />
+        <Questionnaire answers={answers} scores={scores} domain="" actions={[]} canPlan={false} onAnswer={answer} onAddActions={addRecommended} />
+        <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
+          <div style={{ minWidth: 0, flex: '1 1 300px' }}>
+            <h2 style={{ marginBottom: 4 }}>Confiez votre mise en conformité à Equimarge</h2>
+            <p className="note" style={{ margin: 0 }}>
+              Vous nous transmettez les informations, nous réalisons registre, procédures et plan d’action, et vous suivez
+              l’avancement ici.
+            </p>
+          </div>
+          <Link className="btn" href="/conformite#devis">Demander un devis <ArrowRight size={18} /></Link>
+        </div>
+        <p className="note" style={{ margin: 0 }}>
+          Cet auto-diagnostic donne des repères d’organisation ; il ne constitue pas une consultation juridique.
+        </p>
+      </div>
+    );
+  }
+
+  const tabs = tabsFor(role, lists);
+  const current = tabs.includes(tab) ? tab : 'bord';
+  const showFilter = FILTERED_TABS.has(current) && (current === 'actions' ? lists.actions : lists.risks).length > 0;
 
   return (
     <div className="stack">
-      <div className="row" style={{ justifyContent: 'flex-end' }}>
-        <span className={saveClass} aria-live="polite">{supabase ? saveState : 'Aperçu : rien n’est enregistré'}</span>
-      </div>
-
-      {setupMissing && (
-        <p className="err" role="alert">
-          Les tables des dossiers n’existent pas encore dans la base : relancez le fichier supabase/schema.sql dans
-          Supabase (SQL Editor), puis rechargez la page.
-        </p>
-      )}
+      {setupError}
 
       <div className="ws-bar">
         <div className="tabs" role="tablist" aria-label="Outils du dossier">
           {tabs.map((t) => (
-            <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={tab === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
+            <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={current === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
               {TAB_LABELS[t]}
               {t === 'infos' && pendingInfos > 0 && <span className="tab-count">{pendingInfos}</span>}
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          className="btn ghost sm"
-          onClick={() => downloadWorkbook({ answers, ...lists }, dossier.company)}
-        >
-          <Download size={16} />Exporter vers Excel
-        </button>
+        <span className="row ws-tools">
+          {status}
+          <button type="button" className="btn ghost sm" onClick={() => downloadWorkbook({ answers, ...lists }, dossier.company)}>
+            <Download size={16} />Excel
+          </button>
+        </span>
       </div>
 
-      {FILTERED_TABS.has(tab) && (
+      {showFilter && (
         <div className="chips" role="group" aria-label="Filtrer par domaine">
           <button type="button" aria-pressed={domain === ''} onClick={() => setDomain('')}>Tous les domaines</button>
           {DOMAINS.map((d) => (
@@ -297,34 +330,42 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
           ))}
         </div>
       )}
+      {current === 'bord' && domain && (
+        <div className="chips">
+          <button type="button" aria-pressed="true" onClick={() => setDomain('')}>
+            {DOMAINS.find((d) => d.key === domain)?.label} <span aria-hidden="true">×</span>
+            <span className="sr-only"> : retirer le filtre</span>
+          </button>
+        </div>
+      )}
 
-      <div id="ws-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === 'bord' && (
+      <div id="ws-panel" role="tabpanel" aria-labelledby={`tab-${current}`}>
+        {current === 'bord' && (
           <Overview
+            role={role}
             scores={scores}
             domain={domain}
-            mission={mission || admin}
             actions={filtered(lists.actions)}
             risks={filtered(lists.risks)}
-            pendingInfos={pendingInfos}
+            infos={lists.infos}
             deliverables={lists.documents.filter((d) => d.kind === 'Livrable').length}
             today={today}
             onPickDomain={setDomain}
             onOpen={setTab}
           />
         )}
-        {tab === 'diagnostic' && (
+        {current === 'diagnostic' && (
           <Questionnaire
             answers={answers}
             scores={scores}
-            domain={domain}
+            domain=""
             actions={lists.actions}
             canPlan={admin}
             onAnswer={answer}
             onAddActions={addRecommended}
           />
         )}
-        {tab === 'infos' && (
+        {current === 'infos' && (
           <InfoRequests
             items={lists.infos}
             documents={lists.documents}
@@ -338,10 +379,10 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
             onOpenDoc={openDoc}
           />
         )}
-        {tab === 'documents' && (
+        {current === 'documents' && (
           <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
         )}
-        {tab === 'actions' && (
+        {current === 'actions' && (
           <Actions
             actions={lists.actions}
             domain={domain}
@@ -352,7 +393,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
             onRemove={(id) => remove('actions', id)}
           />
         )}
-        {tab === 'registre' && (
+        {current === 'registre' && (
           <Register
             records={lists.records}
             readOnly={!admin}
@@ -361,7 +402,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
             onRemove={(id) => remove('records', id)}
           />
         )}
-        {tab === 'risques' && (
+        {current === 'risques' && (
           <Risks
             risks={lists.risks}
             domain={domain}
@@ -373,24 +414,56 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
         )}
       </div>
 
-      {!admin && !mission && (
-        <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
-          <div style={{ minWidth: 0, flex: '1 1 300px' }}>
-            <h2 style={{ marginBottom: 4 }}>Confiez votre mise en conformité à Equimarge</h2>
-            <p className="note" style={{ margin: 0 }}>
-              Vous nous transmettez les informations, nous réalisons registre, procédures et plan d’action, et vous suivez
-              l’avancement ici.
-            </p>
+      {admin && (
+        <p className="note" style={{ margin: 0 }}>
+          Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, puis plan, registre et risques
+          (en lecture seule) dès qu’ils contiennent quelque chose.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// En-tête de l'auto-diagnostic : progression et score, avec le détail par domaine dès la première réponse.
+function DiagnosticSummary({ scores, status }) {
+  const answered = scores.reduce((t, s) => t + s.answered, 0);
+  const total = scores.reduce((t, s) => t + s.total, 0);
+  const score = globalScore(scores);
+  const level = scoreLevel(score);
+  const evaluated = scores.filter((s) => s.score !== null);
+
+  return (
+    <section className="panel diag-summary">
+      <div className="diag-head">
+        <div>
+          <span className="mini">Votre score</span>
+          <div className="diag-score">
+            <b>{score === null ? '–' : `${Math.round(score * 100)} %`}</b>
+            {score !== null && <span className={'pill ' + level.state}>{level.label}</span>}
           </div>
-          <Link className="btn" href="/conformite#devis">Demander un devis <ArrowRight size={18} /></Link>
+        </div>
+        <div className="diag-progress">
+          <span className="row" style={{ justifyContent: 'space-between' }}>
+            <span className="note">{answered === 0 ? 'Environ 10 minutes · 6 domaines' : `${answered} réponse${answered > 1 ? 's' : ''} sur ${total}`}</span>
+            {status}
+          </span>
+          <span className="track" aria-hidden="true"><span className="fill" style={{ width: `${(answered / total) * 100}%` }} /></span>
+        </div>
+      </div>
+      {evaluated.length > 0 && (
+        <div className="bars diag-bars">
+          {evaluated.map((s) => {
+            const l = scoreLevel(s.score);
+            return (
+              <div key={s.key} className="bar">
+                <span>{s.label}</span>
+                <span className="track"><span className="fill" style={{ width: `${s.score * 100}%` }} /></span>
+                <span className={'pill ' + l.state}>{Math.round(s.score * 100)}&nbsp;%</span>
+              </div>
+            );
+          })}
         </div>
       )}
-
-      <p className="note" style={{ margin: 0 }}>
-        {admin
-          ? 'Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, plan, registre et risques (en lecture seule).'
-          : 'Ces outils accompagnent la mission d’Equimarge ; ils ne constituent pas une consultation juridique.'}
-      </p>
-    </div>
+    </section>
   );
 }

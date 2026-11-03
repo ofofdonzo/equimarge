@@ -5,5 +5,8 @@ node_modules
 .vercel
 .DS_Store
 
+# Cache Python du skill ui-ux-pro-max
+__pycache__/
+
 # Graphe généré par le skill graphify
 graphify-out/

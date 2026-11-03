@@ -1,6 +1,8 @@
 -- Equimarge : base de données
 -- À coller dans Supabase > SQL Editor > New query, puis "Run".
 -- Le fichier est relançable sans perte de données : relancez-le après chaque mise à jour.
+-- Dans les règles d'accès, auth.uid() et is_admin() sont écrits « (select …) » : la base les calcule une fois
+-- par requête au lieu d'une fois par ligne.
 
 -- 1. Administrateurs (vous)
 create table if not exists public.admins (
@@ -20,7 +22,7 @@ $$;
 
 drop policy if exists "admins lisent leur ligne" on public.admins;
 create policy "admins lisent leur ligne" on public.admins
-  for select using (user_id = auth.uid());
+  for select to authenticated using (user_id = (select auth.uid()));
 
 -- 2. Produits et prestations de chaque client
 create table if not exists public.products (
@@ -58,7 +60,7 @@ create trigger products_limit before insert on public.products
 
 drop policy if exists "chacun gère ses produits" on public.products;
 create policy "chacun gère ses produits" on public.products
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- 3. Paramètres de chaque client (charges fixes, nom d'entreprise)
 create table if not exists public.settings (
@@ -74,7 +76,7 @@ alter table public.settings add constraint settings_company_length check (char_l
 
 drop policy if exists "chacun gère ses paramètres" on public.settings;
 create policy "chacun gère ses paramètres" on public.settings
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- 4. Demandes de diagnostic
 create table if not exists public.diagnostic_requests (
@@ -112,6 +114,7 @@ alter table public.diagnostic_requests enable row level security;
 alter table public.diagnostic_requests add column if not exists last_contact_at timestamptz not null default now();
 create index if not exists diag_email_idx on public.diagnostic_requests(lower(email), created_at desc);
 create index if not exists diag_last_contact_idx on public.diagnostic_requests(last_contact_at);
+create index if not exists diag_user_idx on public.diagnostic_requests(user_id);
 
 -- Anti-spam : au plus 3 demandes par heure pour un même e-mail et 30 par heure au total.
 -- Les dates sont imposées par la base, pour qu'un envoi ne puisse pas se dater dans le passé.
@@ -141,6 +144,7 @@ create trigger diag_rate_limit before insert on public.diagnostic_requests
 create or replace function public.touch_last_contact()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   if new.status is distinct from old.status then
@@ -158,7 +162,7 @@ drop policy if exists "envoyer une demande" on public.diagnostic_requests;
 create policy "envoyer une demande" on public.diagnostic_requests
   for insert to anon, authenticated
   with check (
-    (user_id is null or user_id = auth.uid())
+    (user_id is null or user_id = (select auth.uid()))
     and status = 'Nouvelle'
     and coalesce(char_length(sector), 0) <= 100
     and coalesce(char_length(revenue_band), 0) <= 100
@@ -170,17 +174,17 @@ create policy "envoyer une demande" on public.diagnostic_requests
 -- Un client connecté voit ses propres demandes
 drop policy if exists "voir ses demandes" on public.diagnostic_requests;
 create policy "voir ses demandes" on public.diagnostic_requests
-  for select to authenticated using (user_id = auth.uid() or public.is_admin());
+  for select to authenticated using (user_id = (select auth.uid()) or (select public.is_admin()));
 
 -- Seul l'administrateur change le statut
 drop policy if exists "admin met à jour" on public.diagnostic_requests;
 create policy "admin met à jour" on public.diagnostic_requests
-  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Seul l'administrateur supprime une demande (droit à l'effacement)
 drop policy if exists "admin supprime" on public.diagnostic_requests;
 create policy "admin supprime" on public.diagnostic_requests
-  for delete to authenticated using (public.is_admin());
+  for delete to authenticated using ((select public.is_admin()));
 
 -- Purge automatique des demandes sans échange depuis 3 ans
 create or replace function public.purge_old_requests()
@@ -220,7 +224,7 @@ create table if not exists public.request_tracking (
 alter table public.request_tracking enable row level security;
 drop policy if exists "admin gère le suivi" on public.request_tracking;
 create policy "admin gère le suivi" on public.request_tracking
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 create table if not exists public.request_notes (
   id uuid primary key default gen_random_uuid(),
@@ -232,7 +236,7 @@ create index if not exists notes_request_idx on public.request_notes(request_id,
 alter table public.request_notes enable row level security;
 drop policy if exists "admin gère les notes" on public.request_notes;
 create policy "admin gère les notes" on public.request_notes
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- 6. Temps réel : les nouvelles demandes apparaissent dans le poste de travail sans recharger la page.
 -- (Seul l'administrateur les reçoit : le temps réel respecte les règles d'accès ci-dessus.)
@@ -260,7 +264,7 @@ create table if not exists public.push_subscriptions (
 alter table public.push_subscriptions enable row level security;
 drop policy if exists "admin gère ses appareils" on public.push_subscriptions;
 create policy "admin gère ses appareils" on public.push_subscriptions
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- 8. Alerte immédiate à chaque nouvelle demande : la base appelle /api/alerte-demande du site,
 -- qui envoie la notification (et l'e-mail si Resend est configuré).
@@ -268,7 +272,7 @@ create policy "admin gère ses appareils" on public.push_subscriptions
 --   select vault.create_secret('LA-MÊME-PHRASE-QUE-WEBHOOK_SECRET-DANS-NETLIFY', 'equimarge_webhook_secret');
 -- Sans ce secret, le déclencheur ne fait rien (la demande est toujours enregistrée).
 -- N'utilisez pas en plus un « Database Webhook » du tableau de bord : vous recevriez chaque alerte deux fois.
-create extension if not exists pg_net;
+create extension if not exists pg_net with schema extensions;
 
 create or replace function public.alerte_nouvelle_demande()
 returns trigger
@@ -320,16 +324,26 @@ create table if not exists public.dossiers (
 );
 create index if not exists dossiers_email_idx on public.dossiers(lower(email));
 alter table public.dossiers enable row level security;
+-- Une seule règle par opération : lecture pour l'administrateur et le client du dossier, écriture pour l'administrateur
 drop policy if exists "admin gère les dossiers" on public.dossiers;
-create policy "admin gère les dossiers" on public.dossiers
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "client voit son dossier" on public.dossiers;
-create policy "client voit son dossier" on public.dossiers
-  for select to authenticated using (client_id = auth.uid());
+drop policy if exists "dossiers : lecture" on public.dossiers;
+create policy "dossiers : lecture" on public.dossiers
+  for select to authenticated using (client_id = (select auth.uid()) or (select public.is_admin()));
+drop policy if exists "dossiers : admin ajoute" on public.dossiers;
+create policy "dossiers : admin ajoute" on public.dossiers
+  for insert to authenticated with check ((select public.is_admin()));
+drop policy if exists "dossiers : admin modifie" on public.dossiers;
+create policy "dossiers : admin modifie" on public.dossiers
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists "dossiers : admin supprime" on public.dossiers;
+create policy "dossiers : admin supprime" on public.dossiers
+  for delete to authenticated using ((select public.is_admin()));
 
 create or replace function public.touch_dossier()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at := now();
@@ -342,6 +356,7 @@ create trigger dossiers_touch before update on public.dossiers
 
 -- Demande d'origine du dossier (bouton « Ouvrir le dossier » du poste de travail)
 alter table public.diagnostic_requests add column if not exists dossier_id uuid references public.dossiers(id) on delete set null;
+create index if not exists diag_dossier_idx on public.diagnostic_requests(dossier_id);
 
 create or replace function public.can_access_dossier(d uuid)
 returns boolean
@@ -464,7 +479,11 @@ create table if not exists public.dossier_documents (
   created_at timestamptz not null default now()
 );
 create index if not exists dossier_documents_idx on public.dossier_documents(dossier_id, created_at);
+create index if not exists dossier_documents_request_idx on public.dossier_documents(info_request_id);
+create index if not exists dossier_documents_uploader_idx on public.dossier_documents(uploaded_by);
 
+-- Lecture : administrateur ou client du dossier. Écriture : administrateur (une règle par opération).
+-- Les documents ont leur propre règle d'ajout, juste après.
 do $$
 declare
   t text;
@@ -474,20 +493,31 @@ begin
     execute format('drop policy if exists "dossier : lecture" on public.%I', t);
     execute format('create policy "dossier : lecture" on public.%I for select to authenticated using (public.can_access_dossier(dossier_id))', t);
     execute format('drop policy if exists "dossier : admin écrit" on public.%I', t);
-    execute format('create policy "dossier : admin écrit" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
+    execute format('drop policy if exists "dossier : admin ajoute" on public.%I', t);
+    if t <> 'dossier_documents' then
+      execute format('create policy "dossier : admin ajoute" on public.%I for insert to authenticated with check ((select public.is_admin()))', t);
+    end if;
+    execute format('drop policy if exists "dossier : admin modifie" on public.%I', t);
+    execute format('create policy "dossier : admin modifie" on public.%I for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()))', t);
+    execute format('drop policy if exists "dossier : admin supprime" on public.%I', t);
+    execute format('create policy "dossier : admin supprime" on public.%I for delete to authenticated using ((select public.is_admin()))', t);
     execute format('drop trigger if exists %I on public.%I', t || '_limit', t);
     execute format('create trigger %I before insert on public.%I for each row execute function public.limit_rows(%L, %L)',
       t || '_limit', t, case when t = 'dossier_actions' then '500' else '300' end, 'dossier_id');
   end loop;
 end $$;
 
--- Le client dépose ses propres documents dans son dossier
+-- Ajout d'un document : l'administrateur livre, le client dépose ses propres documents dans son dossier
 drop policy if exists "client dépose ses documents" on public.dossier_documents;
-create policy "client dépose ses documents" on public.dossier_documents
+drop policy if exists "dossier : ajout de documents" on public.dossier_documents;
+create policy "dossier : ajout de documents" on public.dossier_documents
   for insert to authenticated
   with check (
-    public.can_access_dossier(dossier_id) and kind = 'Client' and uploaded_by = auth.uid()
-    and split_part(path, '/', 1) = dossier_id::text
+    (select public.is_admin())
+    or (
+      public.can_access_dossier(dossier_id) and kind = 'Client' and uploaded_by = (select auth.uid())
+      and split_part(path, '/', 1) = dossier_id::text
+    )
   );
 
 -- Dossier du client connecté : le sien, sinon celui ouvert à son e-mail confirmé, sinon un nouveau
@@ -700,6 +730,22 @@ as $$
   select ((select count(*) from d) + (select count(*) from o))::integer;
 $$;
 revoke all on function public.purge_old_requests() from public, anon, authenticated;
+
+-- Droits d'exécution des fonctions.
+-- Les fonctions de déclencheur s'exécutent toutes seules à chaque ajout ou modification : personne n'a besoin
+-- de les appeler directement. Les fonctions de contrôle d'accès servent aux règles des comptes connectés :
+-- un visiteur sans compte ne peut plus les appeler.
+revoke all on function public.limit_products() from public, anon, authenticated;
+revoke all on function public.limit_rows() from public, anon, authenticated;
+revoke all on function public.check_request_rate() from public, anon, authenticated;
+revoke all on function public.touch_last_contact() from public, anon, authenticated;
+revoke all on function public.touch_dossier() from public, anon, authenticated;
+revoke all on function public.is_admin() from public, anon;
+revoke all on function public.can_access_dossier(uuid) from public, anon;
+revoke all on function public.can_access_dossier_path(text) from public, anon;
+grant execute on function public.is_admin() to authenticated, service_role;
+grant execute on function public.can_access_dossier(uuid) to authenticated, service_role;
+grant execute on function public.can_access_dossier_path(text) to authenticated, service_role;
 
 -- 10. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
 -- Remplacez l'e-mail puis exécutez cette ligne seule :

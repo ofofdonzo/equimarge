@@ -1,6 +1,12 @@
-// Adresse du projet Supabase d'Equimarge (publique), sauf si NEXT_PUBLIC_SUPABASE_URL en désigne un autre.
-// Même valeur par défaut que lib/supabase/config.js. Sert à la politique de sécurité ci-dessous.
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fiqmbjjfxeyyaiilqmgc.supabase.co';
+// Les deux valeurs Supabase sont obligatoires : sans elles, le site écrirait par erreur dans une autre base.
+// Elles se trouvent dans Supabase > Project Settings > API (voir .env.example).
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (!SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Variables manquantes : NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
+      'Ajoutez-les dans .env.local (en local) ou dans Netlify > Site configuration > Environment variables.'
+  );
+}
 
 const dev = process.env.NODE_ENV !== 'production';
 const supabaseOrigin = new URL(SUPABASE_URL).origin;

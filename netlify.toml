@@ -4,6 +4,12 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Valeurs publiques du projet Supabase (Project Settings > API) : le navigateur les reçoit de toute façon.
+  # Elles ne servent qu'aux déploiements Netlify ; en local, il faut un .env.local (voir .env.example).
+  # Ne jamais mettre ici une clé secrète (service_role, VAPID_PRIVATE_KEY, RESEND_API_KEY, WEBHOOK_SECRET) :
+  # celles-là vont uniquement dans Netlify > Site configuration > Environment variables.
+  NEXT_PUBLIC_SUPABASE_URL = "https://fiqmbjjfxeyyaiilqmgc.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpcW1iampmeGV5eWFpaWxxbWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxOTM3MDMsImV4cCI6MjEwODc2OTcwM30.n3_eQzRIvqMOchck7Ih67Rw6diwnk9Bz0C9wLXVgWMo"
 
 # Fait fonctionner Next.js sur Netlify (pages dynamiques, connexion, middleware)
 [[plugins]]

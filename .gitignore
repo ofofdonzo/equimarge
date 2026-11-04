@@ -4,3 +4,7 @@ node_modules
 .env.local
 .vercel
 .DS_Store
+
+# Application mobile : pages générées par scripts/build-mobile.mjs
+mobile/www
+mobile/demo

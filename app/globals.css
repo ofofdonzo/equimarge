@@ -660,3 +660,54 @@ fieldset.plain:disabled .check input { accent-color: var(--muted); }
 .diag-bars .pill { justify-self: end; min-width: 64px; justify-content: center; }
 @media (max-width: 560px) { .diag-head { grid-template-columns: minmax(0, 1fr); } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Messagerie du dossier */
+.thread { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; }
+.thread-empty { padding: 18px 0; text-align: center; }
+.thread-end { height: 1px; }
+.msg { max-width: min(82%, 560px); display: flex; flex-direction: column; gap: 3px; }
+.msg.theirs { align-self: flex-start; }
+.msg.mine { align-self: flex-end; align-items: flex-end; }
+.msg-who { font-size: .75rem; font-weight: 600; color: var(--muted); }
+.msg-body { margin: 0; padding: 10px 13px; border-radius: 16px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; line-height: 1.5; }
+.msg.theirs .msg-body { background: var(--surface-2); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+.msg.mine .msg-body { background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 5px; }
+.msg-time { font-size: .72rem; color: var(--muted); }
+.msg-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.msg-field { flex: 1 1 240px; margin: 0; }
+.msg-field textarea { min-height: 52px; }
+
+/* Application mobile : barre d'onglets en bas et panneau « Plus » */
+.app-tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  background: var(--surface); border-top: 1px solid var(--line);
+}
+.app-tabbar button {
+  position: relative; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  border: 0; background: none; color: var(--muted); font: inherit; font-size: .7rem; font-weight: 500; cursor: pointer;
+}
+.app-tabbar button[aria-current="page"] { color: var(--accent); font-weight: 700; }
+.app-badge {
+  position: absolute; top: 4px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: #C2410C; color: #fff; font-size: .68rem; font-weight: 700; line-height: 18px; text-align: center;
+}
+.app-sheet { position: fixed; inset: 0; z-index: 50; }
+.app-sheet-backdrop { position: absolute; inset: 0; border: 0; background: rgba(4, 12, 24, .45); cursor: pointer; }
+.app-sheet-panel {
+  position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column;
+  padding: 10px 10px calc(78px + env(safe-area-inset-bottom)); background: var(--surface); border-radius: 18px 18px 0 0;
+}
+.app-sheet-panel button {
+  min-height: 52px; padding: 0 14px; border: 0; border-radius: 12px; background: none; color: var(--fg);
+  font: inherit; font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer;
+}
+.app-sheet-panel button[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+
+/* Action irréversible (suppression du compte) */
+.btn.danger { background: #B91C1C; border-color: #B91C1C; color: #fff; box-shadow: none; }
+.btn.danger:hover { background: #991B1B; border-color: #991B1B; color: #fff; }
+.btn.ghost.danger { background: var(--surface); color: #B91C1C; border-color: color-mix(in srgb, #B91C1C 45%, var(--line)); }
+.btn.ghost.danger:hover { color: #991B1B; border-color: #991B1B; }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }

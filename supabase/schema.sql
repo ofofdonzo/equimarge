@@ -1,6 +1,8 @@
 -- Equimarge : base de données
 -- À coller dans Supabase > SQL Editor > New query, puis "Run".
 -- Le fichier est relançable sans perte de données : relancez-le après chaque mise à jour.
+-- Dans les règles d'accès, auth.uid() et is_admin() sont écrits « (select …) » : la base les calcule une fois
+-- par requête au lieu d'une fois par ligne.
 
 -- 1. Administrateurs (vous)
 create table if not exists public.admins (
@@ -20,7 +22,7 @@ $$;
 
 drop policy if exists "admins lisent leur ligne" on public.admins;
 create policy "admins lisent leur ligne" on public.admins
-  for select using (user_id = auth.uid());
+  for select to authenticated using (user_id = (select auth.uid()));
 
 -- 2. Produits et prestations de chaque client
 create table if not exists public.products (
@@ -58,7 +60,7 @@ create trigger products_limit before insert on public.products
 
 drop policy if exists "chacun gère ses produits" on public.products;
 create policy "chacun gère ses produits" on public.products
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- 3. Paramètres de chaque client (charges fixes, nom d'entreprise)
 create table if not exists public.settings (
@@ -74,7 +76,7 @@ alter table public.settings add constraint settings_company_length check (char_l
 
 drop policy if exists "chacun gère ses paramètres" on public.settings;
 create policy "chacun gère ses paramètres" on public.settings
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- 4. Demandes de diagnostic
 create table if not exists public.diagnostic_requests (
@@ -112,6 +114,7 @@ alter table public.diagnostic_requests enable row level security;
 alter table public.diagnostic_requests add column if not exists last_contact_at timestamptz not null default now();
 create index if not exists diag_email_idx on public.diagnostic_requests(lower(email), created_at desc);
 create index if not exists diag_last_contact_idx on public.diagnostic_requests(last_contact_at);
+create index if not exists diag_user_idx on public.diagnostic_requests(user_id);
 
 -- Anti-spam : au plus 3 demandes par heure pour un même e-mail et 30 par heure au total.
 -- Les dates sont imposées par la base, pour qu'un envoi ne puisse pas se dater dans le passé.
@@ -141,6 +144,7 @@ create trigger diag_rate_limit before insert on public.diagnostic_requests
 create or replace function public.touch_last_contact()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   if new.status is distinct from old.status then
@@ -158,7 +162,7 @@ drop policy if exists "envoyer une demande" on public.diagnostic_requests;
 create policy "envoyer une demande" on public.diagnostic_requests
   for insert to anon, authenticated
   with check (
-    (user_id is null or user_id = auth.uid())
+    (user_id is null or user_id = (select auth.uid()))
     and status = 'Nouvelle'
     and coalesce(char_length(sector), 0) <= 100
     and coalesce(char_length(revenue_band), 0) <= 100
@@ -170,17 +174,17 @@ create policy "envoyer une demande" on public.diagnostic_requests
 -- Un client connecté voit ses propres demandes
 drop policy if exists "voir ses demandes" on public.diagnostic_requests;
 create policy "voir ses demandes" on public.diagnostic_requests
-  for select to authenticated using (user_id = auth.uid() or public.is_admin());
+  for select to authenticated using (user_id = (select auth.uid()) or (select public.is_admin()));
 
 -- Seul l'administrateur change le statut
 drop policy if exists "admin met à jour" on public.diagnostic_requests;
 create policy "admin met à jour" on public.diagnostic_requests
-  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- Seul l'administrateur supprime une demande (droit à l'effacement)
 drop policy if exists "admin supprime" on public.diagnostic_requests;
 create policy "admin supprime" on public.diagnostic_requests
-  for delete to authenticated using (public.is_admin());
+  for delete to authenticated using ((select public.is_admin()));
 
 -- Purge automatique des demandes sans échange depuis 3 ans
 create or replace function public.purge_old_requests()
@@ -220,7 +224,7 @@ create table if not exists public.request_tracking (
 alter table public.request_tracking enable row level security;
 drop policy if exists "admin gère le suivi" on public.request_tracking;
 create policy "admin gère le suivi" on public.request_tracking
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 create table if not exists public.request_notes (
   id uuid primary key default gen_random_uuid(),
@@ -232,7 +236,7 @@ create index if not exists notes_request_idx on public.request_notes(request_id,
 alter table public.request_notes enable row level security;
 drop policy if exists "admin gère les notes" on public.request_notes;
 create policy "admin gère les notes" on public.request_notes
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- 6. Temps réel : les nouvelles demandes apparaissent dans le poste de travail sans recharger la page.
 -- (Seul l'administrateur les reçoit : le temps réel respecte les règles d'accès ci-dessus.)
@@ -260,7 +264,7 @@ create table if not exists public.push_subscriptions (
 alter table public.push_subscriptions enable row level security;
 drop policy if exists "admin gère ses appareils" on public.push_subscriptions;
 create policy "admin gère ses appareils" on public.push_subscriptions
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+  for all to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 
 -- 8. Alerte immédiate à chaque nouvelle demande : la base appelle /api/alerte-demande du site,
 -- qui envoie la notification (et l'e-mail si Resend est configuré).
@@ -268,7 +272,7 @@ create policy "admin gère ses appareils" on public.push_subscriptions
 --   select vault.create_secret('LA-MÊME-PHRASE-QUE-WEBHOOK_SECRET-DANS-NETLIFY', 'equimarge_webhook_secret');
 -- Sans ce secret, le déclencheur ne fait rien (la demande est toujours enregistrée).
 -- N'utilisez pas en plus un « Database Webhook » du tableau de bord : vous recevriez chaque alerte deux fois.
-create extension if not exists pg_net;
+create extension if not exists pg_net with schema extensions;
 
 create or replace function public.alerte_nouvelle_demande()
 returns trigger
@@ -320,16 +324,26 @@ create table if not exists public.dossiers (
 );
 create index if not exists dossiers_email_idx on public.dossiers(lower(email));
 alter table public.dossiers enable row level security;
+-- Une seule règle par opération : lecture pour l'administrateur et le client du dossier, écriture pour l'administrateur
 drop policy if exists "admin gère les dossiers" on public.dossiers;
-create policy "admin gère les dossiers" on public.dossiers
-  for all to authenticated using (public.is_admin()) with check (public.is_admin());
 drop policy if exists "client voit son dossier" on public.dossiers;
-create policy "client voit son dossier" on public.dossiers
-  for select to authenticated using (client_id = auth.uid());
+drop policy if exists "dossiers : lecture" on public.dossiers;
+create policy "dossiers : lecture" on public.dossiers
+  for select to authenticated using (client_id = (select auth.uid()) or (select public.is_admin()));
+drop policy if exists "dossiers : admin ajoute" on public.dossiers;
+create policy "dossiers : admin ajoute" on public.dossiers
+  for insert to authenticated with check ((select public.is_admin()));
+drop policy if exists "dossiers : admin modifie" on public.dossiers;
+create policy "dossiers : admin modifie" on public.dossiers
+  for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
+drop policy if exists "dossiers : admin supprime" on public.dossiers;
+create policy "dossiers : admin supprime" on public.dossiers
+  for delete to authenticated using ((select public.is_admin()));
 
 create or replace function public.touch_dossier()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   new.updated_at := now();
@@ -342,6 +356,7 @@ create trigger dossiers_touch before update on public.dossiers
 
 -- Demande d'origine du dossier (bouton « Ouvrir le dossier » du poste de travail)
 alter table public.diagnostic_requests add column if not exists dossier_id uuid references public.dossiers(id) on delete set null;
+create index if not exists diag_dossier_idx on public.diagnostic_requests(dossier_id);
 
 create or replace function public.can_access_dossier(d uuid)
 returns boolean
@@ -351,6 +366,18 @@ set search_path = public
 stable
 as $$
   select public.is_admin() or exists (select 1 from public.dossiers where id = d and client_id = auth.uid());
+$$;
+
+-- Le client écrit dans son dossier (documents, messages) seulement quand une mission est ouverte :
+-- un simple compte d'auto-diagnostic ne peut ni déposer de fichiers ni écrire de messages.
+create or replace function public.client_can_write(d uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from public.dossiers where id = d and client_id = auth.uid() and status <> 'Auto-diagnostic');
 $$;
 
 -- Nombre maximal de lignes, compté par la colonne passée en 2e argument (dossier ou utilisateur)
@@ -464,7 +491,11 @@ create table if not exists public.dossier_documents (
   created_at timestamptz not null default now()
 );
 create index if not exists dossier_documents_idx on public.dossier_documents(dossier_id, created_at);
+create index if not exists dossier_documents_request_idx on public.dossier_documents(info_request_id);
+create index if not exists dossier_documents_uploader_idx on public.dossier_documents(uploaded_by);
 
+-- Lecture : administrateur ou client du dossier. Écriture : administrateur (une règle par opération).
+-- Les documents ont leur propre règle d'ajout, juste après.
 do $$
 declare
   t text;
@@ -474,20 +505,32 @@ begin
     execute format('drop policy if exists "dossier : lecture" on public.%I', t);
     execute format('create policy "dossier : lecture" on public.%I for select to authenticated using (public.can_access_dossier(dossier_id))', t);
     execute format('drop policy if exists "dossier : admin écrit" on public.%I', t);
-    execute format('create policy "dossier : admin écrit" on public.%I for all to authenticated using (public.is_admin()) with check (public.is_admin())', t);
+    execute format('drop policy if exists "dossier : admin ajoute" on public.%I', t);
+    if t <> 'dossier_documents' then
+      execute format('create policy "dossier : admin ajoute" on public.%I for insert to authenticated with check ((select public.is_admin()))', t);
+    end if;
+    execute format('drop policy if exists "dossier : admin modifie" on public.%I', t);
+    execute format('create policy "dossier : admin modifie" on public.%I for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()))', t);
+    execute format('drop policy if exists "dossier : admin supprime" on public.%I', t);
+    execute format('create policy "dossier : admin supprime" on public.%I for delete to authenticated using ((select public.is_admin()))', t);
     execute format('drop trigger if exists %I on public.%I', t || '_limit', t);
     execute format('create trigger %I before insert on public.%I for each row execute function public.limit_rows(%L, %L)',
       t || '_limit', t, case when t = 'dossier_actions' then '500' else '300' end, 'dossier_id');
   end loop;
 end $$;
 
--- Le client dépose ses propres documents dans son dossier
+-- Ajout d'un document : l'administrateur livre, le client dépose ses propres documents dans son dossier
+-- (pendant une mission)
 drop policy if exists "client dépose ses documents" on public.dossier_documents;
-create policy "client dépose ses documents" on public.dossier_documents
+drop policy if exists "dossier : ajout de documents" on public.dossier_documents;
+create policy "dossier : ajout de documents" on public.dossier_documents
   for insert to authenticated
   with check (
-    public.can_access_dossier(dossier_id) and kind = 'Client' and uploaded_by = auth.uid()
-    and split_part(path, '/', 1) = dossier_id::text
+    (select public.is_admin())
+    or (
+      public.client_can_write(dossier_id) and kind = 'Client' and uploaded_by = (select auth.uid())
+      and split_part(path, '/', 1) = dossier_id::text
+    )
   );
 
 -- Dossier du client connecté : le sien, sinon celui ouvert à son e-mail confirmé, sinon un nouveau
@@ -665,6 +708,23 @@ as $$
   select exists (select 1 from public.dossiers d where d.id::text = split_part(p, '/', 1) and public.can_access_dossier(d.id));
 $$;
 
+-- Dépôt d'un fichier : l'administrateur dans tout dossier ; le client dans son dossier, pendant une mission,
+-- et 200 fichiers au plus par dossier (protège l'espace de stockage contre un remplissage abusif).
+create or replace function public.can_upload_dossier_file(p text)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select case
+    when public.is_admin() then exists (select 1 from public.dossiers d where d.id::text = split_part(p, '/', 1))
+    else exists (select 1 from public.dossiers d where d.id::text = split_part(p, '/', 1) and public.client_can_write(d.id))
+      and (select count(*) from storage.objects o
+           where o.bucket_id = 'dossiers' and split_part(o.name, '/', 1) = split_part(p, '/', 1)) < 200
+  end;
+$$;
+
 do $$
 begin
   insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -680,7 +740,7 @@ begin
     for select to authenticated using (bucket_id = 'dossiers' and public.can_access_dossier_path(name));
   drop policy if exists "dossiers : dépôt" on storage.objects;
   create policy "dossiers : dépôt" on storage.objects
-    for insert to authenticated with check (bucket_id = 'dossiers' and public.can_access_dossier_path(name));
+    for insert to authenticated with check (bucket_id = 'dossiers' and public.can_upload_dossier_file(name));
   drop policy if exists "dossiers : suppression" on storage.objects;
   create policy "dossiers : suppression" on storage.objects
     for delete to authenticated using (bucket_id = 'dossiers' and public.is_admin());
@@ -704,6 +764,218 @@ as $$
   select ((select count(*) from d) + (select count(*) from o))::integer;
 $$;
 revoke all on function public.purge_old_requests() from public, anon, authenticated;
+
+-- 11. Messagerie du dossier et application mobile
+
+-- Messages entre le client et Equimarge, dans le dossier. L'auteur, l'origine (client ou Equimarge) et la date
+-- sont fixés par la base : personne ne peut écrire au nom d'un autre ni antidater un message.
+create table if not exists public.dossier_messages (
+  id uuid primary key default gen_random_uuid(),
+  dossier_id uuid not null references public.dossiers(id) on delete cascade,
+  author uuid default auth.uid() references auth.users(id) on delete set null,
+  from_admin boolean not null default false,
+  body text not null check (char_length(btrim(body)) between 1 and 4000),
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists dossier_messages_idx on public.dossier_messages(dossier_id, created_at);
+create index if not exists dossier_messages_author_idx on public.dossier_messages(author);
+alter table public.dossier_messages enable row level security;
+
+drop policy if exists "messages : lecture" on public.dossier_messages;
+create policy "messages : lecture" on public.dossier_messages
+  for select to authenticated using (public.can_access_dossier(dossier_id));
+drop policy if exists "messages : envoi" on public.dossier_messages;
+create policy "messages : envoi" on public.dossier_messages
+  for insert to authenticated with check ((select public.is_admin()) or public.client_can_write(dossier_id));
+drop policy if exists "messages : admin supprime" on public.dossier_messages;
+create policy "messages : admin supprime" on public.dossier_messages
+  for delete to authenticated using ((select public.is_admin()));
+
+-- Anti-abus : 30 messages par heure au plus pour le client d'un dossier
+create or replace function public.prepare_message()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  -- Refus identique pour tout dossier inaccessible, avant tout comptage
+  if not (public.is_admin() or public.client_can_write(new.dossier_id)) then
+    raise exception 'acces_refuse';
+  end if;
+  new.author := auth.uid();
+  new.from_admin := public.is_admin();
+  new.created_at := now();
+  new.read_at := null;
+  new.body := btrim(new.body);
+  if not new.from_admin and (select count(*) from public.dossier_messages
+      where dossier_id = new.dossier_id and not from_admin and created_at > now() - interval '1 hour') >= 30 then
+    raise exception 'trop_de_messages' using hint = 'Réessayez dans une heure';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists dossier_messages_prepare on public.dossier_messages;
+create trigger dossier_messages_prepare before insert on public.dossier_messages
+  for each row execute function public.prepare_message();
+drop trigger if exists dossier_messages_limit on public.dossier_messages;
+create trigger dossier_messages_limit before insert on public.dossier_messages
+  for each row execute function public.limit_rows('2000', 'dossier_id');
+
+-- Marque comme lus les messages reçus (ceux de l'autre partie) ; renvoie leur nombre
+create or replace function public.mark_messages_read(d uuid)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  n integer;
+begin
+  if not public.can_access_dossier(d) then
+    raise exception 'acces_refuse';
+  end if;
+  update public.dossier_messages set read_at = now()
+    where dossier_id = d and read_at is null and from_admin = not public.is_admin();
+  get diagnostics n = row_count;
+  return n;
+end;
+$$;
+
+-- Messages en temps réel (les règles d'accès ci-dessus s'appliquent aussi au temps réel)
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'dossier_messages'
+     ) then
+    alter publication supabase_realtime add table public.dossier_messages;
+  end if;
+end $$;
+
+-- Téléphones abonnés aux notifications de l'application (jeton Apple ou Android).
+-- Chacun ne voit et ne supprime que ses appareils ; l'enregistrement passe par register_device().
+create table if not exists public.device_tokens (
+  token text primary key check (char_length(token) between 32 and 300 and token ~ '^[A-Za-z0-9:_-]+$'),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  platform text not null check (platform in ('ios', 'android')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists device_tokens_user_idx on public.device_tokens(user_id);
+alter table public.device_tokens enable row level security;
+drop policy if exists "appareils : lecture" on public.device_tokens;
+create policy "appareils : lecture" on public.device_tokens
+  for select to authenticated using (user_id = (select auth.uid()));
+drop policy if exists "appareils : suppression" on public.device_tokens;
+create policy "appareils : suppression" on public.device_tokens
+  for delete to authenticated using (user_id = (select auth.uid()));
+
+create or replace function public.register_device(t text, p text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+begin
+  if uid is null then
+    raise exception 'connexion_requise';
+  end if;
+  if p is null or p not in ('ios', 'android') or t is null or char_length(t) not between 32 and 300 or t !~ '^[A-Za-z0-9:_-]+$' then
+    raise exception 'appareil_invalide';
+  end if;
+  if not exists (select 1 from public.device_tokens where token = t and user_id = uid)
+     and (select count(*) from public.device_tokens where user_id = uid) >= 10 then
+    raise exception 'limite_de_lignes' using hint = '10 appareils au maximum par compte';
+  end if;
+  -- Un téléphone qui change de compte n'est plus rattaché qu'au dernier compte connecté
+  insert into public.device_tokens (token, user_id, platform) values (t, uid, p)
+    on conflict (token) do update set user_id = excluded.user_id, platform = excluded.platform, updated_at = now();
+end;
+$$;
+
+-- Notifications : chaque nouvel élément du dossier prévient l'autre partie, via /api/notification du site.
+-- Même secret que l'alerte des nouvelles demandes (section 8). Le contenu des messages n'est jamais envoyé :
+-- seulement le type d'événement et les identifiants ; le site relit le reste dans la base.
+create or replace function public.notifier_dossier()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  secret text;
+  evt text;
+begin
+  if tg_table_name = 'dossier_messages' then
+    evt := case when new.from_admin then 'message_cabinet' else 'message_client' end;
+  elsif tg_table_name = 'dossier_documents' then
+    evt := case when new.kind = 'Livrable' then 'livrable' else 'document_client' end;
+  elsif tg_table_name = 'dossier_info_requests' then
+    if tg_op = 'INSERT' then
+      evt := 'demande';
+    elsif new.status = 'Fourni' and old.status is distinct from 'Fourni' then
+      evt := 'reponse_client';
+    else
+      return new;
+    end if;
+  else
+    return new;
+  end if;
+  select decrypted_secret into secret from vault.decrypted_secrets where name = 'equimarge_webhook_secret' limit 1;
+  if secret is not null then
+    perform net.http_post(
+      url := 'https://equimarge.netlify.app/api/notification',
+      body := jsonb_build_object('event', evt, 'dossier_id', new.dossier_id, 'id', new.id),
+      headers := jsonb_build_object('Content-Type', 'application/json', 'x-webhook-secret', secret),
+      timeout_milliseconds := 5000
+    );
+  end if;
+  return new;
+exception when others then
+  -- Une notification en panne ne doit jamais bloquer l'enregistrement.
+  return new;
+end;
+$$;
+drop trigger if exists notifier_message on public.dossier_messages;
+create trigger notifier_message after insert on public.dossier_messages
+  for each row execute function public.notifier_dossier();
+drop trigger if exists notifier_document on public.dossier_documents;
+create trigger notifier_document after insert on public.dossier_documents
+  for each row execute function public.notifier_dossier();
+drop trigger if exists notifier_demande on public.dossier_info_requests;
+create trigger notifier_demande after insert or update of status on public.dossier_info_requests
+  for each row execute function public.notifier_dossier();
+
+-- Droits d'exécution des fonctions.
+-- Les fonctions de déclencheur s'exécutent toutes seules à chaque ajout ou modification : personne n'a besoin
+-- de les appeler directement. Les fonctions de contrôle d'accès servent aux règles des comptes connectés :
+-- un visiteur sans compte ne peut plus les appeler.
+revoke all on function public.limit_products() from public, anon, authenticated;
+revoke all on function public.limit_rows() from public, anon, authenticated;
+revoke all on function public.check_request_rate() from public, anon, authenticated;
+revoke all on function public.touch_last_contact() from public, anon, authenticated;
+revoke all on function public.touch_dossier() from public, anon, authenticated;
+revoke all on function public.is_admin() from public, anon;
+revoke all on function public.can_access_dossier(uuid) from public, anon;
+revoke all on function public.can_access_dossier_path(text) from public, anon;
+grant execute on function public.is_admin() to authenticated, service_role;
+grant execute on function public.can_access_dossier(uuid) to authenticated, service_role;
+grant execute on function public.can_access_dossier_path(text) to authenticated, service_role;
+revoke all on function public.prepare_message() from public, anon, authenticated;
+revoke all on function public.notifier_dossier() from public, anon, authenticated;
+revoke all on function public.client_can_write(uuid) from public, anon;
+revoke all on function public.can_upload_dossier_file(text) from public, anon;
+revoke all on function public.mark_messages_read(uuid) from public, anon;
+revoke all on function public.register_device(text, text) from public, anon;
+grant execute on function public.client_can_write(uuid) to authenticated, service_role;
+grant execute on function public.can_upload_dossier_file(text) to authenticated, service_role;
+grant execute on function public.mark_messages_read(uuid) to authenticated, service_role;
+grant execute on function public.register_device(text, text) to authenticated, service_role;
 
 -- 10. Vous déclarer administrateur (à faire APRÈS avoir créé votre compte sur le site)
 -- Remplacez l'e-mail puis exécutez cette ligne seule :

@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <article className="legal">
       <h1>Conditions générales</h1>
-      <p className="note">Dernière mise à jour : 1er novembre 2026</p>
+      <p className="note">Dernière mise à jour : 4 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -24,7 +24,7 @@ export default function Page() {
         <li>Les calculs sont indicatifs et dépendent de vos saisies. Ils ne remplacent pas l'avis d'un expert-comptable.</li>
         <li>Les outils de conformité aident à organiser votre démarche. Ils ne constituent pas une consultation juridique et ne garantissent pas la conformité de votre entreprise, qui reste responsable de ses obligations.</li>
         <li>L'outil est fourni sans garantie de disponibilité permanente. Equimarge peut suspendre un compte utilisé de manière abusive.</li>
-        <li>Vous pouvez clôturer votre compte à tout moment en écrivant à contact@equimarge.fr ; vos données sont alors supprimées sous 30 jours.</li>
+        <li>Vous pouvez supprimer votre compte à tout moment depuis la page « Mon compte » du site ou de l’application iPhone, ou en écrivant à contact@equimarge.fr. Le dossier d’une mission réalisée est conservé selon la <Link href="/confidentialite">politique de confidentialité</Link>.</li>
       </ul>
 
       <h2>3. Prestations</h2>

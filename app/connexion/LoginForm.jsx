@@ -59,6 +59,23 @@ export default function LoginForm() {
     router.refresh();
   }
 
+  // Mot de passe oublié : le message est le même que le compte existe ou non (rien n'est révélé)
+  async function forgot() {
+    setError('');
+    setInfo('');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      setError('Saisissez d’abord votre e-mail ci-dessus.');
+      return;
+    }
+    setBusy(true);
+    const { error } = await createClient().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?suite=${encodeURIComponent('/connexion/nouveau-mot-de-passe')}`,
+    });
+    setBusy(false);
+    if (error && error.status === 429) return setError('Trop de demandes. Réessayez dans quelques minutes.');
+    setInfo('Si un compte existe pour ' + email + ', un lien pour choisir un nouveau mot de passe vient de lui être envoyé.');
+  }
+
   const signup = mode === 'signup';
   function switchTo(m) {
     setMode(m);
@@ -111,6 +128,11 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+        {!signup && (
+          <button type="button" className="link-btn" style={{ alignSelf: 'flex-start' }} onClick={forgot} disabled={busy}>
+            Mot de passe oublié ?
+          </button>
+        )}
         {error && <p className="err" role="alert">{error}</p>}
         {info && <p className="panel success" role="status" style={{ margin: 0 }}>{info}</p>}
         <button className="btn lg block" type="submit" disabled={busy}>

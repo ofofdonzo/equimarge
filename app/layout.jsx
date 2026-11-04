@@ -83,6 +83,7 @@ export default function RootLayout({ children }) {
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/conditions-generales">Conditions générales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
+              <Link href="/assistance">Assistance</Link>
               <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>
             </nav>
           </div>

@@ -12,13 +12,15 @@ self.addEventListener('push', (event) => {
     data = { body: event.data ? event.data.text() : '' };
   }
   const id = typeof data.id === 'string' ? data.id : '';
+  // Lien vers une page du poste de travail uniquement (jamais vers un autre site)
+  const url = typeof data.url === 'string' && /^\/admin(\/[\w-]+)*$/.test(data.url) ? data.url : '';
   event.waitUntil(
     self.registration.showNotification(data.title || 'Nouvelle demande — Equimarge', {
       body: data.body || 'Une nouvelle demande vient d’arriver.',
       icon: '/icon-192.png',
       badge: '/icon-192.png',
-      tag: id || 'equimarge',
-      data: { url: id ? `/admin?demande=${encodeURIComponent(id)}` : '/admin' },
+      tag: id || url || 'equimarge',
+      data: { url: url || (id ? `/admin?demande=${encodeURIComponent(id)}` : '/admin') },
     })
   );
 });

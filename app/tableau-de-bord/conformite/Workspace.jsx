@@ -11,12 +11,15 @@ import Register from './Register';
 import Risks from './Risks';
 import InfoRequests from './InfoRequests';
 import Documents from './Documents';
+import Messages from './Messages';
 import { downloadWorkbook } from './excel';
+import { openUrl } from '@/lib/platform';
 
 const TAB_LABELS = {
   bord: 'Tableau de bord',
   infos: 'Demandes d’informations',
   documents: 'Documents',
+  messages: 'Messages',
   diagnostic: 'Auto-diagnostic',
   actions: 'Plan d’action',
   registre: 'Registre RGPD',
@@ -25,9 +28,25 @@ const TAB_LABELS = {
 // Onglets selon le rôle : Equimarge (admin) réalise la mission et voit tout ; le client ne voit que
 // ce qui a déjà du contenu (le plan, le registre et les risques apparaissent quand Equimarge les a établis).
 function tabsFor(role, lists) {
-  if (role === 'admin') return ['bord', 'infos', 'documents', 'diagnostic', 'actions', 'registre', 'risques'];
+  if (role === 'admin') return ['bord', 'infos', 'documents', 'messages', 'diagnostic', 'actions', 'registre', 'risques'];
   const filled = { actions: lists.actions.length, registre: lists.records.length, risques: lists.risks.length };
-  return ['bord', 'infos', 'documents', 'actions', 'registre', 'risques', 'diagnostic'].filter((t) => !(t in filled) || filled[t] > 0);
+  return ['bord', 'infos', 'documents', 'messages', 'actions', 'registre', 'risques', 'diagnostic'].filter((t) => !(t in filled) || filled[t] > 0);
+}
+// Application mobile : quatre onglets en bas de l'écran, les autres dans « Plus »
+const APP_TABS = [
+  { key: 'bord', label: 'Accueil' },
+  { key: 'infos', label: 'Demandes' },
+  { key: 'documents', label: 'Documents' },
+  { key: 'messages', label: 'Messages' },
+];
+const MESSAGE_ERRORS = {
+  trop_de_messages: 'Trop de messages en peu de temps : réessayez dans une heure.',
+  acces_refuse: 'La messagerie n’est pas encore ouverte pour ce dossier.',
+  limite_de_lignes: 'Ce dossier a atteint le nombre maximal de messages.',
+};
+function messageError(error) {
+  const key = Object.keys(MESSAGE_ERRORS).find((k) => error?.message?.includes(k));
+  return key ? MESSAGE_ERRORS[key] : 'Message non envoyé. Vérifiez votre connexion et réessayez.';
 }
 // Filtre par domaine : seulement sur les listes longues (plan d'action, risques)
 const FILTERED_TABS = new Set(['actions', 'risques']);
@@ -50,7 +69,8 @@ function newId() {
 }
 
 // offline : aperçu sans base (rien n'est enregistré).
-export default function Workspace({ role = 'client', dossier, initial, setupMissing = false, offline = false }) {
+// app : présent dans l'application mobile ({ onAccount, requestedTab, demo }) : onglets en bas de l'écran.
+export default function Workspace({ role = 'client', dossier, initial, setupMissing = false, offline = false, app = null }) {
   const supabase = useMemo(() => (offline ? null : createClient()), [offline]);
   const admin = role === 'admin';
   const mission = isMission(dossier);
@@ -64,6 +84,8 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
     infos: initial.infos,
     documents: initial.documents,
   });
+  const [messages, setMessages] = useState(initial.messages || []);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [saveState, setSaveState] = useState('Enregistré');
   // L'état d'enregistrement ne s'affiche qu'après la première modification
   const [touched, setTouched] = useState(false);
@@ -120,6 +142,43 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
+
+  // ---------- Messagerie : nouveaux messages en temps réel ----------
+  useEffect(() => {
+    if (!supabase || !dossier?.id) return undefined;
+    const channel = supabase
+      .channel(`messages:${dossier.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dossier_messages', filter: `dossier_id=eq.${dossier.id}` }, (p) =>
+        setMessages((l) => (l.some((m) => m.id === p.new.id) ? l : [...l, p.new]))
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, dossier?.id]);
+
+  // Onglet demandé par l'application (notification touchée)
+  const requested = app?.requestedTab || null;
+  const [seenRequest, setSeenRequest] = useState(null);
+  if (requested !== seenRequest) {
+    setSeenRequest(requested);
+    if (requested?.tab) setTab(requested.tab);
+  }
+
+  async function sendMessage(body) {
+    if (!supabase) {
+      setMessages((l) => [...l, { id: newId(), from_admin: admin, body, read_at: null, created_at: new Date().toISOString() }]);
+      return null;
+    }
+    const { data, error } = await supabase
+      .from('dossier_messages')
+      .insert({ dossier_id: dossier.id, body })
+      .select('id,from_admin,body,read_at,created_at')
+      .single();
+    if (error) return messageError(error);
+    setMessages((l) => (l.some((m) => m.id === data.id) ? l : [...l, data]));
+    return null;
+  }
 
   // ---------- Auto-diagnostic : cliquer à nouveau sur la réponse choisie l'efface ----------
   function answer(question, value) {
@@ -243,7 +302,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
     if (!supabase) return setSaveState('Aperçu : les documents ne sont pas téléchargeables.');
     const { data, error } = await supabase.storage.from('dossiers').createSignedUrl(doc.path, 60, { download: doc.name });
     if (error) return setSaveState('Téléchargement impossible : ' + error.message);
-    window.location.assign(data.signedUrl);
+    openUrl(data.signedUrl);
   }
 
   async function removeDoc(doc) {
@@ -259,13 +318,31 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
   }
 
   const saveClass = saveState === 'Enregistré' ? 'save' : saveState === 'Enregistrement…' ? 'save busy' : 'save bad';
-  const status = !supabase ? (
+  const status = app?.demo ? null : !supabase ? (
     <span className="save">Aperçu : rien n’est enregistré</span>
   ) : touched || saveState !== 'Enregistré' ? (
     <span className={saveClass} aria-live="polite">{saveState}</span>
   ) : null;
   const filtered = (list) => list.filter((x) => !domain || x.domain === domain);
   const pendingInfos = lists.infos.filter((i) => i.status === 'À fournir').length;
+  const unread = messages.filter((m) => m.from_admin !== admin && !m.read_at).length;
+  const tabs = tabsFor(role, lists);
+  const current = tabs.includes(tab) ? tab : 'bord';
+
+  // Messages reçus marqués comme lus dès que l'onglet Messages est ouvert
+  useEffect(() => {
+    if (!supabase || !mission || current !== 'messages' || unread === 0) return undefined;
+    let cancelled = false;
+    supabase.rpc('mark_messages_read', { d: dossier.id }).then(({ error }) => {
+      if (cancelled || error) return;
+      const now = new Date().toISOString();
+      setMessages((l) => l.map((m) => (m.from_admin !== admin && !m.read_at ? { ...m, read_at: now } : m)));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [supabase, mission, current, unread, admin, dossier?.id]);
+
   const setupError = setupMissing && (
     <p className="err" role="alert">
       Les tables des dossiers n’existent pas encore dans la base : relancez le fichier supabase/schema.sql dans Supabase
@@ -297,30 +374,33 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
     );
   }
 
-  const tabs = tabsFor(role, lists);
-  const current = tabs.includes(tab) ? tab : 'bord';
   const showFilter = FILTERED_TABS.has(current) && (current === 'actions' ? lists.actions : lists.risks).length > 0;
 
   return (
     <div className="stack">
       {setupError}
 
-      <div className="ws-bar">
-        <div className="tabs" role="tablist" aria-label="Outils du dossier">
-          {tabs.map((t) => (
-            <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={current === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
-              {TAB_LABELS[t]}
-              {t === 'infos' && pendingInfos > 0 && <span className="tab-count">{pendingInfos}</span>}
+      {app ? (
+        status && <div className="row ws-tools">{status}</div>
+      ) : (
+        <div className="ws-bar">
+          <div className="tabs" role="tablist" aria-label="Outils du dossier">
+            {tabs.map((t) => (
+              <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={current === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
+                {TAB_LABELS[t]}
+                {t === 'infos' && pendingInfos > 0 && <span className="tab-count">{pendingInfos}</span>}
+                {t === 'messages' && unread > 0 && <span className="tab-count">{unread}</span>}
+              </button>
+            ))}
+          </div>
+          <span className="row ws-tools">
+            {status}
+            <button type="button" className="btn ghost sm" onClick={() => downloadWorkbook({ answers, ...lists }, dossier.company)}>
+              <Download size={16} />Excel
             </button>
-          ))}
+          </span>
         </div>
-        <span className="row ws-tools">
-          {status}
-          <button type="button" className="btn ghost sm" onClick={() => downloadWorkbook({ answers, ...lists }, dossier.company)}>
-            <Download size={16} />Excel
-          </button>
-        </span>
-      </div>
+      )}
 
       {showFilter && (
         <div className="chips" role="group" aria-label="Filtrer par domaine">
@@ -382,6 +462,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
         {current === 'documents' && (
           <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
         )}
+        {current === 'messages' && <Messages role={role} messages={messages} canWrite={admin || mission} onSend={sendMessage} />}
         {current === 'actions' && (
           <Actions
             actions={lists.actions}
@@ -416,11 +497,82 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
 
       {admin && (
         <p className="note" style={{ margin: 0 }}>
-          Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, puis plan, registre et risques
-          (en lecture seule) dès qu’ils contiennent quelque chose.
+          Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, messages, puis plan, registre et
+          risques (en lecture seule) dès qu’ils contiennent quelque chose.
         </p>
       )}
+
+      {app && (
+        <AppTabBar
+          tabs={tabs}
+          current={current}
+          counts={{ infos: pendingInfos, messages: unread }}
+          moreOpen={moreOpen}
+          onMore={setMoreOpen}
+          onTab={(t) => {
+            setMoreOpen(false);
+            setTab(t);
+            window.scrollTo(0, 0);
+          }}
+          onAccount={() => {
+            setMoreOpen(false);
+            app.onAccount?.();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// Barre d'onglets de l'application : Accueil, Demandes, Documents, Messages, et « Plus » pour le reste.
+function AppTabBar({ tabs, current, counts, moreOpen, onMore, onTab, onAccount }) {
+  const main = APP_TABS.filter((t) => tabs.includes(t.key));
+  const others = tabs.filter((t) => !APP_TABS.some((m) => m.key === t));
+  const inOthers = others.includes(current);
+  return (
+    <>
+      {moreOpen && (
+        <div className="app-sheet" role="dialog" aria-modal="true" aria-label="Plus d’onglets">
+          <button type="button" className="app-sheet-backdrop" aria-label="Fermer" onClick={() => onMore(false)} />
+          <div className="app-sheet-panel">
+            {others.map((t) => (
+              <button key={t} type="button" aria-current={current === t ? 'page' : undefined} onClick={() => onTab(t)}>
+                {TAB_LABELS[t]}
+              </button>
+            ))}
+            <button type="button" onClick={onAccount}>Mon compte</button>
+          </div>
+        </div>
+      )}
+      <nav className="app-tabbar" aria-label="Onglets du dossier">
+        {main.map((t) => (
+          <button key={t.key} type="button" aria-current={current === t.key ? 'page' : undefined} onClick={() => onTab(t.key)}>
+            <TabIcon name={t.key} />
+            <span>{t.label}</span>
+            {counts[t.key] > 0 && <span className="app-badge" aria-label={`${counts[t.key]} en attente`}>{counts[t.key]}</span>}
+          </button>
+        ))}
+        <button type="button" aria-current={inOthers ? 'page' : undefined} aria-expanded={moreOpen} onClick={() => onMore(!moreOpen)}>
+          <TabIcon name="plus" />
+          <span>Plus</span>
+        </button>
+      </nav>
+    </>
+  );
+}
+
+const TAB_PATHS = {
+  bord: ['M4 11.5 12 5l8 6.5', 'M6 10v9h12v-9'],
+  infos: ['M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', 'm4 7 8 6 8-6'],
+  documents: ['M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'],
+  messages: ['M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z'],
+  plus: ['M5 12h.01', 'M12 12h.01', 'M19 12h.01'],
+};
+function TabIcon({ name }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={name === 'plus' ? 3 : 2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {TAB_PATHS[name].map((d) => <path key={d} d={d} />)}
+    </svg>
   );
 }
 

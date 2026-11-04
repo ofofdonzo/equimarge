@@ -5,6 +5,12 @@ node_modules
 .vercel
 .DS_Store
 
+# Cache Python du skill ui-ux-pro-max
+__pycache__/
+
+# Graphe généré par le skill graphify
+graphify-out/
+
 # Application mobile : pages générées par scripts/build-mobile.mjs
 mobile/www
 mobile/demo

@@ -569,7 +569,9 @@ begin
 end;
 $$;
 
--- Ouvre (ou retrouve) le dossier d'une demande : même compte, sinon même e-mail, sinon nouveau dossier
+-- Ouvre (ou retrouve) le dossier d'une demande : même compte, sinon même e-mail, sinon nouveau dossier.
+-- Le rapprochement par e-mail ne vise que les dossiers sans client : l'e-mail du formulaire est libre,
+-- il ne doit pas suffire à ranger une demande dans le dossier d'un autre client.
 create or replace function public.open_dossier_from_request(r uuid)
 returns uuid
 language plpgsql
@@ -592,7 +594,9 @@ begin
     select id into d from public.dossiers where client_id = req.user_id;
   end if;
   if d is null then
-    select id into d from public.dossiers where lower(email) = lower(req.email) order by created_at limit 1;
+    select id into d from public.dossiers
+      where client_id is null and lower(email) = lower(req.email)
+      order by created_at limit 1;
   end if;
   if d is null then
     insert into public.dossiers (company, contact_name, email, client_id, offer, status)

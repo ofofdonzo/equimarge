@@ -27,5 +27,8 @@ jobs:
       - run: npm test
       - run: npm audit --omit=dev
       - run: npm run build
-      - name: Application mobile (pages intégrées)
+      - name: Application mobile (pages intégrées, valeurs publiques de netlify.toml)
         run: node scripts/build-mobile.mjs
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ''
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ''

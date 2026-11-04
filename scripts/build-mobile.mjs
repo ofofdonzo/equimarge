@@ -13,9 +13,26 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEMO = process.env.EQUIMARGE_DEMO === '1';
 const out = resolve(root, DEMO ? 'mobile/demo' : 'mobile/www');
 const SITE = (process.env.EQUIMARGE_SITE_URL || 'https://equimarge.netlify.app').replace(/\/+$/, '');
-const config = await readFile(resolve(root, 'lib/supabase/config.js'), 'utf8');
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || config.match(/'(https:\/\/[a-z0-9]+\.supabase\.co)'/)[1];
-if (!/^https:\/\//.test(SITE) || !/^https:\/\//.test(SUPABASE_URL)) throw new Error('Adresses https obligatoires');
+// Valeurs publiques de Supabase : variables d'environnement, sinon celles de netlify.toml (mêmes que le site)
+const toml = await readFile(resolve(root, 'netlify.toml'), 'utf8');
+const fromToml = (name) => toml.match(new RegExp(`${name}\\s*=\\s*"([^"]+)"`))?.[1];
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || fromToml('NEXT_PUBLIC_SUPABASE_URL');
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || fromToml('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+if (!/^https:\/\//.test(SITE) || !/^https:\/\//.test(SUPABASE_URL || '')) throw new Error('Adresses https obligatoires');
+// Garde-fou : seule la clé publique entre dans l'application (jamais une clé service_role ou sb_secret_)
+function publicKey(key) {
+  if (!key) throw new Error('Clé publique Supabase manquante (NEXT_PUBLIC_SUPABASE_ANON_KEY)');
+  if (key.startsWith('sb_publishable_')) return key;
+  let role;
+  try {
+    role = JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString()).role;
+  } catch {
+    role = null;
+  }
+  if (role !== 'anon') throw new Error('Seule la clé publique « anon » de Supabase peut entrer dans l’application');
+  return key;
+}
+publicKey(SUPABASE_ANON_KEY);
 
 // Modules du site remplacés dans l'application
 const REPLACED = {
@@ -52,8 +69,8 @@ const result = await build({
     __SITE__: JSON.stringify(SITE),
     __DEMO__: JSON.stringify(DEMO),
     'process.env.NODE_ENV': '"production"',
-    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_URL || ''),
-    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''),
+    'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify(SUPABASE_URL),
+    'process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(SUPABASE_ANON_KEY),
   },
   metafile: true,
 });

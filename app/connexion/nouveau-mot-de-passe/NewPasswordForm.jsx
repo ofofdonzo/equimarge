@@ -4,6 +4,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+function fromRecoveryLink(session) {
+  try {
+    const claims = JSON.parse(atob(session.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return (claims.amr || []).some((m) => m.method === 'recovery' && m.timestamp > Date.now() / 1000 - 3600);
+  } catch {
+    return false;
+  }
+}
+
 // Arrivée depuis le lien « mot de passe oublié » : la session de récupération vient d'être ouverte
 // par /auth/callback ; on y choisit le nouveau mot de passe.
 export default function NewPasswordForm() {
@@ -14,10 +23,12 @@ export default function NewPasswordForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  // Seulement en arrivant par le lien « mot de passe oublié » (session ouverte par ce lien depuis moins d'une heure) :
+  // une session déjà ouverte sur un ordinateur laissé allumé ne suffit pas à changer le mot de passe ici.
   useEffect(() => {
     createClient()
-      .auth.getUser()
-      .then(({ data }) => setReady(Boolean(data.user)));
+      .auth.getSession()
+      .then(({ data }) => setReady(fromRecoveryLink(data.session)));
   }, []);
 
   async function submit(e) {

@@ -37,6 +37,12 @@ export async function loadRecettes(supabase) {
   };
 }
 
+// Lectures de factures du mois qui comptent dans les lectures gratuites : toutes sauf celles en échec
+// (une lecture en cours compte, pour qu'on ne puisse pas en lancer plusieurs à la fois au-delà de la limite)
+export function countMonthReads(supabase, since) {
+  return supabase.from('invoices').select('id', { count: 'exact', head: true }).neq('status', 'Échec').gte('created_at', since);
+}
+
 // Message lisible pour une erreur de la base (limite de lignes, valeur refusée…)
 export function dbMessage(error) {
   if (!error) return '';

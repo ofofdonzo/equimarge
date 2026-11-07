@@ -1,13 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { SUPABASE_URL } from '@/lib/supabase/config';
+import { countMonthReads } from '@/app/tableau-de-bord/recettes/data';
 import { originAllowed } from '@/lib/app-origin.mjs';
 import { detectFileType, INVOICE_SCHEMA, INVOICE_SYSTEM, invoicePrompt, MAX_INVOICE_BYTES, normalizeInvoice } from '@/lib/recettes.mjs';
+import { billingEnabled, freeReads, isActive, monthStart, quotaMessage, readsLeft } from '@/lib/abonnement.mjs';
 
 // Lecture d'une facture fournisseur (photo ou PDF) par Claude, pour mettre à jour le coût des matières premières.
 // Le fichier n'est pas conservé : les lignes lues sont renvoyées au navigateur, où le client les vérifie
 // avant toute mise à jour. Chaque lecture est comptée dans la table invoices (30 par jour au plus).
-// Variables Netlify : ANTHROPIC_API_KEY (obligatoire) ; ANTHROPIC_MODEL (facultatif, claude-opus-5-5 par défaut).
+// Quand l'abonnement est ouvert (Stripe configuré), un compte sans abonnement a quelques lectures gratuites par mois.
+// Variables Netlify : ANTHROPIC_API_KEY (obligatoire) ; ANTHROPIC_MODEL (facultatif, claude-opus-5-5 par défaut) ;
+// SUPABASE_SERVICE_ROLE_KEY (pour qu'une lecture en échec ne compte pas).
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -42,6 +48,18 @@ export async function POST(request) {
   const type = detectFileType(bytes);
   if (!type) return json({ error: 'Format non reconnu : envoyez une photo (JPEG, PNG, WebP) ou un PDF.' }, 415);
 
+  // Lectures gratuites du mois (voir lib/abonnement.mjs) : les lectures en échec ne comptent pas
+  if (billingEnabled(process.env)) {
+    const free = freeReads(process.env);
+    const [{ data: sub }, { count }] = await Promise.all([
+      supabase.from('subscriptions').select('status').maybeSingle(),
+      countMonthReads(supabase, monthStart()),
+    ]);
+    if (readsLeft({ enabled: true, active: isActive(sub), used: count || 0, free }) <= 0) {
+      return json({ error: quotaMessage(free), subscribe: true }, 402);
+    }
+  }
+
   // Compteur anti-abus : la base refuse la ligne au-delà de 30 lectures par jour (voir prepare_invoice)
   const { data: invoice, error: countError } = await supabase.from('invoices').insert({ status: 'Lecture' }).select('id').single();
   if (countError) {
@@ -51,8 +69,12 @@ export async function POST(request) {
     console.error('Facture', countError.message);
     return json({ error: 'Lecture impossible pour le moment. Réessayez.' }, 502);
   }
+  // Seule la clé service_role peut marquer une lecture en échec (voir prepare_invoice) ; sans elle, la lecture
+  // reste « Lecture » et compte dans les lectures gratuites
   const fail = async (status, error) => {
-    await supabase.from('invoices').update({ status: 'Échec' }).eq('id', invoice.id);
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const db = key ? createAdminClient(SUPABASE_URL, key, { auth: { persistSession: false, autoRefreshToken: false } }) : supabase;
+    await db.from('invoices').update({ status: 'Échec' }).eq('id', invoice.id);
     return json({ error }, status);
   };
 

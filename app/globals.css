@@ -756,3 +756,6 @@ tr.muted td { opacity: .5; }
 .faq summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
 .faq details p { margin: 0 0 18px; color: var(--muted); line-height: 1.65; }
 
+/* ---------- Abonnement ---------- */
+.success-line { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 10px 14px; border-radius: 12px; font-weight: 600; color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 25%, transparent); }
+

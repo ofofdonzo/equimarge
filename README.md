@@ -105,6 +105,21 @@ Sans cette étape, l'onglet fonctionne mais les prix se saisissent à la main.
 
 La photo est réduite dans le navigateur, envoyée à Claude, puis oubliée : seuls le fournisseur, la date, le total et le nombre de lignes sont gardés (table `invoices`). Chaque compte peut lire 30 factures par jour et 300 par mois au plus. Le modèle utilisé est `claude-opus-5-5` ; pour en changer, ajoutez la variable `ANTHROPIC_MODEL` (par exemple `claude-haiku-5-5`, plus rapide et moins cher). Une lecture prend en général de 10 à 40 secondes ; au-delà de 50 secondes elle est abandonnée, car Netlify arrête les fonctions à 60 secondes.
 
+### 12. Abonnement Recettes Pro (Stripe)
+Tant que cette étape n'est pas faite, tout l'onglet « Recettes » reste gratuit. Dès que `STRIPE_SECRET_KEY` et `STRIPE_PRICE_RECETTES` sont définis, un compte sans abonnement garde les recettes et les matières sans limite, mais n'a plus que 3 lectures de factures par mois (variable `FACTURES_GRATUITES` pour changer ce nombre, de 0 à 30). L'abonnement débloque les lectures, dans la limite de 30 par jour et 300 par mois.
+
+Faites d'abord tout en **mode test** de Stripe (interrupteur « Test mode »), avec la carte `4242 4242 4242 4242`, puis refaites les étapes 2 à 5 en mode réel.
+1. Relancez `supabase/schema.sql` dans Supabase : il crée la table `subscriptions`.
+2. Sur [dashboard.stripe.com](https://dashboard.stripe.com), **Product catalog** > **Add product** : nom « Recettes Pro », prix récurrent mensuel en euros (par exemple 29 €). Copiez l'identifiant du prix (`price_…`).
+3. **Developers** > **API keys** : copiez la **Secret key** (`sk_…`).
+4. **Developers** > **Webhooks** > **Add endpoint** : adresse `https://equimarge.fr/api/stripe/webhook` (ou l'adresse Netlify), événements `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused` et `customer.subscription.resumed`. Copiez le **Signing secret** (`whsec_…`).
+5. Dans Netlify > **Environment variables** : `STRIPE_SECRET_KEY`, `STRIPE_PRICE_RECETTES`, `STRIPE_WEBHOOK_SECRET` (et `SUPABASE_SERVICE_ROLE_KEY`, déjà demandée à l'étape 9). Relancez un déploiement.
+6. **Settings** > **Billing** > **Customer portal** : activez la mise à jour du moyen de paiement, l'historique des factures et la résiliation « à la fin de la période ». C'est la page qu'ouvre le bouton « Gérer mon abonnement ».
+7. **Settings** > **Business** et **Settings** > **Billing** > **Invoices** : renseignez la raison sociale, l'adresse et le numéro de TVA d'Equimarge, et activez l'envoi des factures et des reçus par e-mail. TVA : si Equimarge la facture, créez un taux de 20 % (**Product catalog** > **Tax rates**) et mettez son identifiant (`txr_…`) dans la variable `STRIPE_TAX_RATE` ; en franchise de TVA, ajoutez sur les factures la mention « TVA non applicable, art. 293 B du CGI ».
+8. Facultatif : un code promotionnel (**Product catalog** > **Coupons**, par exemple « FONDATEUR » à -30 % pour toujours) ; la page de paiement propose d'en saisir un.
+
+Le prix affiché sur « Mon compte » et sur la page `/artisans` est lu dans Stripe (mis à jour en moins d'une heure). L'appli iPhone ne propose pas l'abonnement : Apple n'autorise pas un paiement extérieur dans une appli. La suppression d'un compte résilie son abonnement chez Stripe.
+
 ## Travailler en local (optionnel)
 ```bash
 npm install
@@ -116,6 +131,7 @@ npm run lint && npm test     # vérifications, aussi lancées par GitHub à chaq
 ## Sécurité et conformité
 - **Accès aux données** : chaque table est protégée par des règles Supabase (RLS) ; un client ne voit que ses propres données.
 - **Lecture des factures** : réservée aux comptes connectés, 30 par jour et 300 par mois au plus par compte (compteur tenu par la base), fichier vérifié par ses premiers octets (JPEG, PNG, WebP ou PDF, 4 Mo au plus) et jamais conservé. Les prix ne changent qu'après vérification par le client.
+- **Paiement** : géré par Stripe (le site ne voit jamais les cartes). L'état de l'abonnement n'est écrit que par le webhook signé de Stripe, avec la clé `service_role`, et la base ignore les événements arrivés dans le désordre.
 - **Formulaire public** : 3 demandes par heure au plus pour un même e-mail, 30 par heure au total, et un champ piège contre les robots.
 - **En-têtes de sécurité** (`next.config.mjs`) : le site ne peut pas être affiché dans une autre page et ne charge que ses propres fichiers.
 - **RGPD** : polices servies par le site (aucun appel à Google), demandes supprimables depuis `/admin`, purge automatique après 3 ans sans échange.

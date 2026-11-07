@@ -3,11 +3,14 @@ import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/supabase/config';
 import { bearerToken, corsHeaders, originAllowed } from '@/lib/app-origin.mjs';
+import { isOpen } from '@/lib/abonnement.mjs';
+import { stripeClient } from '@/lib/stripe';
 
 // Suppression du compte par son titulaire, depuis le site (cookie de session) ou l'application
 // (en-tête Authorization). Exigée par l'App Store (règle 5.1.1 v) et par le RGPD (droit à l'effacement).
 // Effacés : le compte, ses appareils, ses outils de marge, ses recettes et factures lues (effacement en cascade
-// par la base), son auto-diagnostic s'il n'y a pas eu de mission.
+// par la base), son auto-diagnostic s'il n'y a pas eu de mission. Un abonnement Recettes Pro en cours est résilié
+// chez Stripe avant l'effacement, pour qu'aucun prélèvement ne suive (variable STRIPE_SECRET_KEY).
 // Conservés, détachés du compte : le dossier d'une mission et ses documents (obligations contractuelles
 // et comptables), comme l'explique la politique de confidentialité.
 // Variable Netlify : SUPABASE_SERVICE_ROLE_KEY.
@@ -46,6 +49,22 @@ export async function DELETE(request) {
   const db = createAdminClient(SUPABASE_URL, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data: admin } = await db.from('admins').select('user_id').eq('user_id', user.id).maybeSingle();
   if (admin) return json({ error: 'Le compte administrateur ne se supprime pas depuis cet écran.' }, 409, origin);
+
+  // Abonnement encore ouvert chez Stripe : résilié tout de suite, sinon le compte n'est pas supprimé
+  const { data: sub } = await db.from('subscriptions').select('stripe_subscription_id,status').eq('user_id', user.id).maybeSingle();
+  if (isOpen(sub)) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return json({ error: 'Votre abonnement doit être résilié avant la suppression du compte. Écrivez à contact@equimarge.fr.' }, 409, origin);
+    }
+    try {
+      await stripeClient().subscriptions.cancel(sub.stripe_subscription_id);
+    } catch (e) {
+      if (e.code !== 'resource_missing') {
+        console.error('Résiliation Stripe', e.type, e.message);
+        return json({ error: "Résiliation de l'abonnement impossible pour le moment. Réessayez." }, 502, origin);
+      }
+    }
+  }
 
   // Auto-diagnostic sans mission : effacé avec ses éventuels fichiers
   const { data: own } = await db.from('dossiers').select('id').eq('client_id', user.id).eq('status', 'Auto-diagnostic');

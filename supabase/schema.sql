@@ -1202,6 +1202,9 @@ as $$
     (user_id, stripe_customer_id, stripe_subscription_id, status, price_id, current_period_end, cancel_at_period_end, event_at, updated_at)
   select p_user_id, p_customer, p_subscription, p_status, p_price, p_period_end, p_cancel, p_event_at, now()
   where exists (select 1 from auth.users u where u.id = p_user_id)
+    -- Sécurité supplémentaire : la fonction n'agit que pour le site (clé service_role), même si un droit d'exécution
+    -- était accordé par erreur à un autre rôle
+    and coalesce((select auth.role()), '') = 'service_role'
   on conflict (user_id) do update set
     stripe_customer_id = excluded.stripe_customer_id,
     stripe_subscription_id = excluded.stripe_subscription_id,

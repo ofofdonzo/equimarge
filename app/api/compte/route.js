@@ -6,7 +6,8 @@ import { bearerToken, corsHeaders, originAllowed } from '@/lib/app-origin.mjs';
 
 // Suppression du compte par son titulaire, depuis le site (cookie de session) ou l'application
 // (en-tête Authorization). Exigée par l'App Store (règle 5.1.1 v) et par le RGPD (droit à l'effacement).
-// Effacés : le compte, ses appareils, ses outils de marge, son auto-diagnostic s'il n'y a pas eu de mission.
+// Effacés : le compte, ses appareils, ses outils de marge, ses recettes et factures lues (effacement en cascade
+// par la base), son auto-diagnostic s'il n'y a pas eu de mission.
 // Conservés, détachés du compte : le dossier d'une mission et ses documents (obligations contractuelles
 // et comptables), comme l'explique la politique de confidentialité.
 // Variable Netlify : SUPABASE_SERVICE_ROLE_KEY.

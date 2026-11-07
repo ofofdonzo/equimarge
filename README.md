@@ -4,6 +4,7 @@ Site et application pour PME, en trois pôles : mise en conformité (sur devis),
 
 - **Accueil** : présentation et formules.
 - **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
+- **Recettes** (`/tableau-de-bord/recettes`) : pour les artisans de l'alimentation. Le client photographie une facture fournisseur, Claude en relève les lignes, le client les vérifie puis met à jour le coût de ses matières premières en un clic. Chaque recette (quantités pour une fournée, nombre de pièces, prix affiché TTC, TVA) donne son coût matière, son taux de marque et un prix conseillé ; les recettes sous l'objectif et les hausses de prix de 5 % ou plus sont signalées. Les calculs sont dans `lib/recettes.mjs`.
 - **Mon dossier conformité** (`/tableau-de-bord/conformite`) : chaque client a un dossier. Sans mission, il y fait l'auto-diagnostic gratuit (44 questions sur six domaines) ; pendant une mission, il répond à vos demandes d'informations, dépose ses documents et consulte tableau de bord, plan d'action, registre RGPD, risques et livrables (en lecture seule), exportables vers Excel. Les questions se modifient dans `lib/conformite.mjs`.
 - **Dossiers clients** (`/admin/clients`, administrateur) : la liste de tous les dossiers (missions, auto-diagnostics, terminés) et, pour chacun, une fiche où vous réalisez la mission : demandes d'informations, documents et livrables, auto-diagnostic, plan d'action, registre, risques. Un dossier s'ouvre depuis une demande (bouton « Ouvrir un dossier client », automatique quand elle passe en « Gagnée ») ou avec « Nouveau dossier ». Le client y accède en créant son espace avec l'e-mail du dossier (bouton « Inviter le client »).
 - **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
@@ -95,6 +96,14 @@ Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages 
 
 Pour être trouvé plus vite, créez des liens vers le site : fiche Google Business Profile, page LinkedIn, annuaires professionnels, signature e-mail.
 
+### 11. Lecture des factures par Claude (onglet « Recettes »)
+Sans cette étape, l'onglet fonctionne mais les prix se saisissent à la main.
+1. Relancez `supabase/schema.sql` dans Supabase (SQL Editor) : il crée les tables des recettes.
+2. Créez une clé sur [platform.claude.com](https://platform.claude.com) : **API Keys** > **Create Key**. Ajoutez du crédit dans **Billing** et, par prudence, un plafond de dépense mensuel dans **Limits**.
+3. Dans Netlify > **Site configuration** > **Environment variables**, ajoutez `ANTHROPIC_API_KEY` avec cette clé, puis relancez un déploiement.
+
+La photo est réduite dans le navigateur, envoyée à Claude, puis oubliée : seuls le fournisseur, la date, le total et le nombre de lignes sont gardés (table `invoices`). Chaque compte peut lire 30 factures par jour et 300 par mois au plus. Le modèle utilisé est `claude-opus-5-5` ; pour en changer, ajoutez la variable `ANTHROPIC_MODEL` (par exemple `claude-haiku-5-5`, plus rapide et moins cher). Une lecture prend en général de 10 à 40 secondes ; au-delà de 50 secondes elle est abandonnée, car Netlify arrête les fonctions à 60 secondes.
+
 ## Travailler en local (optionnel)
 ```bash
 npm install
@@ -105,6 +114,7 @@ npm run lint && npm test     # vérifications, aussi lancées par GitHub à chaq
 
 ## Sécurité et conformité
 - **Accès aux données** : chaque table est protégée par des règles Supabase (RLS) ; un client ne voit que ses propres données.
+- **Lecture des factures** : réservée aux comptes connectés, 30 par jour et 300 par mois au plus par compte (compteur tenu par la base), fichier vérifié par ses premiers octets (JPEG, PNG, WebP ou PDF, 4 Mo au plus) et jamais conservé. Les prix ne changent qu'après vérification par le client.
 - **Formulaire public** : 3 demandes par heure au plus pour un même e-mail, 30 par heure au total, et un champ piège contre les robots.
 - **En-têtes de sécurité** (`next.config.mjs`) : le site ne peut pas être affiché dans une autre page et ne charge que ses propres fichiers.
 - **RGPD** : polices servies par le site (aucun appel à Google), demandes supprimables depuis `/admin`, purge automatique après 3 ans sans échange.

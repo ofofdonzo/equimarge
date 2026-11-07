@@ -1131,6 +1131,8 @@ create policy "factures : modification" on public.invoices
   for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- Anti-abus : 30 lectures par jour et 300 par 30 jours au plus par compte. La date est fixée par la base.
+-- Une lecture en échec ne compte pas dans les lectures gratuites du mois (abonnement, section 13) : seul le site,
+-- avec la clé service_role, peut donc marquer une lecture « Échec ».
 create or replace function public.prepare_invoice()
 returns trigger
 language plpgsql
@@ -1140,6 +1142,7 @@ as $$
 begin
   if tg_op = 'INSERT' then
     new.created_at := now();
+    new.status := 'Lecture';
     if (select count(*) from public.invoices where user_id = new.user_id and created_at > now() - interval '1 day') >= 30
        or (select count(*) from public.invoices where user_id = new.user_id and created_at > now() - interval '30 days') >= 300 then
       raise exception 'limite_factures' using hint = '30 factures par jour et 300 par mois au maximum';
@@ -1147,6 +1150,9 @@ begin
   else
     new.created_at := old.created_at;
     new.user_id := old.user_id;
+    if new.status = 'Échec' and old.status is distinct from 'Échec' and coalesce((select auth.role()), '') <> 'service_role' then
+      new.status := old.status;
+    end if;
   end if;
   return new;
 end;
@@ -1158,6 +1164,59 @@ create trigger invoices_prepare before insert or update on public.invoices
 revoke all on function public.touch_updated_at() from public, anon, authenticated;
 revoke all on function public.record_ingredient_price() from public, anon, authenticated;
 revoke all on function public.prepare_invoice() from public, anon, authenticated;
+
+-- 13. Abonnement « Recettes Pro » (paiement par Stripe)
+-- Une ligne par compte, écrite uniquement par le site à la réception des événements Stripe (/api/stripe/webhook,
+-- clé service_role, fonction save_subscription). Le client lit la sienne ; personne ne peut l'écrire depuis le
+-- navigateur. Les règles d'accès à l'abonnement sont dans lib/abonnement.mjs.
+create table if not exists public.subscriptions (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  stripe_customer_id text not null check (char_length(stripe_customer_id) <= 255),
+  stripe_subscription_id text not null check (char_length(stripe_subscription_id) <= 255),
+  status text not null check (char_length(status) <= 40),
+  price_id text check (char_length(price_id) <= 255),
+  current_period_end timestamptz,
+  cancel_at_period_end boolean not null default false,
+  event_at timestamptz not null,
+  updated_at timestamptz not null default now()
+);
+create index if not exists subscriptions_customer_idx on public.subscriptions(stripe_customer_id);
+alter table public.subscriptions enable row level security;
+drop policy if exists "abonnement : lecture" on public.subscriptions;
+create policy "abonnement : lecture" on public.subscriptions
+  for select to authenticated using (user_id = (select auth.uid()));
+
+-- Enregistre l'état d'un abonnement Stripe. Stripe peut envoyer ses événements dans le désordre : un événement
+-- plus ancien que le dernier enregistré est ignoré, et la fin d'un ancien abonnement n'écrase pas un abonnement
+-- plus récent du même compte. Un compte supprimé entre-temps est ignoré.
+create or replace function public.save_subscription(
+  p_user_id uuid, p_customer text, p_subscription text, p_status text, p_price text,
+  p_period_end timestamptz, p_cancel boolean, p_event_at timestamptz
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into public.subscriptions as s
+    (user_id, stripe_customer_id, stripe_subscription_id, status, price_id, current_period_end, cancel_at_period_end, event_at, updated_at)
+  select p_user_id, p_customer, p_subscription, p_status, p_price, p_period_end, p_cancel, p_event_at, now()
+  where exists (select 1 from auth.users u where u.id = p_user_id)
+  on conflict (user_id) do update set
+    stripe_customer_id = excluded.stripe_customer_id,
+    stripe_subscription_id = excluded.stripe_subscription_id,
+    status = excluded.status,
+    price_id = excluded.price_id,
+    current_period_end = excluded.current_period_end,
+    cancel_at_period_end = excluded.cancel_at_period_end,
+    event_at = excluded.event_at,
+    updated_at = now()
+  where s.event_at <= excluded.event_at
+    and (s.stripe_subscription_id = excluded.stripe_subscription_id
+         or excluded.status not in ('canceled', 'incomplete_expired'));
+$$;
+revoke all on function public.save_subscription(uuid, text, text, text, text, timestamptz, boolean, timestamptz) from public, anon, authenticated;
+grant execute on function public.save_subscription(uuid, text, text, text, text, timestamptz, boolean, timestamptz) to service_role;
 
 -- Droits d'exécution des fonctions.
 -- Les fonctions de déclencheur s'exécutent toutes seules à chaque ajout ou modification : personne n'a besoin

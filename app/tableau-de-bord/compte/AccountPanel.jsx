@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import DeletionNotice, { DELETE_WORD } from '@/components/DeletionNotice';
 
 
-export default function AccountPanel({ email, isAdmin }) {
+export default function AccountPanel({ email, isAdmin, subscribed }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [word, setWord] = useState('');
@@ -54,6 +54,7 @@ export default function AccountPanel({ email, isAdmin }) {
         ) : !open ? (
           <>
             <DeletionNotice />
+            {subscribed && <p className="note" style={{ margin: '10px 0 0' }}>Votre abonnement Recettes Pro sera résilié immédiatement, sans autre prélèvement.</p>}
             <div className="row" style={{ marginTop: 14 }}>
               <button type="button" className="btn ghost danger" onClick={() => setOpen(true)}>Supprimer mon compte…</button>
             </div>
@@ -61,6 +62,7 @@ export default function AccountPanel({ email, isAdmin }) {
         ) : (
           <form className="stack" style={{ gap: 10 }} onSubmit={remove}>
             <DeletionNotice />
+            {subscribed && <p className="note" style={{ margin: 0 }}>Votre abonnement Recettes Pro sera résilié immédiatement, sans autre prélèvement.</p>}
             <div className="field">
               <label htmlFor="confirm-delete">Pour confirmer, écrivez {DELETE_WORD}</label>
               <input id="confirm-delete" autoComplete="off" value={word} onChange={(e) => setWord(e.target.value)} />

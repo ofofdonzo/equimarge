@@ -192,7 +192,7 @@ export default function Home() {
           <Link href="/artisans" className="feature domain-card">
             <div className="feature-icon"><Receipt size={22} /></div>
             <h3>Artisans de l’alimentation</h3>
-            <p className="note">Vos factures fournisseurs mettent à jour le coût de chaque recette, avec un prix conseillé. Gratuit pendant le lancement.</p>
+            <p className="note">Vos factures fournisseurs mettent à jour le coût de chaque recette, avec un prix conseillé. Version gratuite pour commencer.</p>
             <span className="domain-link">Découvrir <ArrowRight size={16} /></span>
           </Link>
           <Link href="/automatisation" className="feature domain-card">

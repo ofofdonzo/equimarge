@@ -1,6 +1,7 @@
 // Bloque tout secret publié par erreur dans le dépôt (lancé par GitHub à chaque modification : npm run secrets).
 // Autorisé : la clé publique « anon » de Supabase. Refusé : toute autre clé Supabase (service_role…),
-// les clés secrètes Supabase (sb_secret_…), les clés d'API Anthropic (sk-ant-…) et les clés privées.
+// les clés secrètes Supabase (sb_secret_…), les clés d'API Anthropic (sk-ant-…), les clés secrètes et secrets de
+// webhook Stripe (sk_live_…, rk_live_…, whsec_…) et les clés privées.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
@@ -27,6 +28,8 @@ for (const file of files) {
   }
   if (/sb_secret_[\w-]{10,}/.test(text)) problems.push(`${file} : clé secrète Supabase (sb_secret_…)`);
   if (/sk-ant-[\w-]{20,}/.test(text)) problems.push(`${file} : clé d'API Anthropic (sk-ant-…)`);
+  if (/\b[sr]k_(live|test)_[A-Za-z0-9]{16,}/.test(text)) problems.push(`${file} : clé secrète Stripe`);
+  if (/\bwhsec_[A-Za-z0-9]{16,}/.test(text)) problems.push(`${file} : secret de webhook Stripe (whsec_…)`);
   if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(text)) problems.push(`${file} : clé privée`);
 }
 

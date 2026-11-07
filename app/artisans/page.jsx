@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Alert, ArrowRight, Check, Lock, Percent, Receipt, Target, TrendUp } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
+import { freeReads, PLAN_NAME, priceLabel } from '@/lib/abonnement.mjs';
+import { recettesPrice } from '@/lib/stripe';
 
 export const metadata = {
   title: 'Coût matière et prix de vente pour artisans de l’alimentation — Equimarge',
@@ -8,6 +10,8 @@ export const metadata = {
     'Photographiez vos factures fournisseurs : le coût de vos matières est mis à jour, chaque recette est recalculée et les produits qui ne rapportent plus assez sont signalés, avec un prix conseillé. Boulangers, pâtissiers, traiteurs, restaurateurs.',
   alternates: { canonical: '/artisans' },
 };
+// Page statique, régénérée chaque heure pour suivre le prix de l'abonnement fixé dans Stripe
+export const revalidate = 3600;
 
 const SIGNUP = '/connexion?mode=inscription&suite=/tableau-de-bord/recettes';
 
@@ -34,11 +38,15 @@ const PRIVACY = [
   'Vos données ne sont visibles que par vous et s’effacent avec votre compte, à tout moment.',
 ];
 
+// Réponse « Combien ça coûte ? » : selon que l'abonnement est ouvert (prix lu dans Stripe) ou non
+function costAnswer(price, free) {
+  if (!price) {
+    return 'Rien pendant le lancement, sans carte bancaire. Si l’outil devient payant, vous serez prévenu à l’avance et rien ne vous sera facturé sans votre accord.';
+  }
+  return `La version gratuite comprend les recettes et les matières sans limite, les prix conseillés, les alertes et ${free} lecture${free > 1 ? 's' : ''} de facture par mois, sans carte bancaire. ${PLAN_NAME}, à ${price}, lit toutes vos factures (jusqu’à 300 par mois). Sans engagement : vous résiliez en ligne quand vous voulez, l’abonnement s’arrête à la fin de la période payée.`;
+}
+
 const FAQ = [
-  {
-    q: 'Combien ça coûte ?',
-    a: 'Rien pendant le lancement, sans carte bancaire. Si l’outil devient payant, vous serez prévenu à l’avance et rien ne vous sera facturé sans votre accord.',
-  },
   {
     q: 'Et si la lecture de la facture se trompe ?',
     a: 'Vous voyez chaque ligne avant la mise à jour : quantité, total hors taxes et coût par kilo, litre ou pièce. Vous pouvez rattacher une ligne à une autre matière, la renommer ou l’ignorer. Les prix se corrigent aussi à la main à tout moment.',
@@ -103,8 +111,12 @@ function Preview() {
   );
 }
 
-export default function Page() {
+export default async function Page() {
   const base = siteUrl();
+  const stripePrice = await recettesPrice();
+  const price = priceLabel(stripePrice);
+  const free = freeReads(process.env);
+  const faq = [{ q: 'Combien ça coûte ?', a: costAnswer(price, free) }, ...FAQ];
   // Fiches lues par les moteurs de recherche : l'outil et ses questions fréquentes (mêmes textes que la page)
   const jsonLd = [
     {
@@ -115,12 +127,15 @@ export default function Page() {
       operatingSystem: 'Web',
       url: `${base}/artisans`,
       inLanguage: 'fr-FR',
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+      offers: [
+        { '@type': 'Offer', name: 'Gratuit', price: '0', priceCurrency: 'EUR' },
+        ...(price ? [{ '@type': 'Offer', name: PLAN_NAME, price: String(stripePrice.unit_amount / 100), priceCurrency: stripePrice.currency.toUpperCase() }] : []),
+      ],
     },
     {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: FAQ.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+      mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
     },
   ];
 
@@ -146,7 +161,7 @@ export default function Page() {
             </a>
           </div>
           <ul className="trust">
-            <li><Check size={18} />Gratuit pendant le lancement</li>
+            <li><Check size={18} />{price ? 'Version gratuite, sans limite de durée' : 'Gratuit pendant le lancement'}</li>
             <li><Check size={18} />Sans carte bancaire</li>
             <li><Check size={18} />Vous validez chaque prix</li>
           </ul>
@@ -211,13 +226,48 @@ export default function Page() {
         </div>
       </section>
 
+      {price && (
+        <section className="section" id="tarifs">
+          <div className="section-head">
+            <span className="eyebrow">Tarifs</span>
+            <h2>Commencez gratuitement, abonnez-vous quand vous voulez</h2>
+          </div>
+          <div className="grid2">
+            <article className="price-card">
+              <h3 style={{ margin: 0 }}>Gratuit</h3>
+              <p className="price">0&nbsp;€</p>
+              <p className="note" style={{ margin: 0 }}>Sans carte bancaire, sans limite de durée.</p>
+              <ul className="checks">
+                <li><Check size={16} />Recettes et matières premières sans limite</li>
+                <li><Check size={16} />Coût matière, taux de marque et prix conseillé</li>
+                <li><Check size={16} />Alertes de hausse de prix</li>
+                <li><Check size={16} />{free} lecture{free > 1 ? 's' : ''} de facture par mois</li>
+              </ul>
+              <Link href={SIGNUP} className="btn ghost">Créer mon espace</Link>
+            </article>
+            <article className="price-card featured">
+              <h3 style={{ margin: 0 }}>{PLAN_NAME}</h3>
+              <p className="price">{price}</p>
+              <p className="note" style={{ margin: 0 }}>Sans engagement, résiliable en ligne.</p>
+              <ul className="checks">
+                <li><Check size={16} />Tout ce que contient la version gratuite</li>
+                <li><Check size={16} />Jusqu’à 300 factures lues par mois</li>
+                <li><Check size={16} />Facture mensuelle par e-mail</li>
+                <li><Check size={16} />Paiement sécurisé par Stripe</li>
+              </ul>
+              <Link href={SIGNUP} className="btn">Essayer gratuitement <ArrowRight size={18} /></Link>
+            </article>
+          </div>
+        </section>
+      )}
+
       <section className="section" id="questions">
         <div className="section-head">
           <span className="eyebrow">Questions fréquentes</span>
           <h2>Avant de commencer</h2>
         </div>
         <div className="faq">
-          {FAQ.map(({ q, a }) => (
+          {faq.map(({ q, a }) => (
             <details key={q}>
               <summary>{q}</summary>
               <p>{a}</p>

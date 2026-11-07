@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { bearerToken, corsHeaders, originAllowed } from '../lib/app-origin.mjs';
+import { bearerToken, corsHeaders, originAllowed, returnOrigin } from '../lib/app-origin.mjs';
 
 const HOST = 'equimarge.netlify.app';
 
@@ -29,4 +29,10 @@ test('bearerToken ne lit qu’un jeton bien formé', () => {
   assert.equal(bearerToken('Basic abcdefghijklmnopqrstuvwxyz'), null);
   assert.equal(bearerToken('Bearer abc def ghi jkl mno pqr stu'), null);
   assert.equal(bearerToken(undefined), null);
+});
+
+test('returnOrigin : page du site, sinon adresse publique', () => {
+  assert.equal(returnOrigin('https://equimarge.fr', 'https://x.fr'), 'https://equimarge.fr');
+  assert.equal(returnOrigin('capacitor://localhost', 'https://equimarge.fr'), 'https://equimarge.fr');
+  assert.equal(returnOrigin(null, 'https://equimarge.fr'), 'https://equimarge.fr');
 });

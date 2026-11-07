@@ -1,7 +1,9 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { Check, Receipt } from '@/components/icons';
+import Link from 'next/link';
+import { ArrowRight, Check, Receipt } from '@/components/icons';
 import { groupInvoiceLines, matchIngredient, MAX_INVOICE_BYTES } from '@/lib/recettes.mjs';
+import { PLAN_NAME, quotaMessage, readsLeft } from '@/lib/abonnement.mjs';
 import { dbMessage } from './data';
 import { date, eur, num, perUnit } from './format';
 
@@ -39,9 +41,12 @@ async function prepareFile(file) {
 }
 
 // Lecture d'une facture : envoi, vérification des lignes par le client, puis mise à jour des prix
-export default function InvoiceReader({ ingredients, supabase, save, onApplied }) {
+export default function InvoiceReader({ ingredients, supabase, save, onApplied, quota }) {
   const [phase, setPhase] = useState('idle'); // idle | reading | review | applying | done
   const [error, setError] = useState('');
+  // Lectures gratuites du mois (sans abonnement, quand l'abonnement est ouvert)
+  const [used, setUsed] = useState(quota?.used || 0);
+  const left = quota ? readsLeft({ ...quota, used }) : Infinity;
   const [invoice, setInvoice] = useState(null);
   const [rows, setRows] = useState([]);
   const [summary, setSummary] = useState('');
@@ -67,6 +72,7 @@ export default function InvoiceReader({ ingredients, supabase, save, onApplied }
     try {
       const res = await fetch('/api/factures/lire', { method: 'POST', body });
       data = await res.json().catch(() => ({ error: "La lecture n'a pas abouti. Réessayez." }));
+      if (res.status === 402 && quota) setUsed(quota.free);
       if (!res.ok) throw new Error(data.error || "La lecture n'a pas abouti. Réessayez.");
     } catch (err) {
       setPhase('idle');
@@ -76,6 +82,7 @@ export default function InvoiceReader({ ingredients, supabase, save, onApplied }
       setPhase('idle');
       return setError("Aucune ligne de produit n'a été trouvée sur ce document. Essayez une photo plus nette, bien à plat.");
     }
+    setUsed((n) => n + 1);
     setInvoice(data);
     setRows(data.lines.map((l, i) => ({ ...l, key: i, choice: matchIngredient(l, ingredients) || 'new', name: l.designation })));
     setPhase('review');
@@ -123,7 +130,9 @@ export default function InvoiceReader({ ingredients, supabase, save, onApplied }
     <div className={'panel' + (phase === 'done' ? ' success' : '')}>
       <div className="panel-head">
         <h2>Lire une facture fournisseur</h2>
-        {(phase === 'idle' || phase === 'reading' || phase === 'done') && (
+        {(phase === 'idle' || phase === 'done') && left === 0 ? (
+          <Link className="btn sm" href="/tableau-de-bord/compte#abonnement">S'abonner à {PLAN_NAME} <ArrowRight size={16} /></Link>
+        ) : (phase === 'idle' || phase === 'reading' || phase === 'done') && (
           <label className={'btn sm file-btn' + (busy ? ' disabled' : '')}>
             <Receipt size={16} />
             {phase === 'reading' ? 'Lecture en cours…' : phase === 'done' ? 'Lire une autre facture' : 'Photographier ou choisir'}
@@ -140,6 +149,13 @@ export default function InvoiceReader({ ingredients, supabase, save, onApplied }
           </p>
         )}
         {phase === 'reading' && <p className="note" style={{ margin: 0 }}>Lecture de la facture, comptez 10 à 40 secondes…</p>}
+        {(phase === 'idle' || phase === 'done') && Number.isFinite(left) && (
+          <p className="note" style={{ margin: '8px 0 0' }}>
+            {left > 0
+              ? `${left} lecture${left > 1 ? 's' : ''} gratuite${left > 1 ? 's' : ''} restante${left > 1 ? 's' : ''} ce mois-ci. ${PLAN_NAME} : jusqu'à 300 factures par mois.`
+              : quotaMessage(quota.free)}
+          </p>
+        )}
         {phase === 'done' && (
           <p style={{ margin: 0 }}><Check size={18} style={{ verticalAlign: '-3px', color: 'var(--ok)' }} /> {summary}</p>
         )}

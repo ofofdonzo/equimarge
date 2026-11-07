@@ -13,7 +13,7 @@ import Ingredients from './Ingredients';
 
 const MAX_ALERTS = 6;
 
-export default function Recettes({ initial }) {
+export default function Recettes({ initial, quota }) {
   const supabase = useMemo(() => createClient(), []);
   const save = useAutosave();
   const [ingredients, setIngredients] = useState(initial.ingredients);
@@ -120,7 +120,7 @@ export default function Recettes({ initial }) {
         </div>
       )}
 
-      <InvoiceReader ingredients={ingredients} supabase={supabase} save={save} onApplied={afterInvoice} />
+      <InvoiceReader ingredients={ingredients} supabase={supabase} save={save} onApplied={afterInvoice} quota={quota} />
 
       <RecipeList
         recipes={recipes}

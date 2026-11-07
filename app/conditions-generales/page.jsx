@@ -8,12 +8,13 @@ export default function Page() {
   return (
     <article className="legal">
       <h1>Conditions générales</h1>
-      <p className="note">Dernière mise à jour : 4 novembre 2026</p>
+      <p className="note">Dernière mise à jour : 7 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
-        Ces conditions régissent l'utilisation de l'espace gratuit de suivi de marge et la vente des prestations
-        d'Equimarge (diagnostic de marge, mise en conformité, automatisation). Les services sont réservés aux
+        Ces conditions régissent l'utilisation de l'espace gratuit (suivi de marge, recettes, auto-diagnostic),
+        l'abonnement « Recettes Pro » et la vente des prestations d'Equimarge (diagnostic de marge, mise en conformité,
+        automatisation). Les services sont réservés aux
         professionnels : entreprises, associations et organismes publics. Ils ne s'adressent pas aux consommateurs.
       </p>
 
@@ -21,6 +22,7 @@ export default function Page() {
       <ul>
         <li>L'accès est gratuit et nécessite un compte. Vous êtes responsable de vos identifiants et des données que vous saisissez.</li>
         <li>L'espace comprend un auto-diagnostic de conformité gratuit et un outil de suivi de marge. Pendant une mission, il donne accès au dossier partagé avec Equimarge : demandes d'informations, dépôt de documents, livrables, plan d'action, registre des traitements et cartographie des risques, exportables vers Excel.</li>
+        <li>L'onglet « Recettes » calcule le coût matière de vos recettes à partir des prix de vos matières premières, saisis à la main ou relevés sur vos factures fournisseurs par un service d'intelligence artificielle. Chaque ligne relevée vous est présentée pour vérification avant toute mise à jour : vous restez responsable des prix enregistrés. Sans abonnement, le nombre de factures lues chaque mois est limité ; la limite en vigueur est indiquée dans l'onglet.</li>
         <li>Les calculs sont indicatifs et dépendent de vos saisies. Ils ne remplacent pas l'avis d'un expert-comptable.</li>
         <li>Les outils de conformité aident à organiser votre démarche. Ils ne constituent pas une consultation juridique et ne garantissent pas la conformité de votre entreprise, qui reste responsable de ses obligations.</li>
         <li>L'outil est fourni sans garantie de disponibilité permanente. Equimarge peut suspendre un compte utilisé de manière abusive.</li>
@@ -50,7 +52,17 @@ export default function Page() {
         </li>
       </ul>
 
-      <h2>5. Confidentialité et données personnelles</h2>
+      <h2>5. Abonnement Recettes Pro</h2>
+      <ul>
+        <li>L'abonnement donne accès à la lecture des factures fournisseurs dans la limite de 30 factures par jour et 300 par mois, pour un compte. Son prix est affiché sur le site et sur la page de paiement avant la souscription.</li>
+        <li>Il est payé d'avance par carte bancaire, chaque mois (ou chaque année, selon la formule choisie), par l'intermédiaire de Stripe. Il se renouvelle automatiquement à chaque échéance. Une facture est émise à chaque paiement et envoyée par e-mail.</li>
+        <li>Il est sans engagement : vous le résiliez à tout moment depuis la page « Mon compte », bouton « Gérer mon abonnement ». La résiliation prend effet à la fin de la période déjà payée, qui n'est pas remboursée. La suppression du compte résilie l'abonnement immédiatement.</li>
+        <li>En cas d'échec de paiement, Stripe présente de nouveau le paiement pendant quelques jours ; sans régularisation, l'abonnement prend fin et le compte revient à la version gratuite, sans perte de données.</li>
+        <li>Toute modification du prix est annoncée par e-mail au moins 30 jours avant de s'appliquer ; vous pouvez résilier avant cette date.</li>
+        <li>Les services étant réservés aux professionnels, le droit de rétractation prévu pour les consommateurs ne s'applique pas.</li>
+      </ul>
+
+      <h2>6. Confidentialité et données personnelles</h2>
       <ul>
         <li>Chaque partie garde confidentielles les informations reçues de l'autre pendant la mission et après sa fin.</li>
         <li>
@@ -60,20 +72,20 @@ export default function Page() {
         <li>Les données traitées par Equimarge pour son propre compte sont décrites dans la <Link href="/confidentialite">politique de confidentialité</Link>.</li>
       </ul>
 
-      <h2>6. Responsabilité</h2>
+      <h2>7. Responsabilité</h2>
       <p>
         La responsabilité d'Equimarge est limitée aux dommages directs et prouvés, dans la limite du montant payé pour la
-        prestation concernée. Les décisions prises à partir des livrables d'Equimarge restent sous la responsabilité du
+        prestation concernée ou, pour l'abonnement, des sommes payées au cours des douze derniers mois. Les décisions prises à partir des livrables d'Equimarge restent sous la responsabilité du
         client.
       </p>
 
-      <h2>7. Propriété intellectuelle</h2>
+      <h2>8. Propriété intellectuelle</h2>
       <p>
         Une fois la prestation payée, le client peut utiliser librement les documents livrés pour ses besoins internes.
         Equimarge conserve ses méthodes, outils et modèles.
       </p>
 
-      <h2>8. Droit applicable et litiges</h2>
+      <h2>9. Droit applicable et litiges</h2>
       <p>
         Ces conditions sont soumises au droit français. En cas de différend, les parties recherchent d'abord une solution
         amiable ; à défaut, le litige est porté devant les tribunaux du ressort de la cour d'appel de Paris, sauf règle

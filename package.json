@@ -11,6 +11,7 @@
     "secrets": "node scripts/verifier-secrets.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.1.0",
     "@capacitor/app": "8.1.2",
     "@capacitor/browser": "8.0.5",
     "@capacitor/core": "8.6.0",

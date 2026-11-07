@@ -531,8 +531,9 @@ html, body { overflow-x: clip; }
 }
 
 /* ---------- Mon espace : navigation et espace conformité ---------- */
-.space-nav { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface-2); justify-self: start; }
-.space-nav a { padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: .9rem; color: var(--muted); text-decoration: none; transition: color .15s, background-color .15s; }
+.space-nav { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface-2); justify-self: start; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.space-nav::-webkit-scrollbar { display: none; }
+.space-nav a { flex: none; white-space: nowrap; padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: .9rem; color: var(--muted); text-decoration: none; transition: color .15s, background-color .15s; }
 .space-nav a:hover { color: var(--fg); }
 .space-nav a[aria-current="page"] { background: var(--raised); color: var(--fg); box-shadow: var(--shadow-sm); }
 .ws-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--line); }
@@ -711,3 +712,47 @@ fieldset.plain:disabled .check input { accent-color: var(--muted); }
 .btn.ghost.danger { background: var(--surface); color: #B91C1C; border-color: color-mix(in srgb, #B91C1C 45%, var(--line)); }
 .btn.ghost.danger:hover { color: #991B1B; border-color: #991B1B; }
 .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* ---------- Recettes et factures ---------- */
+.kpis.kpis3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 860px) { .kpis.kpis3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.steps-list { display: grid; gap: 10px; margin: 0; padding-left: 22px; }
+.alert-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.alert-list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: .92rem; line-height: 1.5; }
+.alert-list li svg { flex: none; margin-top: 2px; color: var(--warn); }
+.alert-list li.bad svg { color: var(--bad); }
+.up { color: var(--bad); font-weight: 600; }
+td select.cell {
+  width: 100%; min-width: 150px; font: inherit; font-size: .92rem; color: var(--fg); background-color: var(--surface-2);
+  border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer;
+}
+td select.cell:hover { border-color: var(--line-strong); }
+td select.cell:focus { outline: 2px solid transparent; border-color: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }
+td input.left { text-align: left; }
+td.cell-text { min-width: 200px; font-size: .92rem; overflow-wrap: anywhere; }
+tr.muted td { opacity: .5; }
+.recipe-detail { display: grid; gap: 14px; padding: 8px 4px 12px; text-align: left; white-space: normal; }
+.recipe-detail .fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.recipe-detail .field input, .recipe-detail .field select { padding: 9px 12px; text-align: left; }
+.tbl-items { min-width: 520px; }
+.tbl-items td, .tbl-items th { background: transparent; }
+.recipe-detail td input, .recipe-detail td select.cell { background-color: var(--surface); border-color: var(--line); }
+.qty { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.qty input { flex: none; width: 110px; min-width: 0; }
+.qty span { color: var(--muted); font-size: .85rem; white-space: nowrap; }
+@media (max-width: 640px) { .recipe-detail .fields { grid-template-columns: 1fr; } }
+
+/* ---------- Page « Artisans » ---------- */
+.chips.trades { margin: 0; padding: 0; list-style: none; }
+.faq { display: grid; gap: 10px; max-width: 820px; }
+.faq details { padding: 0 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow-sm); }
+.faq summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0;
+  font-family: var(--display); font-weight: 700; font-size: 1.02rem; cursor: pointer; list-style: none;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; flex: none; font-size: 1.4rem; font-weight: 500; line-height: 1; color: var(--accent); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+.faq details p { margin: 0 0 18px; color: var(--muted); line-height: 1.65; }
+

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart, Bot, Check, ClipboardList, Database, Lock, Search, Shield, TrendUp } from '@/components/icons';
+import { ArrowRight, BarChart, Bot, Check, ClipboardList, Database, Lock, Receipt, Search, Shield, TrendUp } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
 export const metadata = { alternates: { canonical: '/' } };
@@ -182,12 +182,18 @@ export default function Home() {
           <span className="eyebrow">Aussi chez Equimarge</span>
           <h2>Pour aller plus loin</h2>
         </div>
-        <div className="grid2">
+        <div className="grid3">
           <Link href="/diagnostic" className="feature domain-card">
             <div className="feature-icon"><BarChart size={22} /></div>
             <h3>Diagnostic de marge</h3>
             <p className="note">Une analyse produit par produit de votre rentabilité, avec un outil gratuit de suivi de marge.</p>
             <span className="domain-link">Voir les formules <ArrowRight size={16} /></span>
+          </Link>
+          <Link href="/artisans" className="feature domain-card">
+            <div className="feature-icon"><Receipt size={22} /></div>
+            <h3>Artisans de l’alimentation</h3>
+            <p className="note">Vos factures fournisseurs mettent à jour le coût de chaque recette, avec un prix conseillé. Gratuit pendant le lancement.</p>
+            <span className="domain-link">Découvrir <ArrowRight size={16} /></span>
           </Link>
           <Link href="/automatisation" className="feature domain-card">
             <div className="feature-icon"><Bot size={22} /></div>

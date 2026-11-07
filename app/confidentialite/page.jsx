@@ -15,6 +15,12 @@ export default function Page() {
       <ul>
         <li><b>Compte utilisateur</b> (e-mail, mot de passe chiffré) : vous donner accès à votre espace. Base légale : exécution du contrat (<Link href="/conditions-generales">conditions générales</Link>).</li>
         <li><b>Données de marge</b> (produits, prix, coûts, quantités, charges fixes) : calculer vos indicateurs. Base légale : exécution du contrat.</li>
+        <li>
+          <b>Recettes et factures fournisseurs</b> (matières premières et leurs prix, historique des prix, recettes,
+          fournisseur, date et total des factures lues) : calculer votre coût matière et vous signaler les hausses. Base
+          légale : exécution du contrat. La photo ou le PDF d'une facture est transmis au service d'IA pour en relever les
+          lignes, puis n'est pas conservé ; vous vérifiez chaque ligne avant toute mise à jour.
+        </li>
         <li><b>Dossier de conformité</b> (réponses à l'auto-diagnostic, demandes d'informations et vos réponses, documents que vous transmettez, livrables, plan d'action et responsables désignés, registre des traitements, cartographie des risques) : réaliser et suivre la mission. Vos réponses à l'auto-diagnostic sont visibles par Equimarge pour préparer un accompagnement. Base légale : exécution du contrat ou mesures précontractuelles. Lorsque vos documents contiennent des données personnelles de vos salariés ou de vos clients, Equimarge les traite comme sous-traitant, pour votre compte (voir les <Link href="/conditions-generales">conditions générales</Link>).</li>
         <li><b>Messagerie du dossier</b> (vos messages et ceux d'Equimarge, date, lecture) : échanger pendant la mission. Base légale : exécution du contrat. Seuls vous et Equimarge les lisez.</li>
         <li>
@@ -46,7 +52,8 @@ export default function Page() {
         <li><b>Google</b> (Gmail et Google Drive) : messagerie d'Equimarge et documents de travail, dont le suivi des prospects.</li>
         <li>
           <b>Anthropic</b> (États-Unis, assistant d'IA Claude) : tri de la messagerie, préparation de brouillons de réponse
-          et de la liste des prospects. Les brouillons sont relus par Equimarge avant tout envoi.
+          et de la liste des prospects, relevé des lignes des factures fournisseurs que vous envoyez depuis l'onglet
+          « Recettes ». Les brouillons sont relus par Equimarge avant tout envoi.
         </li>
       </ul>
       <p>
@@ -57,7 +64,7 @@ export default function Page() {
 
       <h2>Durée de conservation</h2>
       <ul>
-        <li>Données du compte, de marge et d'auto-diagnostic, appareils abonnés aux notifications : tant que le compte est actif. Elles sont effacées dès que vous supprimez votre compte (page « Mon compte » du site ou de l'application).</li>
+        <li>Données du compte, de marge, de recettes et d'auto-diagnostic, appareils abonnés aux notifications : tant que le compte est actif. Elles sont effacées dès que vous supprimez votre compte (page « Mon compte » du site ou de l'application).</li>
         <li>Dossier d'une mission (documents, réponses, messages, livrables) : pendant la mission, puis 3 ans après sa fin, sauf demande de suppression plus tôt. Si vous supprimez votre compte, ce dossier est détaché de votre compte et conservé pour cette durée ; écrivez-nous pour en demander l'effacement.</li>
         <li>Demandes de diagnostic ou de devis et leur suivi : 3 ans à compter du dernier échange, puis suppression automatique.</li>
         <li>Prospects : 3 ans à compter du dernier contact venant de vous. Si vous refusez nos messages, seules les données nécessaires pour ne plus vous écrire sont conservées.</li>

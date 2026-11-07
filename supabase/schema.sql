@@ -951,6 +951,214 @@ drop trigger if exists notifier_demande on public.dossier_info_requests;
 create trigger notifier_demande after insert or update of status on public.dossier_info_requests
   for each row execute function public.notifier_dossier();
 
+-- 12. Recettes et factures fournisseurs (onglet « Recettes » de l'espace client)
+-- Chaque client gère ses matières premières, ses recettes et lit ses factures fournisseurs ; personne d'autre
+-- (administrateur compris) ne voit ces données. Tout est effacé avec le compte (on delete cascade).
+-- Les calculs (coût matière, prix conseillé, hausses) sont dans lib/recettes.mjs.
+
+-- Mise à jour de la colonne updated_at
+create or replace function public.touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+-- Matières premières : coût hors taxes par unité de base (kg, litre ou pièce), saisi à la main ou repris
+-- d'une facture. cost_source indique l'origine du dernier coût (reportée dans l'historique des prix).
+create table if not exists public.ingredients (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null default '' check (char_length(name) <= 200),
+  unit text not null default 'kg' check (unit in ('kg', 'L', 'pièce')),
+  unit_cost numeric(12,4) not null default 0 check (unit_cost >= 0),
+  supplier text not null default '' check (char_length(supplier) <= 200),
+  cost_source text not null default 'Saisie' check (cost_source in ('Saisie', 'Facture')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists ingredients_user_idx on public.ingredients(user_id);
+alter table public.ingredients enable row level security;
+drop policy if exists "chacun gère ses matières" on public.ingredients;
+create policy "chacun gère ses matières" on public.ingredients
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+drop trigger if exists ingredients_limit on public.ingredients;
+create trigger ingredients_limit before insert on public.ingredients
+  for each row execute function public.limit_rows('500', 'user_id');
+drop trigger if exists ingredients_touch on public.ingredients;
+create trigger ingredients_touch before update on public.ingredients
+  for each row execute function public.touch_updated_at();
+
+-- Historique des prix de chaque matière (24 derniers prix), écrit par la base à chaque changement de coût :
+-- il sert aux alertes de hausse. Le client le lit mais ne peut pas l'écrire.
+create table if not exists public.ingredient_prices (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  ingredient_id uuid not null references public.ingredients(id) on delete cascade,
+  unit_cost numeric(12,4) not null check (unit_cost >= 0),
+  source text not null check (source in ('Saisie', 'Facture')),
+  created_at timestamptz not null default now()
+);
+create index if not exists ingredient_prices_idx on public.ingredient_prices(ingredient_id, created_at desc);
+create index if not exists ingredient_prices_user_idx on public.ingredient_prices(user_id);
+alter table public.ingredient_prices enable row level security;
+drop policy if exists "historique des prix : lecture" on public.ingredient_prices;
+create policy "historique des prix : lecture" on public.ingredient_prices
+  for select to authenticated using (user_id = (select auth.uid()));
+
+create or replace function public.record_ingredient_price()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  last_row public.ingredient_prices%rowtype;
+begin
+  if new.unit_cost <= 0 or (tg_op = 'UPDATE' and new.unit_cost = old.unit_cost) then
+    return new;
+  end if;
+  select * into last_row from public.ingredient_prices
+    where ingredient_id = new.id order by created_at desc limit 1;
+  -- Saisie au clavier : une correction faite dans les 2 minutes remplace la valeur au lieu de s'ajouter
+  if found and new.cost_source = 'Saisie' and last_row.source = 'Saisie'
+     and last_row.created_at > now() - interval '2 minutes' then
+    update public.ingredient_prices set unit_cost = new.unit_cost where id = last_row.id;
+  else
+    insert into public.ingredient_prices (user_id, ingredient_id, unit_cost, source)
+      values (new.user_id, new.id, new.unit_cost, new.cost_source);
+    delete from public.ingredient_prices where id in (
+      select id from public.ingredient_prices where ingredient_id = new.id order by created_at desc offset 24
+    );
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists ingredients_price_history on public.ingredients;
+create trigger ingredients_price_history after insert or update of unit_cost on public.ingredients
+  for each row execute function public.record_ingredient_price();
+
+-- Deux derniers prix de chaque matière (hausse = dernier prix comparé au précédent).
+-- security_invoker : la vue applique les règles d'accès de la personne connectée.
+create or replace view public.ingredient_price_changes with (security_invoker = true) as
+  select ingredient_id, unit_cost, source, created_at
+  from (
+    select p.*, row_number() over (partition by p.ingredient_id order by p.created_at desc) as rang
+    from public.ingredient_prices p
+  ) x
+  where rang <= 2;
+revoke all on public.ingredient_price_changes from anon;
+
+-- Recettes (produits vendus) : nombre de pièces par fournée, prix affiché TTC d'une pièce, TVA,
+-- taux de marque visé sur le coût matière (0,7 = 70 %).
+create table if not exists public.recipes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null default '' check (char_length(name) <= 200),
+  portions numeric(10,2) not null default 1 check (portions > 0),
+  price numeric(12,2) not null default 0 check (price >= 0),
+  vat numeric(4,2) not null default 5.5 check (vat in (0, 5.5, 10, 20)),
+  target numeric(4,3) not null default 0.7 check (target >= 0 and target < 1),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists recipes_user_idx on public.recipes(user_id);
+alter table public.recipes enable row level security;
+drop policy if exists "chacun gère ses recettes" on public.recipes;
+create policy "chacun gère ses recettes" on public.recipes
+  for all to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+drop trigger if exists recipes_limit on public.recipes;
+create trigger recipes_limit before insert on public.recipes
+  for each row execute function public.limit_rows('300', 'user_id');
+drop trigger if exists recipes_touch on public.recipes;
+create trigger recipes_touch before update on public.recipes
+  for each row execute function public.touch_updated_at();
+
+-- Composition des recettes : quantité de chaque matière (dans son unité) pour une fournée.
+-- La recette et la matière doivent appartenir à la personne connectée.
+create table if not exists public.recipe_items (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  recipe_id uuid not null references public.recipes(id) on delete cascade,
+  ingredient_id uuid not null references public.ingredients(id) on delete cascade,
+  quantity numeric(12,4) not null default 0 check (quantity >= 0),
+  created_at timestamptz not null default now()
+);
+create index if not exists recipe_items_recipe_idx on public.recipe_items(recipe_id);
+create index if not exists recipe_items_ingredient_idx on public.recipe_items(ingredient_id);
+create index if not exists recipe_items_user_idx on public.recipe_items(user_id);
+alter table public.recipe_items enable row level security;
+drop policy if exists "chacun compose ses recettes" on public.recipe_items;
+create policy "chacun compose ses recettes" on public.recipe_items
+  for all to authenticated
+  using (user_id = (select auth.uid()))
+  with check (
+    user_id = (select auth.uid())
+    and exists (select 1 from public.recipes r where r.id = recipe_id and r.user_id = (select auth.uid()))
+    and exists (select 1 from public.ingredients i where i.id = ingredient_id and i.user_id = (select auth.uid()))
+  );
+drop trigger if exists recipe_items_limit on public.recipe_items;
+create trigger recipe_items_limit before insert on public.recipe_items
+  for each row execute function public.limit_rows('3000', 'user_id');
+
+-- Factures lues : fournisseur, date, total et nombre de lignes (le fichier lui-même n'est pas conservé).
+-- Une ligne est créée par le site avant chaque lecture : elle sert de compteur anti-abus, car chaque lecture
+-- est facturée par le service d'IA. Pas de suppression par le client, pour que le compteur reste juste.
+create table if not exists public.invoices (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  supplier text not null default '' check (char_length(supplier) <= 200),
+  invoice_date date,
+  total_ht numeric(12,2) not null default 0 check (total_ht >= 0),
+  line_count integer not null default 0 check (line_count between 0 and 200),
+  status text not null default 'Lecture' check (status in ('Lecture', 'Lue', 'Échec', 'Appliquée')),
+  created_at timestamptz not null default now()
+);
+create index if not exists invoices_user_idx on public.invoices(user_id, created_at desc);
+alter table public.invoices enable row level security;
+drop policy if exists "factures : lecture" on public.invoices;
+create policy "factures : lecture" on public.invoices
+  for select to authenticated using (user_id = (select auth.uid()));
+drop policy if exists "factures : ajout" on public.invoices;
+create policy "factures : ajout" on public.invoices
+  for insert to authenticated with check (user_id = (select auth.uid()));
+drop policy if exists "factures : modification" on public.invoices;
+create policy "factures : modification" on public.invoices
+  for update to authenticated using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
+-- Anti-abus : 30 lectures par jour et 300 par 30 jours au plus par compte. La date est fixée par la base.
+create or replace function public.prepare_invoice()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT' then
+    new.created_at := now();
+    if (select count(*) from public.invoices where user_id = new.user_id and created_at > now() - interval '1 day') >= 30
+       or (select count(*) from public.invoices where user_id = new.user_id and created_at > now() - interval '30 days') >= 300 then
+      raise exception 'limite_factures' using hint = '30 factures par jour et 300 par mois au maximum';
+    end if;
+  else
+    new.created_at := old.created_at;
+    new.user_id := old.user_id;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists invoices_prepare on public.invoices;
+create trigger invoices_prepare before insert or update on public.invoices
+  for each row execute function public.prepare_invoice();
+
+revoke all on function public.touch_updated_at() from public, anon, authenticated;
+revoke all on function public.record_ingredient_price() from public, anon, authenticated;
+revoke all on function public.prepare_invoice() from public, anon, authenticated;
+
 -- Droits d'exécution des fonctions.
 -- Les fonctions de déclencheur s'exécutent toutes seules à chaque ajout ou modification : personne n'a besoin
 -- de les appeler directement. Les fonctions de contrôle d'accès servent aux règles des comptes connectés :

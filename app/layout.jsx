@@ -79,6 +79,7 @@ export default function RootLayout({ children }) {
               <Link href="/conformite">Conformité</Link>
               <Link href="/intermediaires-assurance">Intermédiaires d’assurance</Link>
               <Link href="/diagnostic">Diagnostic de marge</Link>
+              <Link href="/artisans">Artisans de l’alimentation</Link>
               <Link href="/automatisation">Automatisation IA</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/conditions-generales">Conditions générales</Link>

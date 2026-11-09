@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
         <header className="site-header">
           <div className="wrap header-inner">
             <Link href="/" className="brand">
-              <LogoMark id="logo-header" />
+              <LogoMark />
               <span className="brand-name">Equimarge</span>
             </Link>
             <SiteNav>
@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
           <div className="wrap footer-inner">
             <div>
               <Link href="/" className="brand">
-                <LogoMark id="logo-footer" size={28} />
+                <LogoMark size={28} />
                 <span>Equimarge</span>
               </Link>
               <p>Conformité des PME et des intermédiaires d’assurance.</p>

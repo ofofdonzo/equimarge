@@ -59,39 +59,18 @@ export const DOMAIN_ICONS = { procedures: ClipboardList, rgpd: Database, dpo: Lo
 // Icône de chaque étage d'automatisation (clés de AUTOMATION dans components/offers.js)
 export const FLOOR_ICONS = { messages: Mail, factures: Receipt, planning: Calendar, superviseur: Bot };
 
-// Logo : bouclier vert (conformité) gravé d'un « E » dont la branche du haut sort du cadre (marge qui
-// progresse), sur un carré bleu nuit. `id` doit être unique dans la page (il préfixe les dégradés).
-export function LogoMark({ id = 'logo', size = 32 }) {
+// Logo : bouclier ardoise (conformité) gravé d'un « E » dont la branche du haut, verte, sort du cadre (marge qui
+// progresse), sur un pavé clair à demi transparent qui laisse voir le fond de la page. En aplats, sans dégradé.
+export function LogoMark({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={`${id}-t`} x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#0E2A52" />
-          <stop offset="1" stopColor="#071631" />
-        </linearGradient>
-        <radialGradient id={`${id}-g`} cx="32" cy="32" r="26" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#10B981" stopOpacity=".45" />
-          <stop offset="1" stopColor="#10B981" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id={`${id}-s`} x1="12" y1="10" x2="50" y2="56" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#4ADE80" />
-          <stop offset=".5" stopColor="#10B981" />
-          <stop offset="1" stopColor="#047857" />
-        </linearGradient>
-        <linearGradient id={`${id}-b`} x1="20" y1="18" x2="56" y2="24" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#86EFAC" />
-          <stop offset="1" stopColor="#22C55E" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="16" fill={`url(#${id}-t)`} />
-      <circle cx="32" cy="32" r="26" fill={`url(#${id}-g)`} />
+      <rect x=".75" y=".75" width="62.5" height="62.5" rx="15.5" fill="#fff" fillOpacity=".5" stroke="#16212C" strokeOpacity=".16" strokeWidth="1.5" />
       <g transform="translate(32 32) scale(.8) translate(-33.75 -31.7)">
-        <path d="M30 9 49 15.8v14c0 11.8-8 19.9-19 24.6C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill={`url(#${id}-s)`} />
-        <path d="M30 9v45.4C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill="#fff" fillOpacity=".14" />
-        <rect x="19.5" y="18" width="6" height="25.5" rx="2.4" fill="#fff" fillOpacity=".95" />
-        <rect x="19.5" y="37.5" width="12" height="6" rx="2.4" fill="#fff" fillOpacity=".7" />
-        <rect x="19.5" y="27.75" width="17" height="6" rx="2.4" fill="#fff" fillOpacity=".85" />
-        <rect x="19.5" y="18" width="37" height="6" rx="2.4" fill={`url(#${id}-b)`} />
+        <path d="M30 9 49 15.8v14c0 11.8-8 19.9-19 24.6C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill="#16212C" />
+        <rect x="19.5" y="18" width="6" height="25.5" rx="2.4" fill="#fff" />
+        <rect x="19.5" y="37.5" width="12" height="6" rx="2.4" fill="#fff" />
+        <rect x="19.5" y="27.75" width="17" height="6" rx="2.4" fill="#fff" />
+        <rect x="19.5" y="18" width="37" height="6" rx="2.4" fill="#17996A" />
       </g>
     </svg>
   );

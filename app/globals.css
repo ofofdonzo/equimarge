@@ -1,13 +1,14 @@
 /* ---------- Couleurs et polices ---------- */
 /* Identité : des bleus-gris de glacier (ciel et neige à l'ombre) pour les fonds, une ardoise sombre pour le texte,
    le vert du logo pour les actions. En aplats : pas de dégradé, pas de halo, pas d'ombre portée.
+   Cartes, bandeaux et filets sont à demi transparents : ils prennent la teinte du fond, qui fonce doucement vers le bas de la page.
    Un seul thème : le site garde ces couleurs même quand l'appareil est en mode sombre. */
 :root {
-  --bg: #D5DFE8; --surface: #E6ECF2; --surface-2: #C3D0DC; --raised: #F3F6F9;
-  --line: #B3C1CE; --line-strong: #8496A8; --fg: #16212C; --muted: #435261;
+  --bg: #D5DFE8; --surface: rgb(255 255 255 / .4); --surface-2: rgb(70 100 130 / .16); --raised: rgb(255 255 255 / .72);
+  --line: rgb(22 33 44 / .16); --line-strong: rgb(22 33 44 / .34); --fg: #16212C; --muted: #435261;
   --accent: #085C3F; --accent-strong: #06482F; --accent-ink: #FFFFFF;
   --accent-soft: #C6DDD3;
-  --ink-block: #24323F; --ink-block-fg: #F3F6F9;
+  --ink-block: rgb(22 33 44 / .9); --ink-block-fg: #F3F6F9;
   --ok: #14632F; --warn: #854B04; --bad: #A8221B;
   --shadow-sm: none; --shadow: none; --shadow-lg: none;
   --radius: 8px; --radius-lg: 8px;
@@ -20,7 +21,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
-  min-height: 100vh; display: flex; flex-direction: column; background: var(--bg);
+  min-height: 100vh; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #DDE6EE 0%, #D5DFE8 38%, #C6D3DF 100%) fixed var(--bg);
   color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
@@ -51,14 +53,16 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 /* ---------- En-tête ---------- */
 .site-header {
   position: sticky; top: 0; z-index: 40;
-  background: var(--bg); border-bottom: 1px solid var(--line); transition: border-color .2s;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent); transition: border-color .2s;
 }
 .header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; min-height: 68px; transition: min-height .25s cubic-bezier(.2, .7, .2, 1); }
 /* L'en-tête se resserre et son filet se renforce dès que la page défile */
 [data-scrolled] .header-inner { min-height: 54px; }
 [data-scrolled] .site-header { border-bottom-color: var(--line-strong); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 1.3rem; color: var(--fg); text-decoration: none; }
-.brand svg { flex: none; border-radius: 25%; }
+.brand svg { flex: none; }
 .nav-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .nav-actions form { display: flex; margin: 0; }
 .nav-link {
@@ -85,7 +89,7 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 /* Téléphones : le bouton « Menu » déroule les liens sous l'en-tête, l'un après l'autre */
 @media (max-width: 760px) {
   .nav-toggle {
-    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 6px;
+    display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 6px;
     background: transparent; font: inherit; font-weight: 600; font-size: .88rem; color: var(--fg); cursor: pointer;
   }
   .nav-toggle-bars { position: relative; width: 16px; height: 10px; }
@@ -108,7 +112,7 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
   .nav .nav-link:last-child { margin-bottom: 8px; }
   .nav .nav-link[aria-current="page"] { color: var(--accent); }
   .nav.open .nav-link { opacity: 1; transform: none; transition: opacity .3s calc(var(--i) * 45ms + 90ms), transform .3s cubic-bezier(.2, .7, .2, 1) calc(var(--i) * 45ms + 90ms); }
-  .nav-actions .btn { padding: 9px 12px; font-size: .85rem; }
+  .nav-actions .btn { height: 40px; padding: 0 12px; font-size: .85rem; }
   .hide-sm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 /* Petits téléphones : le logo seul (le nom reste lu par les lecteurs d'écran).
@@ -266,7 +270,7 @@ td.num { font-weight: 600; font-size: .92rem; }
 .offer input { position: absolute; opacity: 0; pointer-events: none; }
 .offer::after { content: ''; position: absolute; top: 20px; right: 20px; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface); transition: border-color .15s, background-color .15s, box-shadow .15s; }
 .offer.selected { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow); }
-.offer.selected::after { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px var(--surface); }
+.offer.selected::after { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #EEF2F6; }
 .offer:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
 .price { margin: 6px 0 2px; font-family: var(--display); font-weight: 700; font-size: 1.9rem; line-height: 1.15; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .done-icon { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
@@ -615,7 +619,7 @@ fieldset.plain:disabled input, fieldset.plain:disabled select, fieldset.plain:di
 fieldset.plain:disabled input::placeholder, fieldset.plain:disabled textarea::placeholder { color: transparent; }
 fieldset.plain:disabled input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
 fieldset.plain:disabled .check input { accent-color: var(--muted); }
-.tab-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: var(--warn); color: var(--surface); font-size: .72rem; font-weight: 700; }
+.tab-count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; margin-left: 6px; padding: 0 6px; border-radius: 999px; background: var(--warn); color: #fff; font-size: .72rem; font-weight: 700; }
 .info-card { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
 .info-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: flex-start; justify-content: space-between; }
 .info-head h3 { margin: 0 0 4px; }
@@ -680,7 +684,7 @@ fieldset.plain:disabled .check input { accent-color: var(--muted); }
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
-  background: var(--surface); border-top: 1px solid var(--line);
+  background: #E6ECF2; border-top: 1px solid var(--line);
 }
 .app-tabbar button {
   position: relative; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -695,7 +699,7 @@ fieldset.plain:disabled .check input { accent-color: var(--muted); }
 .app-sheet-backdrop { position: absolute; inset: 0; border: 0; background: rgba(4, 12, 24, .45); cursor: pointer; }
 .app-sheet-panel {
   position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column;
-  padding: 10px 10px calc(78px + env(safe-area-inset-bottom)); background: var(--surface); border-radius: 18px 18px 0 0;
+  padding: 10px 10px calc(78px + env(safe-area-inset-bottom)); background: #E6ECF2; border-radius: 18px 18px 0 0;
 }
 .app-sheet-panel button {
   min-height: 52px; padding: 0 14px; border: 0; border-radius: 6px; background: none; color: var(--fg);

@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { Libre_Franklin, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 import AuthNav from '@/components/AuthNav';
+import Motion from '@/components/Motion';
+import SiteNav from '@/components/SiteNav';
 import { LogoMark } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
@@ -43,22 +45,14 @@ export default function RootLayout({ children }) {
               <LogoMark id="logo-header" />
               <span className="brand-name">Equimarge</span>
             </Link>
-            <nav className="nav" aria-label="Navigation principale">
-              <Link href="/conformite" className="nav-link">
-                Conformité
-              </Link>
-              <Link href="/intermediaires-assurance" className="nav-link">
-                Assurance
-              </Link>
-              <Link href="/#services" className="nav-link hide-xs">
-                Autres services
-              </Link>
+            <SiteNav>
               <AuthNav />
-            </nav>
+            </SiteNav>
           </div>
         </header>
 
         <main className="wrap">{children}</main>
+        <Motion />
 
         <footer className="site-footer">
           <div className="wrap footer-inner">

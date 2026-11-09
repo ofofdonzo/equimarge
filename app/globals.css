@@ -51,35 +51,72 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 /* ---------- En-tête ---------- */
 .site-header {
   position: sticky; top: 0; z-index: 40;
-  background: var(--bg); border-bottom: 1px solid var(--line);
+  background: var(--bg); border-bottom: 1px solid var(--line); transition: border-color .2s;
 }
-.header-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
+.header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; min-height: 68px; transition: min-height .25s cubic-bezier(.2, .7, .2, 1); }
+/* L'en-tête se resserre et son filet se renforce dès que la page défile */
+[data-scrolled] .header-inner { min-height: 54px; }
+[data-scrolled] .site-header { border-bottom-color: var(--line-strong); }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 1.3rem; color: var(--fg); text-decoration: none; }
 .brand svg { flex: none; border-radius: 25%; }
-.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.nav form { display: flex; margin: 0; }
-.nav .btn { margin-left: 6px; }
+.nav-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.nav-actions form { display: flex; margin: 0; }
 .nav-link {
-  display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 6px; background: none;
+  position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 6px; background: none;
   font: inherit; font-weight: 500; font-size: .92rem; color: var(--muted); text-decoration: none; cursor: pointer;
-  transition: color .15s, background-color .15s;
+  transition: color .15s;
 }
-.nav-link:hover { color: var(--fg); background: var(--surface-2); }
-@media (max-width: 560px) {
-  .header-inner { gap: 8px; }
-  .brand { font-size: 1.15rem; gap: 8px; }
-  .site-header .brand svg { width: 28px; height: 28px; }
-  .nav { gap: 2px; }
-  .nav-link { padding: 8px; font-size: .88rem; }
-  .nav .btn { margin-left: 2px; padding: 8px 12px; font-size: .85rem; }
+.nav-link:hover, .nav-link[aria-current="page"] { color: var(--fg); }
+.nav-toggle { display: none; }
+
+/* Grands écrans : liens en ligne ; un trait se trace sous le lien survolé et reste sous la page en cours */
+@media (min-width: 761px) {
+  .nav { order: 2; margin-left: auto; }
+  .nav-actions { order: 3; margin-left: 8px; }
+  .nav-inner { display: flex; align-items: center; gap: 4px; }
+  .nav .only-panel { display: none; }
+  .nav .nav-link::after {
+    content: ''; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform .28s cubic-bezier(.2, .7, .2, 1);
+  }
+  .nav .nav-link:hover::after, .nav .nav-link:focus-visible::after, .nav .nav-link[aria-current="page"]::after { transform: scaleX(1); }
+}
+
+/* Téléphones : le bouton « Menu » déroule les liens sous l'en-tête, l'un après l'autre */
+@media (max-width: 760px) {
+  .nav-toggle {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: transparent; font: inherit; font-weight: 600; font-size: .88rem; color: var(--fg); cursor: pointer;
+  }
+  .nav-toggle-bars { position: relative; width: 16px; height: 10px; }
+  .nav-toggle-bars i { position: absolute; left: 0; right: 0; height: 2px; border-radius: 1px; background: currentColor; transition: transform .3s cubic-bezier(.2, .7, .2, 1); }
+  .nav-toggle-bars i:first-child { top: 0; }
+  .nav-toggle-bars i:last-child { bottom: 0; }
+  .nav-toggle[aria-expanded="true"] .nav-toggle-bars i:first-child { transform: translateY(4px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] .nav-toggle-bars i:last-child { transform: translateY(-4px) rotate(-45deg); }
+  .nav {
+    flex: 0 0 100%; display: grid; grid-template-rows: 0fr; visibility: hidden;
+    transition: grid-template-rows .34s cubic-bezier(.2, .7, .2, 1), visibility 0s .34s;
+  }
+  .nav.open { grid-template-rows: 1fr; visibility: visible; transition-delay: 0s; }
+  .nav-inner { min-height: 0; overflow: hidden; display: grid; }
+  .nav .only-wide { display: none; }
+  .nav .nav-link {
+    padding: 14px 0; border-top: 1px solid var(--line); border-radius: 0; font-size: 1.05rem; color: var(--fg);
+    opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s;
+  }
+  .nav .nav-link:last-child { margin-bottom: 8px; }
+  .nav .nav-link[aria-current="page"] { color: var(--accent); }
+  .nav.open .nav-link { opacity: 1; transform: none; transition: opacity .3s calc(var(--i) * 45ms + 90ms), transform .3s cubic-bezier(.2, .7, .2, 1) calc(var(--i) * 45ms + 90ms); }
+  .nav-actions .btn { padding: 9px 12px; font-size: .85rem; }
   .hide-sm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
-/* Téléphones : le logo seul, pour que la navigation tienne sur une ligne (le nom reste lu par les lecteurs d'écran).
+/* Petits téléphones : le logo seul (le nom reste lu par les lecteurs d'écran).
    La déconnexion passe dans l'espace client (tableau de bord). */
 @media (max-width: 499px) {
   .site-header .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .site-header .brand svg { width: 34px; height: 34px; }
-  .nav .logout { display: none; }
+  .nav-actions .logout { display: none; }
 }
 .link-btn { padding: 0; border: 0; background: none; font: inherit; font-size: .85rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .link-btn:hover { color: var(--fg); }
@@ -377,7 +414,13 @@ section[id] { scroll-margin-top: 88px; }
 .legal ul { display: grid; gap: 8px; padding-left: 20px; }
 
 /* ---------- Mouvement ---------- */
-/* Aucune animation d'apparition : seules restent les transitions qui répondent à un geste. */
+/* Les blocs des pages publiques montent en place quand ils entrent dans l'écran (attribut posé par components/Motion.jsx).
+   Les barres de l'exemple de dossier se remplissent au chargement. */
+[data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s cubic-bezier(.2, .7, .2, 1); }
+[data-reveal="in"] { opacity: 1; transform: none; }
+.preview-row .fill { transform-origin: left; animation: fill .9s cubic-bezier(.2, .7, .2, 1) .15s both; }
+@keyframes fill { from { transform: scaleX(0); } }
+.btn:active { transform: translateY(1px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

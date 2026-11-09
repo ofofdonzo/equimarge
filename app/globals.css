@@ -1,29 +1,19 @@
 /* ---------- Couleurs et polices ---------- */
-/* Identité : le bleu nuit et le vert du logo, en aplats. Pas de dégradé, pas de halo, pas d'ombre portée :
-   la hiérarchie vient de la typographie, des filets et de l'espace. */
+/* Identité : des bleus-gris de glacier (ciel et neige à l'ombre) pour les fonds, une ardoise sombre pour le texte,
+   le vert du logo pour les actions. En aplats : pas de dégradé, pas de halo, pas d'ombre portée.
+   Un seul thème : le site garde ces couleurs même quand l'appareil est en mode sombre. */
 :root {
-  --bg: #FFFFFF; --surface: #FFFFFF; --surface-2: #F2F4F1; --raised: #FFFFFF;
-  --line: #DDE2DE; --line-strong: #B4BEB8; --fg: #0B1B2B; --muted: #54616B;
-  --accent: #0A6847; --accent-strong: #07523A; --accent-ink: #FFFFFF;
-  --accent-soft: #E9F2ED;
-  --ink-block: #0B1B2B; --ink-block-fg: #FFFFFF;
-  --ok: #17703A; --warn: #9A5B06; --bad: #B3261E;
+  --bg: #D5DFE8; --surface: #E6ECF2; --surface-2: #C3D0DC; --raised: #F3F6F9;
+  --line: #B3C1CE; --line-strong: #8496A8; --fg: #16212C; --muted: #435261;
+  --accent: #085C3F; --accent-strong: #06482F; --accent-ink: #FFFFFF;
+  --accent-soft: #C6DDD3;
+  --ink-block: #24323F; --ink-block-fg: #F3F6F9;
+  --ok: #14632F; --warn: #854B04; --bad: #A8221B;
   --shadow-sm: none; --shadow: none; --shadow-lg: none;
   --radius: 8px; --radius-lg: 8px;
   --display: var(--font-serif), "Source Serif 4", Georgia, "Times New Roman", serif;
   --body: var(--font-franklin), "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0B1B2B; --surface: #0B1B2B; --surface-2: #13273B; --raised: #1B3148;
-    --line: #22384E; --line-strong: #3B546C; --fg: #EAF0F5; --muted: #9DAEBD;
-    --accent: #5FCB9D; --accent-strong: #86DBB6; --accent-ink: #06231A;
-    --accent-soft: #15332F;
-    --ink-block: #13273B; --ink-block-fg: #EAF0F5;
-    --ok: #6FD08F; --warn: #F0B34A; --bad: #F2857C;
-    color-scheme: dark;
-  }
 }
 
 /* ---------- Base ---------- */
@@ -66,10 +56,6 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 .header-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 1.3rem; color: var(--fg); text-decoration: none; }
 .brand svg { flex: none; border-radius: 25%; }
-@media (prefers-color-scheme: dark) {
-  /* Le carré bleu nuit du logo se détache du fond sombre grâce à un liseré */
-  .brand svg { box-shadow: 0 0 0 1px rgb(255 255 255 / .16); }
-}
 .nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .nav form { display: flex; margin: 0; }
 .nav .btn { margin-left: 6px; }
@@ -119,7 +105,7 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 .btn.ghost { background: transparent; color: var(--fg); border-color: var(--line-strong); }
 .btn.ghost:hover { background: transparent; color: var(--fg); border-color: var(--fg); }
 /* Sur le bloc bleu nuit de fin de page */
-.btn.inverse { background: #FFFFFF; color: #0B1B2B; border-color: #FFFFFF; }
+.btn.inverse { background: #FFFFFF; color: #16212C; border-color: #FFFFFF; }
 .btn.inverse:hover { background: #E4EAE6; border-color: #E4EAE6; }
 .btn.on-grad { background: transparent; color: inherit; border-color: color-mix(in srgb, currentColor 50%, transparent); }
 .btn.on-grad:hover { background: transparent; border-color: currentColor; }
@@ -456,10 +442,6 @@ html, body { overflow-x: clip; }
 .pole-tag { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: .72rem; font-weight: 700; color: var(--accent); background: var(--accent-soft); }
 .pole-tag.p-conformité { color: #1D4ED8; background: color-mix(in srgb, #1D4ED8 10%, var(--surface)); }
 .pole-tag.p-automatisation { color: #7C3AED; background: color-mix(in srgb, #7C3AED 10%, var(--surface)); }
-@media (prefers-color-scheme: dark) {
-  .pole-tag.p-conformité { color: #93C5FD; background: color-mix(in srgb, #93C5FD 14%, var(--surface)); }
-  .pole-tag.p-automatisation { color: #C4B5FD; background: color-mix(in srgb, #C4B5FD 14%, var(--surface)); }
-}
 .ws-placeholder { display: grid; justify-items: center; gap: 4px; padding: 64px 20px; text-align: center; }
 .ws-placeholder h2 { margin: 12px 0 0; }
 .ws-placeholder .note { max-width: 44ch; }

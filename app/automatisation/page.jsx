@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { AUTOMATION } from '@/components/offers';
 import RequestForm from '@/components/RequestForm';
-import { ArrowRight, Check, FLOOR_ICONS, Layers, Search, Shield, TrendUp } from '@/components/icons';
+import { Check, FLOOR_ICONS } from '@/components/icons';
 
 export const metadata = {
   title: 'Automatisation par agents IA pour PME — Equimarge',
@@ -13,10 +13,10 @@ export const metadata = {
 export const dynamic = 'force-dynamic';
 
 const STEPS = [
-  { n: '01', title: 'Repérage', text: 'Nous listons ce qui se répète chaque jour chez vous et le temps que cela vous coûte.', Icon: Search },
-  { n: '02', title: 'Premier étage', text: 'Un premier agent sur la tâche la plus lourde, testé avec vous pendant deux semaines.', Icon: Layers },
-  { n: '03', title: 'Étages suivants', text: 'Factures, planning, achats : un étage de plus quand le précédent tourne seul.', Icon: TrendUp },
-  { n: '04', title: 'Supervision', text: 'Le superviseur contrôle les agents et vous écrit chaque soir. Vous gardez la main.', Icon: Shield },
+  { n: '1', title: 'Repérage', text: 'Nous listons ce qui se répète chaque jour chez vous et le temps que cela vous coûte.' },
+  { n: '2', title: 'Premier étage', text: 'Un premier agent sur la tâche la plus lourde, testé avec vous pendant deux semaines.' },
+  { n: '3', title: 'Étages suivants', text: 'Factures, planning, achats : un étage de plus quand le précédent tourne seul.' },
+  { n: '4', title: 'Supervision', text: 'Le superviseur contrôle les agents et vous écrit chaque soir. Vous gardez la main.' },
 ];
 
 const GUARANTEES = [
@@ -31,7 +31,7 @@ const GUARANTEES = [
 function Building() {
   const floors = [...AUTOMATION].reverse();
   return (
-    <div className="building rise d2" aria-hidden="true">
+    <div className="building" aria-hidden="true">
       {floors.map((f, i) => {
         const Icon = FLOOR_ICONS[f.key];
         return (
@@ -62,10 +62,10 @@ export default async function Page(props) {
   return (
     <div className="stack" style={{ gap: 88 }}>
       <section className="hero">
-        <div className="rise">
-          <span className="badge"><span className="badge-dot" />Pôle automatisation · agents IA</span>
+        <div>
+          <span className="badge">Pôle automatisation : agents IA</span>
           <h1>
-            Votre entreprise se construit <span className="grad-text">étage par étage</span>
+            Votre entreprise se construit étage par étage
           </h1>
           <p className="lead">
             On ne commence pas par le haut. On commence par ce qui se répète tous les jours : les mails, les messages
@@ -74,7 +74,7 @@ export default async function Page(props) {
           </p>
           <div className="row">
             <a href="#devis" className="btn lg">
-              Demander un devis <ArrowRight size={18} />
+              Demander un devis
             </a>
             <a href="#etages" className="btn ghost lg">
               Voir les étages
@@ -91,15 +91,12 @@ export default async function Page(props) {
 
       <section className="section" id="etages">
         <div className="section-head">
-          <span className="eyebrow">Les étages</span>
           <h2>Ce que les agents prennent en charge</h2>
         </div>
         <div className="grid2">
           {AUTOMATION.map((d) => {
-            const Icon = FLOOR_ICONS[d.key];
             return (
               <article key={d.key} className="feature domain">
-                <div className="feature-icon"><Icon size={22} /></div>
                 <span className="eyebrow">{d.floor}</span>
                 <h3>{d.id}</h3>
                 <p className="note">{d.intro}</p>
@@ -109,7 +106,7 @@ export default async function Page(props) {
                   ))}
                 </ul>
                 <Link href={`/automatisation?etage=${d.key}#devis`} className="domain-link">
-                  Demander un devis <ArrowRight size={16} />
+                  Demander un devis
                 </Link>
               </article>
             );
@@ -119,14 +116,12 @@ export default async function Page(props) {
 
       <section className="section">
         <div className="section-head">
-          <span className="eyebrow">Notre démarche</span>
           <h2>Un étage à la fois</h2>
         </div>
         <ol className="steps4">
-          {STEPS.map(({ n, title, text, Icon }) => (
+          {STEPS.map(({ n, title, text }) => (
             <li key={n} className="feature">
               <span className="num" aria-hidden="true">{n}</span>
-              <div className="feature-icon"><Icon size={22} /></div>
               <h3>{title}</h3>
               <p className="note">{text}</p>
             </li>
@@ -148,7 +143,6 @@ export default async function Page(props) {
 
       <section className="section" id="devis">
         <div className="section-head">
-          <span className="eyebrow">Devis</span>
           <h2>Demander un devis d’automatisation</h2>
           <p>Cochez ce qui vous prend le plus de temps : nous revenons vers vous sous 48&nbsp;h ouvrées. Aucun engagement à ce stade.</p>
         </div>

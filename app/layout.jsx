@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Libre_Franklin, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 import AuthNav from '@/components/AuthNav';
 import { LogoMark } from '@/components/icons';
@@ -7,8 +7,8 @@ import { siteUrl } from '@/lib/site';
 
 // Polices téléchargées au build et servies par le site lui-même : aucune requête vers Google
 // et donc aucune adresse IP de visiteur transmise.
-const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-inter' });
-const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap', variable: '--font-jakarta' });
+const franklin = Libre_Franklin({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-franklin' });
+const serif = Source_Serif_4({ subsets: ['latin'], weight: ['600', '700'], display: 'swap', variable: '--font-serif' });
 
 const TITLE = 'Equimarge — conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
 const DESCRIPTION =
@@ -30,22 +30,20 @@ export function generateMetadata() {
 
 export const viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#F6F9F7' },
-    { media: '(prefers-color-scheme: dark)', color: '#071226' },
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B1B2B' },
   ],
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr" className={`${inter.variable} ${jakarta.variable}`}>
+    <html lang="fr" className={`${franklin.variable} ${serif.variable}`}>
       <body>
         <header className="site-header">
           <div className="wrap header-inner">
             <Link href="/" className="brand">
               <LogoMark id="logo-header" />
-              <span className="brand-name">
-                Equi<span>marge</span>
-              </span>
+              <span className="brand-name">Equimarge</span>
             </Link>
             <nav className="nav" aria-label="Navigation principale">
               <Link href="/conformite" className="nav-link">
@@ -69,9 +67,7 @@ export default function RootLayout({ children }) {
             <div>
               <Link href="/" className="brand">
                 <LogoMark id="logo-footer" size={28} />
-                <span>
-                  Equi<span>marge</span>
-                </span>
+                <span>Equimarge</span>
               </Link>
               <p>Conformité des PME et des intermédiaires d’assurance.</p>
             </div>

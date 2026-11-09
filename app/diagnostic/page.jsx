@@ -22,7 +22,6 @@ export default async function Page(props) {
   return (
     <div className="stack" style={{ gap: 32 }}>
       <div>
-        <span className="eyebrow">Pôle marges · diagnostic</span>
         <h1>Commander un diagnostic</h1>
         <p className="lead" style={{ marginBottom: 0 }}>
           Choisissez une formule et décrivez votre entreprise. Nous revenons vers vous sous 48&nbsp;h ouvrées pour fixer

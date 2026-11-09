@@ -7,10 +7,10 @@ export const metadata = { alternates: { canonical: '/' } };
 const DIAGNOSTIC = '/connexion?mode=inscription&suite=/tableau-de-bord/conformite';
 
 const STEPS = [
-  { n: '1', title: 'Auto-diagnostic gratuit', text: 'Quelques minutes en ligne pour situer votre entreprise, domaine par domaine.' },
+  { n: '1', title: 'Auto-diagnostic gratuit', text: 'Vous répondez en ligne à un questionnaire, domaine par domaine. Comptez quelques minutes.' },
   { n: '2', title: 'Devis', text: 'Nous échangeons sur votre situation et vous proposons une mission au forfait ou un abonnement.' },
-  { n: '3', title: 'Vous transmettez, nous réalisons', text: 'Vous répondez à nos demandes et déposez vos documents dans votre dossier en ligne. Nous faisons le travail.' },
-  { n: '4', title: 'Livrables et suivi', text: 'Registre, procédures et plan d’action sont livrés dans votre dossier, avec un suivi dans la durée.' },
+  { n: '3', title: 'Réalisation', text: 'Vous répondez à nos demandes et déposez vos documents dans votre dossier en ligne. Nous préparons le registre, les procédures et le plan d’action.' },
+  { n: '4', title: 'Livrables et suivi', text: 'Nous livrons les documents dans votre dossier, puis nous suivons leur mise à jour avec vous.' },
 ];
 
 const OFFERS = [
@@ -36,8 +36,8 @@ const OFFERS = [
 
 const SERVICES = [
   { href: '/diagnostic', title: 'Diagnostic de marge', text: 'Une analyse produit par produit de votre rentabilité, avec un outil gratuit de suivi de marge.' },
-  { href: '/artisans', title: 'Artisans de l’alimentation', text: 'Vos factures fournisseurs mettent à jour le coût de chaque recette, avec un prix conseillé. Version gratuite pour commencer.' },
-  { href: '/automatisation', title: 'Automatisation par agents IA', text: 'Mails, factures, relances et planning préparés par des agents IA, validés par vous.' },
+  { href: '/artisans', title: 'Artisans de l’alimentation', text: 'Vous photographiez vos factures fournisseurs, l’outil recalcule le coût de chaque recette et propose un prix de vente. Une version gratuite existe.' },
+  { href: '/automatisation', title: 'Automatisation par agents IA', text: 'Des agents IA préparent vos mails, vos factures et vos relances. Vous validez avant tout envoi.' },
 ];
 
 // Exemple de dossier client, tel que le client le voit dans son espace
@@ -96,11 +96,11 @@ export default function Home() {
       <section className="hero">
         <div>
           <span className="badge">Pour les PME et les intermédiaires d’assurance</span>
-          <h1>Votre conformité prise en charge, de l’état des lieux au DPO externalisé</h1>
+          <h1>Mise en conformité RGPD et DPO externalisé</h1>
           <p className="lead">
-            Equimarge réalise votre mise en conformité RGPD, assure la fonction de délégué à la protection des données et
-            vous accompagne sur l’anti-blanchiment, l’intelligence artificielle et vos procédures. Vous nous transmettez les
-            informations, nous faisons le travail, vous suivez l’avancement dans votre espace.
+            Equimarge réalise votre mise en conformité RGPD et assure la fonction de délégué à la protection des données
+            (DPO). Nous traitons aussi l’anti-blanchiment, l’usage de l’intelligence artificielle et vos procédures
+            internes. Vous déposez vos informations dans un dossier en ligne et vous y suivez l’avancement de la mission.
           </p>
           <div className="row">
             <Link href="/conformite#devis" className="btn lg">Demander un devis</Link>
@@ -117,8 +117,8 @@ export default function Home() {
 
       <section className="section">
         <div className="section-head">
-          <h2>Vous transmettez, nous réalisons</h2>
-          <p>Votre temps reste consacré à votre activité : la conformité avance sans vous demander de devenir juriste.</p>
+          <h2>Déroulement d’une mission</h2>
+          <p>Nous faisons l’état des lieux et rédigeons les documents. De votre côté, vous répondez à nos questions et déposez les pièces demandées.</p>
         </div>
         <ol className="steps4">
           {STEPS.map(({ n, title, text }) => (
@@ -133,8 +133,8 @@ export default function Home() {
 
       <section className="section" id="offres">
         <div className="section-head">
-          <h2>Une mission au forfait ou un accompagnement continu</h2>
-          <p>Réponse sous 48&nbsp;h ouvrées, sans engagement à la demande de devis.</p>
+          <h2>Forfait ou abonnement</h2>
+          <p>Nous répondons à toute demande de devis sous 48&nbsp;h ouvrées. La demande ne vous engage pas.</p>
         </div>
         <div className="grid3">
           {OFFERS.map(({ title, price, href, items }) => (
@@ -154,8 +154,8 @@ export default function Home() {
         <div>
           <h2>Courtiers et intermédiaires d’assurance</h2>
           <p>
-            Devoir de conseil, lutte contre le blanchiment, données de santé, réclamations : un audit et des procédures
-            adaptés aux cabinets de courtage.
+            Nous auditons le cabinet et mettons ses procédures à jour : devoir de conseil, lutte contre le blanchiment,
+            données de santé, réclamations.
           </p>
         </div>
         <Link href="/intermediaires-assurance" className="btn ghost lg">Voir l’accompagnement dédié</Link>
@@ -176,8 +176,8 @@ export default function Home() {
 
       <section className="cta">
         <div>
-          <h2>Parlons de votre conformité</h2>
-          <p>Devis sous 48&nbsp;h ouvrées, ou commencez par l’auto-diagnostic gratuit.</p>
+          <h2>Demander un devis</h2>
+          <p>Nous répondons sous 48&nbsp;h ouvrées. Vous pouvez aussi commencer par l’auto-diagnostic gratuit.</p>
         </div>
         <div className="row">
           <Link href="/conformite#devis" className="btn inverse lg">Demander un devis</Link>

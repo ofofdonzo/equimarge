@@ -38,10 +38,10 @@ const OBLIGATIONS = [
 ];
 
 const STEPS = [
-  { n: '1', title: 'Audit du cabinet', text: 'Procédures, contrats, échantillon de dossiers clients et outils : nous mesurons les écarts.' },
-  { n: '2', title: 'Plan d’action', text: 'Les écarts classés par priorité, avec un calendrier adapté à la taille du cabinet.' },
-  { n: '3', title: 'Mise à jour', text: 'Procédures, modèles de documents et registres mis à jour avec vos équipes.' },
-  { n: '4', title: 'Suivi annuel', text: 'Formation, contrôles internes et mise à jour du dispositif quand la réglementation évolue.' },
+  { n: '1', title: 'Audit du cabinet', text: 'Nous relisons vos procédures, vos contrats, vos outils et un échantillon de dossiers clients pour mesurer les écarts.' },
+  { n: '2', title: 'Plan d’action', text: 'Nous classons les écarts par priorité et fixons un calendrier adapté à la taille du cabinet.' },
+  { n: '3', title: 'Mise à jour', text: 'Nous mettons à jour les procédures, les modèles de documents et les registres avec vos équipes.' },
+  { n: '4', title: 'Suivi annuel', text: 'Chaque année, nous formons vos équipes, contrôlons le dispositif et le mettons à jour quand la réglementation change.' },
 ];
 
 export default async function Page() {
@@ -54,13 +54,11 @@ export default async function Page() {
     <div className="stack" style={{ gap: 88 }}>
       <section className="page-hero">
         <span className="badge">Courtiers et intermédiaires d’assurance</span>
-        <h1>
-          La conformité de votre cabinet de courtage, prise en charge
-        </h1>
+        <h1>Audit et mise en conformité des cabinets de courtage</h1>
         <p className="lead">
-          Devoir de conseil, lutte contre le blanchiment, données de santé, réclamations : Equimarge audite vos pratiques,
-          met vos procédures à jour et suit le dispositif avec vous. Vous transmettez les informations dans votre dossier en
-          ligne, nous faisons le travail.
+          Equimarge audite vos pratiques et met vos procédures à jour sur le devoir de conseil, la lutte contre le
+          blanchiment, les données de santé et les réclamations. Vous transmettez les informations dans votre dossier en
+          ligne.
         </p>
         <div className="row">
           <a href="#devis" className="btn lg">Demander un devis</a>
@@ -84,7 +82,7 @@ export default async function Page() {
 
       <section className="section">
         <div className="section-head">
-          <h2>Quatre étapes, à votre rythme</h2>
+          <h2>Déroulement d’une mission</h2>
         </div>
         <ol className="steps4">
           {STEPS.map(({ n, title, text }) => (
@@ -106,7 +104,7 @@ export default async function Page() {
       <section className="section" id="devis">
         <div className="section-head">
           <h2>Demander un devis</h2>
-          <p>Indiquez la taille du cabinet et les sujets prioritaires : nous revenons vers vous sous 48&nbsp;h ouvrées.</p>
+          <p>Indiquez la taille du cabinet et les sujets prioritaires. Nous vous répondons sous 48&nbsp;h ouvrées.</p>
         </div>
         <RequestForm kind="conformite" userId={user?.id || null} defaultEmail={user?.email || ''} defaultTopics={['lcbft', 'rgpd']} defaultSector="Assurance / courtage" />
       </section>

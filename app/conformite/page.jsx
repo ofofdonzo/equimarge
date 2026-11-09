@@ -20,10 +20,10 @@ const TOOLS = [
 ];
 
 const STEPS = [
-  { n: '1', title: 'État des lieux', text: 'Entretiens et revue de vos documents pour mesurer les écarts avec vos obligations.' },
-  { n: '2', title: "Plan d'action", text: 'Les écarts classés par priorité, avec un calendrier réaliste pour vos équipes.' },
-  { n: '3', title: 'Mise en place', text: 'Politiques, procédures, registres et contrôles déployés avec vos équipes.' },
-  { n: '4', title: 'Suivi', text: "Des points réguliers pour faire vivre le dispositif et l'adapter à vos évolutions." },
+  { n: '1', title: 'État des lieux', text: 'Nous menons des entretiens et relisons vos documents pour mesurer les écarts avec vos obligations.' },
+  { n: '2', title: "Plan d'action", text: 'Nous classons les écarts par priorité et fixons un calendrier avec vous.' },
+  { n: '3', title: 'Mise en place', text: 'Nous rédigeons les politiques, les procédures et les registres, puis nous mettons les contrôles en place avec vos équipes.' },
+  { n: '4', title: 'Suivi', text: 'Nous faisons le point à intervalles réguliers et mettons le dispositif à jour quand votre activité change.' },
 ];
 
 export default async function Page(props) {
@@ -39,9 +39,7 @@ export default async function Page(props) {
     <div className="stack" style={{ gap: 88 }}>
       <section className="page-hero">
         <span className="badge">Pôle conformité</span>
-        <h1>
-          Mettez votre entreprise en conformité, étape par étape
-        </h1>
+        <h1>Audit et mise en conformité de votre entreprise</h1>
         <p className="lead">
           Audit et accompagnement pour répondre à vos obligations : RGPD et délégué à la protection des données (DPO)
           externalisé, intelligence artificielle, anti-blanchiment, anticorruption, procédures internes, droit social.
@@ -77,7 +75,7 @@ export default async function Page(props) {
 
       <section className="section" id="domaines">
         <div className="section-head">
-          <h2>Ce que nous mettons en place avec vous</h2>
+          <h2>Nos domaines d’intervention</h2>
         </div>
         <div className="grid3 grid-center">
           {COMPLIANCE.map((d) => {
@@ -102,7 +100,7 @@ export default async function Page(props) {
       <section className="section">
         <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
           <div style={{ minWidth: 0, flex: '1 1 320px' }}>
-            <h2 style={{ margin: '6px 0 8px' }}>Vous transmettez, nous réalisons, vous suivez</h2>
+            <h2 style={{ margin: '6px 0 8px' }}>Votre dossier en ligne</h2>
             <ul className="checks" style={{ marginTop: 0 }}>
               {TOOLS.map((t) => (
                 <li key={t}><Check size={16} />{t}</li>
@@ -117,7 +115,7 @@ export default async function Page(props) {
 
       <section className="section">
         <div className="section-head">
-          <h2>Quatre étapes, à votre rythme</h2>
+          <h2>Déroulement d’une mission</h2>
         </div>
         <ol className="steps4">
           {STEPS.map(({ n, title, text }) => (
@@ -138,7 +136,7 @@ export default async function Page(props) {
       <section className="section" id="devis">
         <div className="section-head">
           <h2>Demander un devis</h2>
-          <p>Décrivez votre situation : nous revenons vers vous sous 48&nbsp;h ouvrées pour en parler. Aucun engagement à ce stade.</p>
+          <p>Décrivez votre situation. Nous vous répondons sous 48&nbsp;h ouvrées. La demande ne vous engage pas.</p>
         </div>
         <RequestForm
           key={preselected.join()}

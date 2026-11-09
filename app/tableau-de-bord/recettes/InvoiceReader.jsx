@@ -166,7 +166,7 @@ export default function InvoiceReader({ ingredients, supabase, save, onApplied, 
         <div className="stack" style={{ gap: 14 }}>
           <p className="note" style={{ margin: 0 }}>
             {invoice.supplier || 'Fournisseur non lu'}
-            {invoice.date && ` · facture du ${date(invoice.date)}`} · {rows.length} ligne{rows.length > 1 ? 's' : ''} · {eur(invoice.total)} HT.
+            {invoice.date && `, facture du ${date(invoice.date)}`}, {rows.length} ligne{rows.length > 1 ? 's' : ''}, {eur(invoice.total)} HT.
             Vérifiez les quantités : le coût par unité en dépend.
           </p>
           <div className="scroll">

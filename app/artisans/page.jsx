@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { Alert, ArrowRight, Check, Lock, Percent, Receipt, Target, TrendUp } from '@/components/icons';
+import { Check, Lock, TrendUp } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 import { freeReads, PLAN_NAME, priceLabel } from '@/lib/abonnement.mjs';
 import { recettesPrice } from '@/lib/stripe';
 
 export const metadata = {
-  title: 'Coût matière et prix de vente pour artisans de l’alimentation — Equimarge',
+  title: 'Coût matière et prix de vente pour artisans de l’alimentation | Equimarge',
   description:
     'Photographiez vos factures fournisseurs : le coût de vos matières est mis à jour, chaque recette est recalculée et les produits qui ne rapportent plus assez sont signalés, avec un prix conseillé. Boulangers, pâtissiers, traiteurs, restaurateurs.',
   alternates: { canonical: '/artisans' },
@@ -16,17 +16,17 @@ export const revalidate = 3600;
 const SIGNUP = '/connexion?mode=inscription&suite=/tableau-de-bord/recettes';
 
 const STEPS = [
-  { n: '01', title: 'Photographiez la facture', text: 'Depuis votre téléphone, ou envoyez le PDF reçu par e-mail.', Icon: Receipt },
-  { n: '02', title: 'Vérifiez les lignes', text: 'Produits, quantités et prix hors taxes sont relevés pour vous. Vous corrigez ou validez en un clic.', Icon: Check },
-  { n: '03', title: 'Composez vos recettes', text: 'Une seule fois : les quantités d’une fournée, le nombre de pièces et le prix affiché.', Icon: Target },
-  { n: '04', title: 'Ajustez vos prix', text: 'À chaque facture, les recettes qui ne rapportent plus assez remontent, avec le prix à afficher.', Icon: TrendUp },
+  { n: '1', title: 'Photographiez la facture', text: 'Depuis votre téléphone, ou envoyez le PDF reçu par e-mail.' },
+  { n: '2', title: 'Vérifiez les lignes', text: 'L’outil relève les produits, les quantités et les prix hors taxes. Vous corrigez ou vous validez.' },
+  { n: '3', title: 'Composez vos recettes', text: 'Vous saisissez une fois les quantités d’une fournée, le nombre de pièces et le prix affiché.' },
+  { n: '4', title: 'Ajustez vos prix', text: 'À chaque nouvelle facture, l’outil signale les recettes qui ne rapportent plus assez et indique le prix à afficher.' },
 ];
 
 const FEATURES = [
-  { title: 'Le coût matière de chaque pièce', text: 'Farine, beurre, œufs, emballages : le coût réel d’un croissant ou d’une part de tarte, au centime, avec vos derniers prix fournisseurs.', Icon: Receipt },
-  { title: 'Taux de marque et coefficient', text: 'Pour chaque recette, ce qui reste sur le prix hors taxes une fois les matières payées, comparé à l’objectif que vous fixez.', Icon: Percent },
-  { title: 'Un prix conseillé, prêt à afficher', text: 'Le prix TTC qui atteint votre objectif, TVA comprise et arrondi aux 5 centimes supérieurs.', Icon: Target },
-  { title: 'Les hausses signalées', text: 'Une matière qui augmente de 5 % ou plus est signalée, avec le nombre de recettes qu’elle touche.', Icon: Alert },
+  { title: 'Le coût matière de chaque pièce', text: 'Farine, beurre, œufs, emballages : le coût réel d’un croissant ou d’une part de tarte, au centime, avec vos derniers prix fournisseurs.' },
+  { title: 'Taux de marque et coefficient', text: 'Pour chaque recette, ce qui reste sur le prix hors taxes une fois les matières payées, comparé à l’objectif que vous fixez.' },
+  { title: 'Un prix conseillé', text: 'Le prix TTC qui atteint votre objectif, TVA comprise et arrondi aux 5 centimes supérieurs.' },
+  { title: 'Les hausses signalées', text: 'L’outil signale toute matière qui augmente de 5 % ou plus, avec le nombre de recettes touchées.' },
 ];
 
 const TRADES = ['Boulangeries-pâtisseries', 'Traiteurs', 'Boucheries-charcuteries', 'Restaurants', 'Food trucks', 'Chocolatiers', 'Glaciers', 'Pizzerias'];
@@ -35,7 +35,7 @@ const PRIVACY = [
   'Equimarge ne conserve pas le fichier de la facture : seuls le fournisseur, la date et le total sont gardés.',
   'Aucun prix ne change sans votre validation, ligne par ligne.',
   'La facture est lue par Claude, l’IA d’Anthropic. Vos recettes et vos prix sont hébergés dans l’Union européenne.',
-  'Vos données ne sont visibles que par vous et s’effacent avec votre compte, à tout moment.',
+  'Vous seul voyez vos données. Elles sont effacées quand vous supprimez votre compte.',
 ];
 
 // Réponse « Combien ça coûte ? » : selon que l'abonnement est ouvert (prix lu dans Stripe) ou non
@@ -61,7 +61,7 @@ const FAQ = [
   },
   {
     q: 'Faut-il saisir toutes mes recettes d’un coup ?',
-    a: 'Non. Commencez par vos cinq meilleures ventes : ce sont elles qui font votre marge. Les matières se créent toutes seules à la lecture de vos factures.',
+    a: 'Non. Commencez par vos cinq meilleures ventes. L’outil crée les matières à la lecture de vos factures.',
   },
 ];
 
@@ -75,11 +75,11 @@ const EXAMPLE = [
 
 function Preview() {
   return (
-    <div className="preview rise d2" aria-hidden="true">
+    <div className="preview" aria-hidden="true">
       <div className="preview-card">
         <div className="preview-head">
-          <span className="preview-dots"><i /><i /><i /></span>
-          <span>Exemple · vos recettes</span>
+          
+          <span>Exemple : vos recettes</span>
         </div>
         <div className="preview-kpis">
           <div><small>Recettes suivies</small><b>24</b></div>
@@ -143,18 +143,16 @@ export default async function Page() {
     <div className="stack" style={{ gap: 88 }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="hero">
-        <div className="rise">
-          <span className="badge"><span className="badge-dot" />Pour les artisans de l’alimentation</span>
-          <h1>
-            Vos matières augmentent. <span className="grad-text">Vos prix suivent&#8209;ils ?</span>
-          </h1>
+        <div>
+          <span className="badge">Pour les artisans de l’alimentation</span>
+          <h1>Le coût matière de vos recettes, recalculé à chaque facture</h1>
           <p className="lead">
-            Photographiez vos factures fournisseurs : le coût de vos matières est mis à jour, chaque recette est
-            recalculée, et vous savez quels produits ne rapportent plus assez, avec le prix à afficher.
+            Photographiez vos factures fournisseurs. L’outil met à jour le coût de vos matières et recalcule chaque
+            recette. Vous voyez quels produits ne rapportent plus assez et à quel prix les afficher.
           </p>
           <div className="row">
             <Link href={SIGNUP} className="btn lg">
-              Essayer gratuitement <ArrowRight size={18} />
+              Essayer gratuitement
             </Link>
             <a href="#etapes" className="btn ghost lg">
               Comment ça marche
@@ -171,14 +169,12 @@ export default async function Page() {
 
       <section className="section" id="etapes">
         <div className="section-head">
-          <span className="eyebrow">Comment ça marche</span>
-          <h2>De la facture au bon prix, en quelques minutes</h2>
+          <h2>Comment ça marche</h2>
         </div>
         <ol className="steps4">
-          {STEPS.map(({ n, title, text, Icon }) => (
+          {STEPS.map(({ n, title, text }) => (
             <li key={n} className="feature">
               <span className="num" aria-hidden="true">{n}</span>
-              <div className="feature-icon"><Icon size={22} /></div>
               <h3>{title}</h3>
               <p className="note">{text}</p>
             </li>
@@ -188,14 +184,12 @@ export default async function Page() {
 
       <section className="section">
         <div className="section-head">
-          <span className="eyebrow">Ce que vous voyez</span>
-          <h2>Chaque produit, ce qu’il vous coûte et ce qu’il vous rapporte</h2>
+          <h2>Ce que l’outil calcule</h2>
           <p>Le beurre, le cacao, les fruits changent de prix d’une livraison à l’autre. Vos étiquettes, elles, restent souvent les mêmes toute l’année.</p>
         </div>
         <div className="grid2">
-          {FEATURES.map(({ title, text, Icon }) => (
+          {FEATURES.map(({ title, text }) => (
             <article key={title} className="feature">
-              <div className="feature-icon"><Icon size={22} /></div>
               <h3>{title}</h3>
               <p className="note">{text}</p>
             </article>
@@ -213,7 +207,7 @@ export default async function Page() {
         <div className="panel callout">
           <div className="row" style={{ gap: 12 }}>
             <span className="float-icon ok"><Lock size={18} /></span>
-            <h2 style={{ margin: 0 }}>Vos factures et vos recettes restent à vous</h2>
+            <h2 style={{ margin: 0 }}>Confidentialité de vos factures et de vos recettes</h2>
           </div>
           <ul className="checks">
             {PRIVACY.map((p) => (
@@ -229,8 +223,7 @@ export default async function Page() {
       {price && (
         <section className="section" id="tarifs">
           <div className="section-head">
-            <span className="eyebrow">Tarifs</span>
-            <h2>Commencez gratuitement, abonnez-vous quand vous voulez</h2>
+            <h2>Tarifs</h2>
           </div>
           <div className="grid2">
             <article className="price-card">
@@ -255,7 +248,7 @@ export default async function Page() {
                 <li><Check size={16} />Facture mensuelle par e-mail</li>
                 <li><Check size={16} />Paiement sécurisé par Stripe</li>
               </ul>
-              <Link href={SIGNUP} className="btn">Essayer gratuitement <ArrowRight size={18} /></Link>
+              <Link href={SIGNUP} className="btn">Essayer gratuitement</Link>
             </article>
           </div>
         </section>
@@ -263,8 +256,7 @@ export default async function Page() {
 
       <section className="section" id="questions">
         <div className="section-head">
-          <span className="eyebrow">Questions fréquentes</span>
-          <h2>Avant de commencer</h2>
+          <h2>Questions fréquentes</h2>
         </div>
         <div className="faq">
           {faq.map(({ q, a }) => (
@@ -283,7 +275,7 @@ export default async function Page() {
         </div>
         <div className="row">
           <Link href={SIGNUP} className="btn inverse lg">
-            Essayer gratuitement <ArrowRight size={18} />
+            Essayer gratuitement
           </Link>
           <Link href="/diagnostic" className="btn on-grad lg">
             Faire analyser mes marges

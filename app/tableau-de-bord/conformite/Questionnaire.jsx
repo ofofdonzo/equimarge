@@ -29,7 +29,7 @@ export default function Questionnaire({ answers, scores, domain, actions, canPla
                   <span className="note">{s.total} questions</span>
                 ) : (
                   <>
-                    <span className="note">{s.answered} / {s.total} réponses · {pct(s.score)}</span>
+                    <span className="note">{s.answered} / {s.total} réponses, {pct(s.score)}</span>
                     <span className={'pill ' + level.state}>{level.label}</span>
                   </>
                 )}

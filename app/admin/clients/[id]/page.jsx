@@ -4,7 +4,7 @@ import { loadDossier } from '@/app/tableau-de-bord/conformite/load';
 import { requireAdmin, Restricted } from '../../guard';
 import DossierHeader from './DossierHeader';
 
-export const metadata = { title: 'Dossier client — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Dossier client | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page({ params }) {

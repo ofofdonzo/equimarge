@@ -59,13 +59,13 @@ export const COMPLIANCE = [
   {
     key: 'procedures',
     id: 'Politiques et procédures internes',
-    intro: 'Formaliser vos règles de fonctionnement pour sécuriser les décisions et les contrôles.',
+    intro: 'Mettre par écrit vos règles de fonctionnement et les contrôles qui vont avec.',
     items: ['État des lieux de vos pratiques', 'Formalisation des politiques et procédures', 'Mise en place des contrôles et du suivi'],
   },
   {
     key: 'social',
     id: 'Droit social',
-    intro: "Vérifier que vos obligations d'employeur sont couvertes, au quotidien comme en cas de contrôle.",
+    intro: "Vérifier que vous remplissez vos obligations d'employeur avant un contrôle.",
     items: ['Affichages et registres obligatoires', 'Vérification du document unique (DUERP) et du règlement intérieur', 'Audit des pratiques et documents RH'],
   },
 ];
@@ -78,21 +78,21 @@ export const AUTOMATION = [
     key: 'messages',
     floor: 'Étage 1',
     id: 'Mails, messages et appels manqués',
-    intro: 'Chaque demande est triée et sa réponse préparée, même à 2 h du matin : vous la relisez et l’envoyez.',
+    intro: 'L’agent trie chaque demande et prépare une réponse, y compris la nuit. Vous la relisez et vous l’envoyez.',
     items: ['Tri et classement de la boîte de réception', 'Réponses préparées, validées par vous', 'Appels manqués transformés en tâches'],
   },
   {
     key: 'factures',
     floor: 'Étage 2',
     id: 'Factures et relances',
-    intro: 'Les factures partent, les retards de paiement sont repérés et relancés au bon moment.',
+    intro: 'L’agent prépare les factures, repère les retards de paiement et rédige les relances.',
     items: ['Suivi des factures émises et reçues', 'Relances graduées des impayés', 'Échéancier des paiements fournisseurs'],
   },
   {
     key: 'planning',
     floor: 'Étage 3',
     id: 'Planning et achats',
-    intro: 'Rendez-vous, tâches de l’équipe et commandes fournisseurs suivis sans ressaisie.',
+    intro: 'L’agent suit les rendez-vous, les tâches de l’équipe et les commandes fournisseurs. Vous ne ressaisissez rien.',
     items: ['Planning et rappels automatiques', 'Suivi des commandes et des stocks', 'Alertes avant les ruptures'],
   },
   {

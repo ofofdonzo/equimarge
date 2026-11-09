@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { OFFERS, COMPLIANCE, COMPLIANCE_OFFER, AUTOMATION, AUTOMATION_OFFER, SECTORS, REVENUE_BANDS } from '@/components/offers';
-import { ArrowRight, Check, Clock, DOMAIN_ICONS, FLOOR_ICONS } from '@/components/icons';
+import { Check, Clock, DOMAIN_ICONS, FLOOR_ICONS } from '@/components/icons';
 
 // Formulaire de demande, commun aux deux pôles :
 // kind="diagnostic" : choix d'une formule de diagnostic de marge ;
@@ -190,7 +190,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
         {error && <p className="err" role="alert">{error}</p>}
         <div className="row">
           <button className="btn lg" type="submit" disabled={busy}>
-            {busy ? 'Envoi…' : <>{compliance ? 'Demander un devis' : 'Envoyer ma demande'} <ArrowRight size={18} /></>}
+            {busy ? 'Envoi…' : <>{compliance ? 'Demander un devis' : 'Envoyer ma demande'}</>}
           </button>
           <span className="note">* champs obligatoires</span>
         </div>

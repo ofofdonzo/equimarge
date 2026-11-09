@@ -5,7 +5,7 @@ import { isMission } from '@/lib/conformite.mjs';
 import Workspace from './Workspace';
 import { loadDossier } from './load';
 
-export const metadata = { title: 'Mon dossier conformité — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Mon dossier conformité | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 const STATE = { 'En cours': 'warn', Terminé: 'ok', Suspendu: 'none', 'Auto-diagnostic': 'none' };
@@ -46,7 +46,7 @@ export default async function Page() {
           <span className="eyebrow">{mission ? 'Mon dossier' : 'Auto-diagnostic gratuit'}</span>
           {mission && <span className={'pill ' + STATE[dossier.status]}>{dossier.status}</span>}
         </div>
-        <h1>{mission ? `Votre mise en conformité${dossier.company ? ' · ' + dossier.company : ''}` : 'Évaluez votre conformité'}</h1>
+        <h1>{mission ? `Votre mise en conformité${dossier.company ? ' : ' + dossier.company : ''}` : 'Évaluez votre conformité'}</h1>
         <p className="lead" style={{ marginBottom: 0 }}>
           {mission
             ? `${dossier.offer ? dossier.offer + ' : ' : ''}répondez aux demandes d’informations, transmettez vos documents et suivez l’avancement de la mission réalisée par Equimarge.`

@@ -1,20 +1,20 @@
 import Link from 'next/link';
-import { ArrowRight, BarChart, Shield } from '@/components/icons';
+import { BarChart, Shield } from '@/components/icons';
 
-export const metadata = { title: 'Page introuvable — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Page introuvable | Equimarge', robots: { index: false } };
 
 // Page affichée pour toute adresse qui n'existe pas (erreur 404)
 export default function NotFound() {
   return (
-    <section className="notfound rise">
-      <p className="notfound-code grad-text" aria-hidden="true">404</p>
+    <section className="notfound">
+      <p className="notfound-code" aria-hidden="true">404</p>
       <h1>Page introuvable</h1>
       <p className="lead">
         La page que vous cherchez n'existe pas ou a été déplacée. Vérifiez l'adresse, ou repartez de l'un de ces liens.
       </p>
       <div className="row" style={{ justifyContent: 'center' }}>
         <Link href="/" className="btn lg">
-          Retour à l'accueil <ArrowRight size={18} />
+          Retour à l'accueil
         </Link>
       </div>
       <div className="notfound-links">

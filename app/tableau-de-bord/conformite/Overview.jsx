@@ -175,7 +175,7 @@ export default function Overview({ role, scores, domain, actions, risks, infos =
             <span className="due-date">{a.due_date ? frDate(a.due_date) : 'Sans date'}</span>
             <span className="due-title">
               <b>{a.title || 'Action sans titre'}</b>
-              <span className="note">{domainLabel(a.domain)} · {a.status}</span>
+              <span className="note">{domainLabel(a.domain)}, {a.status}</span>
             </span>
             {isLate(a, today) && <span className="pill bad">En retard</span>}
           </li>

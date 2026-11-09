@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Assistance — Equimarge',
+  title: 'Assistance | Equimarge',
   description: 'Aide pour l’espace client et l’application iPhone Equimarge : connexion, documents, messages, notifications, suppression du compte.',
   alternates: { canonical: '/assistance' },
 };

@@ -56,7 +56,7 @@ function replyMailto(r) {
     'Equimarge',
     'contact@equimarge.fr',
   ].join('\n');
-  return `mailto:${r.email}?subject=${encodeURIComponent(`Votre demande de ${subjectOf(r)} — Equimarge`)}&body=${encodeURIComponent(body)}`;
+  return `mailto:${r.email}?subject=${encodeURIComponent(`Equimarge : votre demande de ${subjectOf(r)}`)}&body=${encodeURIComponent(body)}`;
 }
 
 function briefForClaude(r, t, notes) {
@@ -139,7 +139,7 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
   // Nombre de demandes à traiter dans le titre de l'onglet
   const todoCount = rows.filter((r) => r.status === 'Nouvelle').length;
   useEffect(() => {
-    document.title = (todoCount ? `(${todoCount}) ` : '') + 'Poste de travail — Equimarge';
+    document.title = (todoCount ? `(${todoCount}) ` : '') + 'Poste de travail | Equimarge';
   }, [todoCount]);
 
   // ---------- Filtres et indicateurs ----------

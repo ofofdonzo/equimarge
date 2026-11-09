@@ -56,8 +56,8 @@ export default function Documents({ documents, infos, role, offline, onUpload, o
                       <span className="doc-name">
                         <b>{d.name}</b>
                         <span className="note">
-                          {frDate(d.created_at)} · {fileSize(d.size)}
-                          {d.info_request_id && titleOf(d.info_request_id) ? ` · ${titleOf(d.info_request_id)}` : ''}
+                          {frDate(d.created_at)}, {fileSize(d.size)}
+                          {d.info_request_id && titleOf(d.info_request_id) ? `, ${titleOf(d.info_request_id)}` : ''}
                         </span>
                       </span>
                       <span className="row" style={{ gap: 4, flexWrap: 'nowrap' }}>

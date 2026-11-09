@@ -596,7 +596,7 @@ function DiagnosticSummary({ scores, status }) {
         </div>
         <div className="diag-progress">
           <span className="row" style={{ justifyContent: 'space-between' }}>
-            <span className="note">{answered === 0 ? 'Environ 10 minutes · 6 domaines' : `${answered} réponse${answered > 1 ? 's' : ''} sur ${total}`}</span>
+            <span className="note">{answered === 0 ? 'Environ 10 minutes, 6 domaines' : `${answered} réponse${answered > 1 ? 's' : ''} sur ${total}`}</span>
             {status}
           </span>
           <span className="track" aria-hidden="true"><span className="fill" style={{ width: `${(answered / total) * 100}%` }} /></span>

@@ -5,7 +5,7 @@ import RequestForm from '@/components/RequestForm';
 import { Check, FLOOR_ICONS } from '@/components/icons';
 
 export const metadata = {
-  title: 'Automatisation par agents IA pour PME — Equimarge',
+  title: 'Automatisation par agents IA pour PME | Equimarge',
   description:
     'Des agents IA qui traitent les tâches répétitives de votre PME : mails et appels manqués, factures et relances, planning et achats, avec un rapport de cinq lignes chaque soir. Sur devis.',
   alternates: { canonical: '/automatisation' },

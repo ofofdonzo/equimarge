@@ -230,8 +230,8 @@ export default function Dashboard({ initialProducts, initialSettings, userId }) 
 
       <div className="panel callout row" style={{ justifyContent: 'space-between' }}>
         <div style={{ minWidth: 0, flex: '1 1 260px' }}>
-          <h2 style={{ marginBottom: 4 }}>Besoin d'un regard extérieur ?</h2>
-          <p className="note" style={{ margin: 0 }}>Un diagnostic identifie les postes qui grèvent votre marge et propose un plan d'action.</p>
+          <h2 style={{ marginBottom: 4 }}>Diagnostic de marge</h2>
+          <p className="note" style={{ margin: 0 }}>Equimarge analyse vos marges. Trois formules, dont une gratuite de 30 minutes en visio.</p>
         </div>
         <Link className="btn" href="/diagnostic">Commander un diagnostic <ArrowRight size={18} /></Link>
       </div>

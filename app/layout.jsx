@@ -10,7 +10,7 @@ import { siteUrl } from '@/lib/site';
 const franklin = Libre_Franklin({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-franklin' });
 const serif = Source_Serif_4({ subsets: ['latin'], weight: ['600', '700'], display: 'swap', variable: '--font-serif' });
 
-const TITLE = 'Equimarge — conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
+const TITLE = 'Equimarge : conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
 const DESCRIPTION =
   'Equimarge réalise la mise en conformité des PME et des intermédiaires d’assurance : RGPD, DPO externalisé, anti-blanchiment, IA, anticorruption, droit social. Dossier suivi en ligne. Aussi : diagnostic de marge et automatisation.';
 

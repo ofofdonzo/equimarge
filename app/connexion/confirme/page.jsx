@@ -1,6 +1,6 @@
 import Confirmed from './Confirmed';
 
-export const metadata = { title: 'E-mail confirmé — Equimarge', robots: { index: false } };
+export const metadata = { title: 'E-mail confirmé | Equimarge', robots: { index: false } };
 
 // Arrivée depuis le lien de confirmation d'un compte créé dans l'application iPhone.
 export default function Page() {

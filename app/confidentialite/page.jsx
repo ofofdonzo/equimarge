@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Confidentialité — Equimarge', alternates: { canonical: '/confidentialite' } };
+export const metadata = { title: 'Confidentialité | Equimarge', alternates: { canonical: '/confidentialite' } };
 
 export default function Page() {
   return (

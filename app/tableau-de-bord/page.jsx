@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import SpaceNav from '@/components/SpaceNav';
 import Dashboard from './Dashboard';
 
-export const metadata = { title: 'Suivi de marge — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Suivi de marge | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

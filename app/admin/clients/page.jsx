@@ -2,7 +2,7 @@ import AdminNav from '@/components/AdminNav';
 import { requireAdmin, Restricted } from '../guard';
 import ClientsList from './ClientsList';
 
-export const metadata = { title: 'Dossiers clients — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Dossiers clients | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

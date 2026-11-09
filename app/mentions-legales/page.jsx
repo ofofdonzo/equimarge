@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Mentions légales — Equimarge', alternates: { canonical: '/mentions-legales' } };
+export const metadata = { title: 'Mentions légales | Equimarge', alternates: { canonical: '/mentions-legales' } };
 
 // Société en cours de constitution : après l'immatriculation, remplacer « en cours de constitution »,
 // ajouter l'adresse complète du siège, le SIREN, le capital social, « RCS Paris » et le n° de TVA intracommunautaire.

@@ -49,7 +49,7 @@ export default function Messages({ role, messages, canWrite, onSend }) {
               <p className="msg-body">{m.body}</p>
               <span className="msg-time">
                 {when(m.created_at)}
-                {mine && m.read_at ? ' · Lu' : ''}
+                {mine && m.read_at ? ', lu' : ''}
               </span>
             </li>
           );

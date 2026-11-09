@@ -7,7 +7,7 @@ import { countMonthReads } from '../recettes/data';
 import AccountPanel from './AccountPanel';
 import SubscriptionPanel from './SubscriptionPanel';
 
-export const metadata = { title: 'Mon compte — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Mon compte | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page(props) {

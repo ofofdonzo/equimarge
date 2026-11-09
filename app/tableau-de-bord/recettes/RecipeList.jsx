@@ -195,8 +195,8 @@ export default function RecipeList({ recipes, setRecipes, items, setItems, ingre
 
                             <p className="note" style={{ margin: 0 }}>
                               Fournée : {eur(c.batch)} HT de matières, soit {eur(c.unitCost)} par pièce
-                              {Number.isFinite(c.coef) && ` · prix HT ${eur(c.priceHT)} · coefficient ×${num(c.coef, 1)}`}
-                              {c.missing > 0 && ` · ${c.missing} matière${c.missing > 1 ? 's' : ''} sans prix ou sans quantité`}.
+                              {Number.isFinite(c.coef) && `, prix HT ${eur(c.priceHT)}, coefficient ×${num(c.coef, 1)}`}
+                              {c.missing > 0 && `, ${c.missing} matière${c.missing > 1 ? 's' : ''} sans prix ou sans quantité`}.
                             </p>
                           </div>
                         </td>

@@ -5,7 +5,7 @@ import Recettes from './Recettes';
 import { countMonthReads, loadRecettes } from './data';
 import { billingEnabled, freeReads, isActive, monthStart } from '@/lib/abonnement.mjs';
 
-export const metadata = { title: 'Recettes et coût matière — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Recettes et coût matière | Equimarge', robots: { index: false } };
 export const dynamic = 'force-dynamic';
 
 export default async function Page() {

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Conditions générales — Equimarge', alternates: { canonical: '/conditions-generales' } };
+export const metadata = { title: 'Conditions générales | Equimarge', alternates: { canonical: '/conditions-generales' } };
 
 // Conditions générales d'utilisation de l'espace gratuit et de vente des prestations, entre professionnels.
 // Modèle à faire relire avant la première vente, puis à compléter après l'immatriculation (voir mentions légales).

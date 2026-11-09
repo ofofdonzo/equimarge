@@ -5,7 +5,7 @@ import { Check } from '@/components/icons';
 import RequestForm from '@/components/RequestForm';
 
 export const metadata = {
-  title: 'Mise en conformité des PME — Equimarge',
+  title: 'Mise en conformité des PME | Equimarge',
   description:
     'Audit et accompagnement à la mise en conformité : RGPD, DPO externalisé, intelligence artificielle (AI Act), anti-blanchiment (LCB-FT), anticorruption (Sapin II), procédures internes, droit social. Sur devis.',
   alternates: { canonical: '/conformite' },

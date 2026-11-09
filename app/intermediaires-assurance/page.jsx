@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import RequestForm from '@/components/RequestForm';
 
 export const metadata = {
-  title: 'Conformité des intermédiaires d’assurance — Equimarge',
+  title: 'Conformité des intermédiaires d’assurance | Equimarge',
   description:
     'Audit et mise en conformité des cabinets de courtage et intermédiaires d’assurance : devoir de conseil (DDA), anti-blanchiment, RGPD et données de santé, réclamations, préparation aux contrôles de l’ACPR. Sur devis.',
   alternates: { canonical: '/intermediaires-assurance' },

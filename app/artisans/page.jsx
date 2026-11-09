@@ -5,7 +5,7 @@ import { freeReads, PLAN_NAME, priceLabel } from '@/lib/abonnement.mjs';
 import { recettesPrice } from '@/lib/stripe';
 
 export const metadata = {
-  title: 'Coût matière et prix de vente pour artisans de l’alimentation — Equimarge',
+  title: 'Coût matière et prix de vente pour artisans de l’alimentation | Equimarge',
   description:
     'Photographiez vos factures fournisseurs : le coût de vos matières est mis à jour, chaque recette est recalculée et les produits qui ne rapportent plus assez sont signalés, avec un prix conseillé. Boulangers, pâtissiers, traiteurs, restaurateurs.',
   alternates: { canonical: '/artisans' },

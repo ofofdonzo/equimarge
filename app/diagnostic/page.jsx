@@ -3,7 +3,7 @@ import { OFFERS } from '@/components/offers';
 import RequestForm from '@/components/RequestForm';
 
 export const metadata = {
-  title: 'Commander un diagnostic — Equimarge',
+  title: 'Commander un diagnostic | Equimarge',
   description:
     "Diagnostic de marge pour PME, réalisé par un spécialiste de l'audit : plusieurs formules, réponse sous 48 h ouvrées, aucun paiement à la commande.",
   alternates: { canonical: '/diagnostic' },

@@ -7,7 +7,7 @@ import AdminNav from '@/components/AdminNav';
 // Le manifeste rend le poste de travail installable (écran d'accueil de l'iPhone, appli sur ordinateur),
 // ce qui permet les notifications sur iPhone.
 export const metadata = {
-  title: 'Poste de travail — Equimarge',
+  title: 'Poste de travail | Equimarge',
   robots: { index: false },
   manifest: '/poste.webmanifest',
   appleWebApp: { capable: true, title: 'Equimarge', statusBarStyle: 'black-translucent' },

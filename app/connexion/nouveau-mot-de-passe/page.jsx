@@ -1,6 +1,6 @@
 import NewPasswordForm from './NewPasswordForm';
 
-export const metadata = { title: 'Nouveau mot de passe — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Nouveau mot de passe | Equimarge', robots: { index: false } };
 
 export default function Page() {
   return (

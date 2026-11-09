@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { BarChart, Shield } from '@/components/icons';
 
-export const metadata = { title: 'Page introuvable — Equimarge', robots: { index: false } };
+export const metadata = { title: 'Page introuvable | Equimarge', robots: { index: false } };
 
 // Page affichée pour toute adresse qui n'existe pas (erreur 404)
 export default function NotFound() {

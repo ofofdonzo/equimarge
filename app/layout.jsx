@@ -85,8 +85,9 @@ export default function RootLayout({ children }) {
           </div>
           <div className="wrap">
             <div className="footer-bottom">
-              <span>© {new Date().getFullYear()} Equimarge</span>
+              {/* Bouton à gauche : le coin bas droit de l'écran est occupé par le badge de l'hébergeur */}
               <ThemeToggle />
+              <span>© {new Date().getFullYear()} Equimarge</span>
             </div>
           </div>
         </footer>

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 const LINKS = [
   { href: '/conformite', label: 'Conformité' },
   { href: '/intermediaires-assurance', label: 'Assurance' },
+  { href: '/guides', label: 'Guides' },
   { href: '/#services', label: 'Autres services', only: 'wide' },
   { href: '/diagnostic', label: 'Diagnostic de marge', only: 'panel' },
   { href: '/artisans', label: 'Artisans de l’alimentation', only: 'panel' },
@@ -61,7 +62,7 @@ export default function SiteNav({ children }) {
               href={href}
               className={'nav-link' + (only ? ' only-' + only : '')}
               style={{ '--i': i }}
-              aria-current={pathname === href ? 'page' : undefined}
+              aria-current={pathname === href || pathname.startsWith(href + '/') ? 'page' : undefined}
               onClick={close}
             >
               {label}

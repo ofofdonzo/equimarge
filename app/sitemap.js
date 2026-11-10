@@ -1,7 +1,8 @@
+import { GUIDES } from '@/lib/guides';
 import { siteUrl } from '@/lib/site';
 
 // Sert /sitemap.xml : la liste des pages publiques à proposer aux moteurs de recherche.
-const PAGES = ['/', '/conformite', '/intermediaires-assurance', '/diagnostic', '/automatisation', '/artisans', '/mentions-legales', '/conditions-generales', '/confidentialite', '/assistance'];
+const PAGES = ['/', '/conformite', '/intermediaires-assurance', '/diagnostic', '/automatisation', '/artisans', '/guides', ...GUIDES.map((g) => `/guides/${g.slug}`), '/mentions-legales', '/conditions-generales', '/confidentialite', '/assistance'];
 
 export default function sitemap() {
   const base = siteUrl();

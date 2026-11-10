@@ -20,7 +20,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
   const [f, setF] = useState({
     offer: quote ? quote.offer : defaultOffer, topics: defaultTopics,
     company: '', siren: '', sector: SECTORS.includes(defaultSector) ? defaultSector : SECTORS[0], revenue_band: REVENUE_BANDS[0],
-    contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', consent: false, website: '',
+    contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', callback: false, consent: false, website: '',
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -45,6 +45,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     if (siren && !/^\d{9}$/.test(siren)) miss.push('un SIREN à 9 chiffres (ou laissez le champ vide)');
     if (!f.contact_name.trim()) miss.push('votre nom');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) miss.push('un e-mail valide');
+    if (f.callback && f.phone.replace(/\D/g, '').length < 9) miss.push('un numéro de téléphone pour le rappel');
     if (!f.consent) miss.push("votre accord sur l'utilisation des données");
     if (miss.length) return setError('Il manque ' + miss.join(', ') + '.');
 
@@ -66,7 +67,8 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
       email: f.email.trim(),
       phone: f.phone.trim() || null,
       availability: f.availability.trim() || null,
-      message: f.message.trim() || null,
+      // La demande de rappel est notée en tête du message : pas de colonne dédiée dans la table
+      message: ((f.callback ? 'Rappel téléphonique demandé.\n' : '') + f.message.trim()).slice(0, 4000) || null,
       consent: true,
     });
     setBusy(false);
@@ -83,13 +85,13 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
         <h2 style={{ margin: 0 }}>Demande envoyée</h2>
         {compliance ? (
           <p style={{ margin: 0 }}>
-            Merci. Votre demande de devis {kind === 'automatisation' ? 'd’automatisation ' : ''}pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée. Nous vous
-            écrivons à {f.email} sous 48&nbsp;h ouvrées.
+            Merci. Votre demande de devis {kind === 'automatisation' ? 'd’automatisation ' : ''}pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée.{' '}
+            {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
           </p>
         ) : (
           <p style={{ margin: 0 }}>
-            Merci. Votre demande de diagnostic <b>{f.offer}</b> pour <b>{f.company}</b> est bien enregistrée. Nous vous
-            écrivons à {f.email} sous 48&nbsp;h ouvrées.
+            Merci. Votre demande de diagnostic <b>{f.offer}</b> pour <b>{f.company}</b> est bien enregistrée.{' '}
+            {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
           </p>
         )}
         {!userId && !compliance && (
@@ -176,6 +178,10 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
             onChange={set('message')}
           />
         </div>
+        <label className="check">
+          <input id="callback" type="checkbox" checked={f.callback} onChange={set('callback')} />
+          <span>Je préfère être rappelé par téléphone. Indiquez votre numéro et vos disponibilités ci-dessus.</span>
+        </label>
         <div className="hp" aria-hidden="true">
           <label htmlFor="website">Ne pas remplir</label>
           <input id="website" name="website" tabIndex={-1} autoComplete="off" value={f.website} onChange={set('website')} />

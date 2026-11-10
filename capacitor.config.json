@@ -8,13 +8,13 @@
     "allowsLinkPreview": false,
     "webContentsDebuggingEnabled": false,
     "preferredContentMode": "mobile",
-    "backgroundColor": "#F6F9F7"
+    "backgroundColor": "#D5DFE8"
   },
   "plugins": {
     "SplashScreen": {
       "launchAutoHide": false,
       "launchShowDuration": 0,
-      "backgroundColor": "#071631",
+      "backgroundColor": "#D5DFE8",
       "showSpinner": false
     },
     "PushNotifications": {

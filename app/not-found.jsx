@@ -18,13 +18,13 @@ export default function NotFound() {
         </Link>
       </div>
       <div className="notfound-links">
-        <Link href="/#marges" className="notfound-link">
+        <Link href="/diagnostic" className="notfound-link">
           <span className="topic-icon"><BarChart size={20} /></span>
-          <span><b>Pôle marges</b><small>Outil gratuit et diagnostic</small></span>
+          <span><b>Diagnostic de marge</b><small>Outil gratuit et analyse de vos marges</small></span>
         </Link>
         <Link href="/conformite" className="notfound-link">
           <span className="topic-icon"><Shield size={20} /></span>
-          <span><b>Pôle conformité</b><small>Audit et accompagnement</small></span>
+          <span><b>Conformité</b><small>Audit et accompagnement</small></span>
         </Link>
       </div>
       <p className="note">

@@ -4,6 +4,7 @@ import './globals.css';
 import AuthNav from '@/components/AuthNav';
 import Motion from '@/components/Motion';
 import SiteNav from '@/components/SiteNav';
+import ThemeToggle from '@/components/ThemeToggle';
 import { LogoMark } from '@/components/icons';
 import { siteUrl } from '@/lib/site';
 
@@ -32,12 +33,17 @@ export function generateMetadata() {
 
 export const viewport = {
   themeColor: '#D5DFE8',
-  colorScheme: 'only light',
 };
+
+const THEME_SCRIPT = "try{if(localStorage.getItem('theme')==='nuit')document.documentElement.dataset.theme='nuit'}catch(e){}";
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr" className={`${franklin.variable} ${serif.variable}`}>
+    <html lang="fr" className={`${franklin.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Applique le thème nuit choisi par le visiteur avant le premier affichage, pour éviter un éclair clair */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>
         <header className="site-header">
           <div className="wrap header-inner">
@@ -69,6 +75,8 @@ export default function RootLayout({ children }) {
               <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/artisans">Artisans de l’alimentation</Link>
               <Link href="/automatisation">Automatisation IA</Link>
+              <Link href="/guides">Guides</Link>
+              <Link href="/#a-propos">Qui sommes-nous</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/conditions-generales">Conditions générales</Link>
               <Link href="/confidentialite">Confidentialité</Link>
@@ -77,7 +85,10 @@ export default function RootLayout({ children }) {
             </nav>
           </div>
           <div className="wrap">
-            <div className="footer-bottom">© {new Date().getFullYear()} Equimarge</div>
+            <div className="footer-bottom">
+              <span>© {new Date().getFullYear()} Equimarge</span>
+              <ThemeToggle />
+            </div>
           </div>
         </footer>
       </body>

@@ -40,11 +40,10 @@ const THEME_SCRIPT = "try{if(localStorage.getItem('theme')==='nuit')document.doc
 export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={`${franklin.variable} ${serif.variable}`} suppressHydrationWarning>
-      <head>
-        {/* Applique le thème nuit choisi par le visiteur avant le premier affichage, pour éviter un éclair clair */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-      </head>
       <body>
+        {/* Applique le thème nuit choisi par le visiteur avant l'affichage du contenu, pour éviter un éclair clair.
+            Placé dans <body> : l'hébergeur ajoute ses propres balises dans <head>, ce qui y fausse la reprise par React. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <header className="site-header">
           <div className="wrap header-inner">
             <Link href="/" className="brand">

@@ -146,7 +146,7 @@ main.wrap { flex: 1; padding-top: 40px; padding-bottom: 80px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 10px 24px; }
 .footer-links a { color: var(--muted); text-decoration: none; font-size: .9rem; }
 .footer-links a:hover { color: var(--fg); }
-.footer-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; border-top: 1px solid var(--line); padding: 16px 0 28px; font-size: .82rem; color: var(--muted); }
+.footer-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 8px 16px; border-top: 1px solid var(--line); padding: 16px 0 28px; font-size: .82rem; color: var(--muted); }
 .theme-toggle { padding: 6px 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: transparent; font: inherit; font-weight: 500; color: var(--fg); cursor: pointer; }
 .theme-toggle:hover { border-color: var(--fg); }
 

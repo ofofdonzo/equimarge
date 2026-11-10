@@ -174,6 +174,26 @@ export default function Home() {
         </ul>
       </section>
 
+      <section className="section" id="a-propos">
+        <div className="section-head">
+          <h2>Qui réalise votre mission</h2>
+        </div>
+        <div className="about">
+          <p>
+            Equimarge est dirigée par Ousmane Donzo, formé au droit, à l’audit et à la gestion des risques. Il est votre
+            interlocuteur du premier échange à la livraison des documents.
+          </p>
+          <p>
+            Une mission commence par un état des lieux. Nous classons ensuite les écarts par priorité, puis nous rédigeons
+            les documents. Vous suivez chaque étape dans votre dossier en ligne.
+          </p>
+          <p>
+            Pour un premier échange, écrivez à <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>, appelez
+            le <a href="tel:+33766557340">07 66 55 73 40</a> ou <Link href="/conformite#devis">demandez à être rappelé</Link>.
+          </p>
+        </div>
+      </section>
+
       <section className="cta">
         <div>
           <h2>Demander un devis</h2>

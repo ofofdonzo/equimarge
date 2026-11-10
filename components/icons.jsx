@@ -64,7 +64,7 @@ export const FLOOR_ICONS = { messages: Mail, factures: Receipt, planning: Calend
 export function LogoMark({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <rect x=".75" y=".75" width="62.5" height="62.5" rx="15.5" fill="#fff" fillOpacity=".5" stroke="#16212C" strokeOpacity=".16" strokeWidth="1.5" />
+      <rect x=".75" y=".75" width="62.5" height="62.5" rx="15.5" style={{ fill: 'var(--logo-tile)' }} stroke="#16212C" strokeOpacity=".16" strokeWidth="1.5" />
       <g transform="translate(32 32) scale(.8) translate(-33.75 -31.7)">
         <path d="M30 9 49 15.8v14c0 11.8-8 19.9-19 24.6C19 49.7 11 41.6 11 29.8v-14L30 9Z" fill="#16212C" />
         <rect x="19.5" y="18" width="6" height="25.5" rx="2.4" fill="#fff" />

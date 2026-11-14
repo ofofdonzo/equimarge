@@ -791,3 +791,18 @@ tr.muted td { opacity: .5; }
 /* ---------- Abonnement ---------- */
 .success-line { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 10px 14px; border-radius: 6px; font-weight: 600; color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, transparent); border: 1px solid color-mix(in srgb, var(--ok) 25%, transparent); }
 
+
+/* Page Offres : une offre par bloc, présentation à gauche, contenu à droite */
+.offer-list { display: grid; border-bottom: 1px solid var(--line-strong); }
+.offer-detail { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 56px; padding: 36px 0; border-top: 1px solid var(--line-strong); scroll-margin-top: 96px; }
+.offer-detail-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.offer-detail-head h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 1.9rem); line-height: 1.15; }
+.offer-detail-head p { margin: 0; max-width: 52ch; }
+.offer-detail-head .btn { margin-top: 8px; }
+.offer-detail .checks { margin-top: 10px; font-size: .95rem; }
+@media (max-width: 760px) { .offer-detail { grid-template-columns: minmax(0, 1fr); padding: 28px 0; } }
+
+/* Page Contact : coordonnées directes */
+.contact-direct { display: flex; flex-wrap: wrap; gap: 16px 48px; padding: 20px 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
+.contact-direct > div { display: grid; gap: 4px; }
+.contact-direct a, .contact-direct span:not(.eyebrow) { font-weight: 600; font-size: 1.05rem; }

@@ -46,7 +46,13 @@ const nextConfig = {
   // Anciennes adresses (pages retirées) : renvoyées vers les pages qui les remplacent
   async redirects() {
     return [
-      { source: '/intermediaires-assurance', destination: '/conformite', permanent: true },
+      { source: '/intermediaires-assurance', destination: '/offres', permanent: true },
+      // Site recentré sur la conformité : anciennes pages de conformité, de diagnostic de marge,
+      // de recettes et d'automatisation
+      { source: '/conformite', destination: '/offres', permanent: true },
+      { source: '/diagnostic', destination: '/auto-diagnostic', permanent: true },
+      { source: '/artisans', destination: '/', permanent: true },
+      { source: '/automatisation', destination: '/offres', permanent: true },
       { source: '/guides/rgpd-cabinet-de-courtage', destination: '/guides', permanent: true },
       { source: '/guides/lcb-ft-courtiers-assurance', destination: '/guides', permanent: true },
     ];

@@ -17,9 +17,7 @@ const STEPS = {
 };
 
 const NEW = [
-  { href: '/diagnostic', title: 'Diagnostic de marge', text: 'Une analyse de votre rentabilité, produit par produit.' },
-  { href: '/automatisation#devis', title: 'Automatisation', text: 'Des agents IA pour vos mails, factures et relances.' },
-  { href: '/conformite#devis', title: 'Mise en conformité', text: 'RGPD, DPO externalisé et vos autres obligations.' },
+  { href: '/contact', title: 'Demande de devis', text: 'Mise en conformité RGPD, DPO externalisé, conformité IA, anti-blanchiment.' },
 ];
 
 function subject(r) {

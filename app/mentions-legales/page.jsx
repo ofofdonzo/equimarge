@@ -27,8 +27,8 @@ export default function Page() {
       </p>
       <h2>Activité</h2>
       <p>
-        Audit et accompagnement des entreprises en conformité, diagnostic de marge et automatisation, réservés aux
-        professionnels. Conditions d'utilisation et de vente : voir les <Link href="/conditions-generales">conditions générales</Link>.
+        Audit et accompagnement des entreprises en conformité (RGPD, délégué à la protection des données externalisé,
+        intelligence artificielle, anti-blanchiment), réservés aux professionnels. Conditions d'utilisation et de vente : voir les <Link href="/conditions-generales">conditions générales</Link>.
       </p>
       <h2>Propriété intellectuelle</h2>
       <p>Les contenus du site (textes, logo, mise en page) sont la propriété d'Equimarge. Toute reproduction sans autorisation est interdite.</p>

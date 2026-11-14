@@ -1,27 +1,3 @@
-// Formules de diagnostic : modifiez les prix et contenus ici, ils se mettent à jour partout.
-// `featured: true` met une formule en avant sur l'accueil (badge « Recommandée »).
-export const OFFERS = [
-  {
-    id: 'Flash',
-    delay: '30 min, en visio',
-    price: 'Gratuit',
-    items: ['Lecture de vos marges actuelles', "Trois points d'alerte"],
-  },
-  {
-    id: 'Essentiel',
-    delay: 'Sous 10 jours',
-    price: '490 € HT',
-    featured: true,
-    items: ['Analyse produit par produit', "Revue des prix et des coûts d'achat", 'Rapport écrit et restitution'],
-  },
-  {
-    id: 'Complet',
-    delay: 'Sous 3 semaines',
-    price: '1 290 € HT',
-    items: ["Tout l'Essentiel", 'Cartographie des risques financiers', "Plan d'action chiffré et suivi à 3 mois"],
-  },
-];
-
 // Pôle conformité : domaines d'intervention (sur devis). Modifiez textes et listes ici.
 // `key` sert à l'icône et au lien direct /conformite?domaine=… ; ne le changez pas.
 export const COMPLIANCE_OFFER = 'Conformité';
@@ -175,3 +151,82 @@ export const MISSIONS = [
   'Procédures internes',
   'Droit social',
 ];
+
+// Offres présentées sur le site public (accueil, /offres, formulaire de /contact).
+// `key` correspond aux domaines de COMPLIANCE : la demande enregistre le nom du domaine (`topic`).
+// `tier` : 'principale', 'suivi' ou 'secondaire' (ordre et mise en avant sur les pages).
+export const PRESTATIONS = [
+  {
+    key: 'rgpd',
+    tier: 'principale',
+    name: 'Mise en conformité RGPD',
+    topic: 'RGPD',
+    price: 'Forfait sur devis',
+    short: 'Nous faisons l’état des lieux de vos traitements de données, puis nous rédigeons les documents que le RGPD exige.',
+    who: 'Toute entreprise qui traite des données de clients, de salariés ou de prospects.',
+    includes: [
+      'Entretiens et relecture de vos documents pour repérer les écarts',
+      'Registre des traitements',
+      'Mentions d’information et politique de confidentialité',
+      'Procédure de réponse aux demandes d’accès, de rectification et d’effacement',
+      'Registre des violations de données et procédure de notification à la CNIL',
+      'Durées de conservation, droits d’accès, cookies du site',
+      'Liste des sous-traitants et des clauses à ajouter à leurs contrats',
+      'Plan d’action classé par priorité',
+    ],
+  },
+  {
+    key: 'dpo',
+    tier: 'suivi',
+    name: 'DPO externalisé',
+    topic: 'DPO externalisé',
+    price: 'Abonnement mensuel sur devis',
+    short: 'Equimarge est désignée comme délégué à la protection des données auprès de la CNIL et tient votre conformité à jour.',
+    who: 'Obligatoire pour les organismes publics et les entreprises qui traitent à grande échelle des données sensibles ou suivent des personnes de façon systématique. Facultatif pour les autres.',
+    includes: [
+      'Désignation auprès de la CNIL',
+      'Point de contact des personnes concernées et de la CNIL',
+      'Registre des traitements tenu à jour',
+      'Réponse aux demandes d’exercice des droits',
+      'Traitement des violations de données, notification à la CNIL sous 72 heures si nécessaire',
+      'Avis sur les nouveaux traitements et les analyses d’impact',
+      'Sensibilisation des équipes et rapport annuel',
+    ],
+  },
+  {
+    key: 'ia',
+    tier: 'secondaire',
+    name: 'Conformité IA (AI Act)',
+    topic: 'Intelligence artificielle (AI Act)',
+    price: 'Forfait sur devis',
+    short: 'Le règlement européen sur l’IA impose déjà de former les personnes qui utilisent ces outils et d’informer celles qui échangent avec une IA.',
+    who: 'Toute entreprise dont les équipes utilisent des outils d’IA : assistants, chatbots, logiciels qui intègrent de l’IA.',
+    includes: [
+      'Inventaire des outils d’IA utilisés et de leurs usages',
+      'Classement des usages selon les niveaux de risque du règlement',
+      'Charte d’usage : ce qui est autorisé, ce qui ne doit jamais être saisi',
+      'Formation des utilisateurs',
+      'Information des clients et des salariés',
+      'Vérification RGPD des outils',
+    ],
+  },
+  {
+    key: 'lcbft',
+    tier: 'secondaire',
+    name: 'Anti-blanchiment (LCB-FT)',
+    topic: 'Anti-blanchiment (LCB-FT)',
+    price: 'Forfait sur devis',
+    short: 'Nous mettons en place le dispositif de lutte contre le blanchiment et le financement du terrorisme exigé des professions assujetties.',
+    who: 'Professions assujetties : agences immobilières, administrateurs de biens, experts-comptables, sociétés de domiciliation, marchands d’art, entre autres.',
+    includes: [
+      'Classification des risques de votre activité',
+      'Procédures de vigilance : identification du client et du bénéficiaire effectif',
+      'Procédure de déclaration de soupçon à Tracfin',
+      'Contrôle interne et conservation des pièces',
+      'Formation des équipes',
+    ],
+  },
+];
+
+// Choix « je ne sais pas » du formulaire de devis
+export const PRESTATION_UNSURE = { key: 'autre', name: 'Je ne sais pas encore', topic: 'À préciser' };

@@ -15,10 +15,10 @@ const id = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 
 // Fonction plutôt que constantes : rien n'est calculé ni inclus dans l'appli publiée.
 export function demoData() {
-  const email = 'beatrice@courtage-beta.fr';
+  const email = 'beatrice@menuiserie-beta.fr';
   const dossier = {
   id: id(1),
-  company: 'Courtage Bêta',
+  company: 'Menuiserie Bêta',
   contact_name: 'Béatrice M.',
   email,
   offer: 'DPO externalisé',

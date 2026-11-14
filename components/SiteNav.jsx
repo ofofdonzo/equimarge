@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 // `only` : 'wide' = lien réservé à la barre des grands écrans, 'panel' = lien réservé au menu déroulant des téléphones
 const LINKS = [
   { href: '/conformite', label: 'Conformité' },
-  { href: '/intermediaires-assurance', label: 'Assurance' },
   { href: '/guides', label: 'Guides' },
   { href: '/#services', label: 'Autres services', only: 'wide' },
   { href: '/diagnostic', label: 'Diagnostic de marge', only: 'panel' },

@@ -98,8 +98,8 @@ test('parseEvent n’accepte que les événements connus et un identifiant de do
 });
 
 test('adminMessage nomme le client et pointe vers son dossier, sans saut de ligne', () => {
-  const m = adminMessage('message_client', { id: 'abc', company: 'Courtage\nBêta' });
-  assert.equal(m.title, 'Courtage Bêta : nouveau message');
+  const m = adminMessage('message_client', { id: 'abc', company: 'Menuiserie\nBêta' });
+  assert.equal(m.title, 'Menuiserie Bêta : nouveau message');
   assert.equal(m.url, '/admin/clients/abc');
 });
 

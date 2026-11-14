@@ -43,6 +43,14 @@ const nextConfig = {
   // Adresse publique figée au moment du build : SITE_URL si elle est définie, sinon l'adresse principale
   // du site fournie par Netlify (URL : equimarge.fr une fois le domaine branché, sinon xxx.netlify.app).
   env: { SITE_URL: process.env.SITE_URL || process.env.URL || '' },
+  // Anciennes adresses (pages retirées) : renvoyées vers les pages qui les remplacent
+  async redirects() {
+    return [
+      { source: '/intermediaires-assurance', destination: '/conformite', permanent: true },
+      { source: '/guides/rgpd-cabinet-de-courtage', destination: '/guides', permanent: true },
+      { source: '/guides/lcb-ft-courtiers-assurance', destination: '/guides', permanent: true },
+    ];
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },

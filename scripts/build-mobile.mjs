@@ -114,7 +114,7 @@ await copyFile(resolve(root, 'app/globals.css'), resolve(out, 'globals.css'));
 await copyFile(resolve(root, 'mobile/src/app.css'), resolve(out, 'app.css'));
 
 const js = await readFile(resolve(out, 'app.js'), 'utf8');
-if (!DEMO && js.includes('courtage-beta')) throw new Error('Les données de démonstration ne doivent pas être dans l’application publiée');
+if (!DEMO && js.includes('menuiserie-beta')) throw new Error('Les données de démonstration ne doivent pas être dans l’application publiée');
 if (/process\.env/.test(js)) console.warn('Attention : process.env reste dans app.js');
 const kb = Math.round(js.length / 1024);
 console.log(`Application construite dans ${DEMO ? "mobile/demo" : "mobile/www"} (app.js : ${kb} Ko, site : ${SITE}, ${result.warnings.length} avertissement(s))`);

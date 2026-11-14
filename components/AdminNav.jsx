@@ -14,6 +14,8 @@ export default function AdminNav({ current }) {
           {t.label}
         </Link>
       ))}
+      {/* L'espace tel que les clients le voient */}
+      <Link href="/tableau-de-bord/demandes" className="switch">Voir l’espace client</Link>
     </nav>
   );
 }

@@ -55,7 +55,13 @@ export default function LoginForm() {
       setBusy(false);
       if (error) return setError(MESSAGES[error.message] || error.message);
     }
-    router.push(next);
+    // Sans page demandée, l'administrateur arrive sur son poste de travail et le client dans son espace
+    let target = next;
+    if (!suite) {
+      const { data: isAdmin } = await supabase.rpc('is_admin');
+      if (isAdmin) target = '/admin';
+    }
+    router.push(target);
     router.refresh();
   }
 

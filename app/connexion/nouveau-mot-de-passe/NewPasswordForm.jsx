@@ -37,7 +37,8 @@ export default function NewPasswordForm() {
     if (password.length < 8) return setError('Le mot de passe doit contenir au moins 8 caractères.');
     if (password !== confirm) return setError('Les deux mots de passe ne sont pas identiques.');
     setBusy(true);
-    const { error } = await createClient().auth.updateUser({ password });
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password });
     setBusy(false);
     if (error) {
       return setError(
@@ -48,7 +49,8 @@ export default function NewPasswordForm() {
             : 'Le mot de passe n’a pas pu être changé. Recommencez depuis la page de connexion.'
       );
     }
-    router.push('/tableau-de-bord/conformite');
+    const { data: isAdmin } = await supabase.rpc('is_admin');
+    router.push(isAdmin ? '/admin' : '/tableau-de-bord/conformite');
     router.refresh();
   }
 

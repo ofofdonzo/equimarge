@@ -14,7 +14,7 @@ export default function InfoRequests({ items, documents, role, today, onAdd, onU
   return (
     <section className="panel">
       <div className="panel-head">
-        <h2>Demandes d’informations</h2>
+        <h2>{admin ? 'Demandes d’informations' : 'Questions d’Equimarge'}</h2>
         <span className="row" style={{ gap: 8 }}>
           {pending > 0 && <span className="pill warn">{pending} à fournir</span>}
           {admin && (

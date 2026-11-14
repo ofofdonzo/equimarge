@@ -5,8 +5,8 @@ export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const asked = searchParams.get('suite');
-  const suite = asked || '/tableau-de-bord/conformite';
-  const safe = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord/conformite';
+  const suite = asked || '/tableau-de-bord';
+  const safe = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord';
 
   if (code) {
     const supabase = await createClient();

@@ -50,7 +50,7 @@ export default function NewPasswordForm() {
       );
     }
     const { data: isAdmin } = await supabase.rpc('is_admin');
-    router.push(isAdmin ? '/admin' : '/tableau-de-bord/conformite');
+    router.push(isAdmin ? '/admin' : '/tableau-de-bord');
     router.refresh();
   }
 

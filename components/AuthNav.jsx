@@ -35,7 +35,7 @@ export default function AuthNav() {
             <span className="hide-sm">Se déconnecter</span>
           </button>
         </form>
-        <Link href={admin ? '/admin' : '/tableau-de-bord/conformite'} className="btn sm">
+        <Link href={admin ? '/admin' : '/tableau-de-bord'} className="btn sm">
           {admin ? 'Poste de travail' : 'Mon espace'}
         </Link>
       </>

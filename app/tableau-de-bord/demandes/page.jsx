@@ -44,7 +44,7 @@ export default async function Page() {
       <SpaceNav current="demandes" />
       <div>
         <span className="eyebrow">Mon espace</span>
-        <h1>Vos demandes</h1>
+        <h1>Mes demandes</h1>
         <p className="lead" style={{ marginBottom: 0 }}>
           Chaque demande envoyée à Equimarge depuis votre compte apparaît ici, avec son état d’avancement.
         </p>

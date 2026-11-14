@@ -34,10 +34,6 @@ export default function Page() {
       <p>Les contenus du site (textes, logo, mise en page) sont la propriété d'Equimarge. Toute reproduction sans autorisation est interdite.</p>
       <h2>Responsabilité</h2>
       <p>
-        Les calculs fournis par l'outil sont indicatifs et dépendent des données saisies par l'utilisateur. Ils ne
-        remplacent pas l'avis d'un expert-comptable.
-      </p>
-      <p>
         Les missions de mise en conformité proposées par Equimarge relèvent de l'audit et de l'accompagnement
         opérationnel. Elles ne constituent pas des consultations juridiques.
       </p>

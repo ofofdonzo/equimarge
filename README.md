@@ -1,17 +1,13 @@
 # Equimarge
 
-Site et application pour PME, en trois pôles : mise en conformité (sur devis), suivi de marge (outil gratuit et diagnostic) et automatisation des tâches répétitives par agents IA (sur devis).
+Site et application d'Equimarge, conseil en conformité pour les PME : mise en conformité RGPD (forfait), DPO externalisé (abonnement), conformité IA (AI Act) et anti-blanchiment.
 
 - **Accueil** : présentation et formules.
-- **Mon espace** (`/tableau-de-bord`) : chaque client saisit ses produits ; marge, taux de marque, alertes et seuil de rentabilité sont calculés et sauvegardés.
+- **Mon espace** (`/tableau-de-bord`) : quatre onglets. **Accueil** liste ce que le client doit faire maintenant (questions en attente, messages non lus, devis à examiner, auto-diagnostic à terminer). **Mes demandes**, **Mon dossier** et **Mon compte** sont décrits ci-dessous.
 - **Mes demandes** (`/tableau-de-bord/demandes`) : le client y retrouve chaque demande envoyée depuis son compte, avec son état (reçue, en cours d'étude, devis envoyé, acceptée), et peut en faire une nouvelle.
-- **Recettes** (`/tableau-de-bord/recettes`) : pour les artisans de l'alimentation. Le client photographie une facture fournisseur, Claude en relève les lignes, le client les vérifie puis met à jour le coût de ses matières premières en un clic. Chaque recette (quantités pour une fournée, nombre de pièces, prix affiché TTC, TVA) donne son coût matière, son taux de marque et un prix conseillé ; les recettes sous l'objectif et les hausses de prix de 5 % ou plus sont signalées. Les calculs sont dans `lib/recettes.mjs`.
-- **Artisans** (`/artisans`) : page publique qui présente l'onglet Recettes aux boulangers, pâtissiers, traiteurs et restaurateurs, avec un bouton d'inscription qui mène directement à l'onglet. Elle figure dans le plan du site, le pied de page et la rubrique « Pour aller plus loin » de l'accueil.
-- **Mon dossier conformité** (`/tableau-de-bord/conformite`) : chaque client a un dossier. Sans mission, il y fait l'auto-diagnostic gratuit (44 questions sur six domaines) ; pendant une mission, il répond à vos demandes d'informations, dépose ses documents et consulte tableau de bord, plan d'action, registre RGPD, risques et livrables (en lecture seule), exportables vers Excel. Les questions se modifient dans `lib/conformite.mjs`.
+- **Mon dossier** (`/tableau-de-bord/conformite`) : sans mission, le client y fait l'auto-diagnostic gratuit (44 questions sur six domaines). Pendant une mission, quatre onglets : Questions (vos demandes d'informations, et son auto-diagnostic), Documents à déposer, Livrables (fichiers, plan d'action, registre et risques en lecture seule, export Excel) et Messages. L'adresse `?onglet=questions|documents|livrables|messages` ouvre directement un onglet. Les questions de l'auto-diagnostic se modifient dans `lib/conformite.mjs`.
 - **Dossiers clients** (`/admin/clients`, administrateur) : la liste de tous les dossiers (missions, auto-diagnostics, terminés) et, pour chacun, une fiche où vous réalisez la mission : demandes d'informations, documents et livrables, auto-diagnostic, plan d'action, registre, risques. Un dossier s'ouvre depuis une demande (bouton « Ouvrir un dossier client », automatique quand elle passe en « Gagnée ») ou avec « Nouveau dossier ». Le client y accède en créant son espace avec l'e-mail du dossier (bouton « Inviter le client »).
-- **Diagnostic** (`/diagnostic`) : formulaire ouvert à tous ; les demandes sont enregistrées dans la base.
-- **Conformité** (`/conformite`) : qui est concerné par quelle obligation, domaines d'intervention (RGPD, DPO externalisé, IA, anti-blanchiment, anticorruption, procédures, droit social), démarche et formulaire de demande de devis (mêmes demandes, formule « Conformité »).
-- **Automatisation** (`/automatisation`) : les « étages » d'agents IA (mails et appels manqués, factures et relances, planning et achats, superviseur et rapport du soir) et le formulaire de devis (formule « Automatisation »).
+- **Offres** (`/offres`), **Auto-diagnostic gratuit** (`/auto-diagnostic`), **Guides** et **Contact** (`/contact`) : le site public, consacré à la conformité des PME (RGPD, DPO externalisé, AI Act, anti-blanchiment). La page Contact porte le seul formulaire de demande de devis ; les offres se modifient dans `components/offers.js` (`PRESTATIONS`).
 - **Poste de travail** (`/admin`) : réservé à vous. Vous y arrivez directement en vous connectant ; le lien « Voir l'espace client » montre ce que voient vos clients. S'installe comme une appli sur l'iPhone ou l'ordinateur. Les demandes arrivent en direct (son, compteur dans l'onglet) et une notification vous prévient même appli fermée. Pour chacune : réponse e-mail préparée en un clic, appel, statut, montant du devis, prochaine relance datée, notes privées, et « Copier pour Claude » pour préparer la réponse avec Claude. En bas, vos agents IA et leurs horaires. Les montants et les notes sont dans des tables à part que le client ne voit jamais.
 - **Mentions légales**, **Conditions générales** et **Confidentialité** : remplies pour une SASU en cours de constitution ; à compléter après l'immatriculation (voir l'étape 7).
 
@@ -97,43 +93,3 @@ Le site fournit déjà tout ce que Google lit : `/sitemap.xml` (liste des pages 
 6. (Facultatif) [Bing Webmaster Tools](https://www.bing.com/webmasters) : **Importer depuis Google Search Console**. Bing alimente aussi DuckDuckGo et Ecosia.
 
 Pour être trouvé plus vite, créez des liens vers le site : fiche Google Business Profile, page LinkedIn, annuaires professionnels, signature e-mail.
-
-### 11. Lecture des factures par Claude (onglet « Recettes »)
-Sans cette étape, l'onglet fonctionne mais les prix se saisissent à la main.
-1. Relancez `supabase/schema.sql` dans Supabase (SQL Editor) : il crée les tables des recettes.
-2. Créez une clé sur [platform.claude.com](https://platform.claude.com) : **API Keys** > **Create Key**. Ajoutez du crédit dans **Billing** et, par prudence, un plafond de dépense mensuel dans **Limits**.
-3. Dans Netlify > **Site configuration** > **Environment variables**, ajoutez `ANTHROPIC_API_KEY` avec cette clé, puis relancez un déploiement.
-
-La photo est réduite dans le navigateur, envoyée à Claude, puis oubliée : seuls le fournisseur, la date, le total et le nombre de lignes sont gardés (table `invoices`). Chaque compte peut lire 30 factures par jour et 300 par mois au plus. Le modèle utilisé est `claude-opus-5-5` ; pour en changer, ajoutez la variable `ANTHROPIC_MODEL` (par exemple `claude-haiku-5-5`, plus rapide et moins cher). Une lecture prend en général de 10 à 40 secondes ; au-delà de 50 secondes elle est abandonnée, car Netlify arrête les fonctions à 60 secondes.
-
-### 12. Abonnement Recettes Pro (Stripe)
-Tant que cette étape n'est pas faite, tout l'onglet « Recettes » reste gratuit. Dès que `STRIPE_SECRET_KEY` et `STRIPE_PRICE_RECETTES` sont définis, un compte sans abonnement garde les recettes et les matières sans limite, mais n'a plus que 3 lectures de factures par mois (variable `FACTURES_GRATUITES` pour changer ce nombre, de 0 à 30). L'abonnement débloque les lectures, dans la limite de 30 par jour et 300 par mois.
-
-Faites d'abord tout en **mode test** de Stripe (interrupteur « Test mode »), avec la carte `4242 4242 4242 4242`, puis refaites les étapes 2 à 5 en mode réel.
-1. Relancez `supabase/schema.sql` dans Supabase : il crée la table `subscriptions`.
-2. Sur [dashboard.stripe.com](https://dashboard.stripe.com), **Product catalog** > **Add product** : nom « Recettes Pro », prix récurrent mensuel en euros (par exemple 29 €). Copiez l'identifiant du prix (`price_…`).
-3. **Developers** > **API keys** : copiez la **Secret key** (`sk_…`).
-4. **Developers** > **Webhooks** > **Add endpoint** : adresse `https://equimarge.fr/api/stripe/webhook` (ou l'adresse Netlify), événements `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused` et `customer.subscription.resumed`. Copiez le **Signing secret** (`whsec_…`).
-5. Dans Netlify > **Environment variables** : `STRIPE_SECRET_KEY`, `STRIPE_PRICE_RECETTES`, `STRIPE_WEBHOOK_SECRET` (et `SUPABASE_SERVICE_ROLE_KEY`, déjà demandée à l'étape 9). Relancez un déploiement.
-6. **Settings** > **Billing** > **Customer portal** : activez la mise à jour du moyen de paiement, l'historique des factures et la résiliation « à la fin de la période ». C'est la page qu'ouvre le bouton « Gérer mon abonnement ».
-7. **Settings** > **Business** et **Settings** > **Billing** > **Invoices** : renseignez la raison sociale, l'adresse et le numéro de TVA d'Equimarge, et activez l'envoi des factures et des reçus par e-mail. TVA : si Equimarge la facture, créez un taux de 20 % (**Product catalog** > **Tax rates**) et mettez son identifiant (`txr_…`) dans la variable `STRIPE_TAX_RATE` ; en franchise de TVA, ajoutez sur les factures la mention « TVA non applicable, art. 293 B du CGI ».
-8. Facultatif : un code promotionnel (**Product catalog** > **Coupons**, par exemple « FONDATEUR » à -30 % pour toujours) ; la page de paiement propose d'en saisir un.
-
-Le prix affiché sur « Mon compte » et sur la page `/artisans` est lu dans Stripe (mis à jour en moins d'une heure). L'appli iPhone ne propose pas l'abonnement : Apple n'autorise pas un paiement extérieur dans une appli. La suppression d'un compte résilie son abonnement chez Stripe.
-
-## Travailler en local (optionnel)
-```bash
-npm install
-cp .env.example .env.local   # puis remplissez les deux valeurs
-npm run dev                  # http://localhost:3000
-npm run lint && npm test     # vérifications, aussi lancées par GitHub à chaque modification
-```
-
-## Sécurité et conformité
-- **Accès aux données** : chaque table est protégée par des règles Supabase (RLS) ; un client ne voit que ses propres données.
-- **Lecture des factures** : réservée aux comptes connectés, 30 par jour et 300 par mois au plus par compte (compteur tenu par la base), fichier vérifié par ses premiers octets (JPEG, PNG, WebP ou PDF, 4 Mo au plus) et jamais conservé. Les prix ne changent qu'après vérification par le client.
-- **Paiement** : géré par Stripe (le site ne voit jamais les cartes). L'état de l'abonnement n'est écrit que par le webhook signé de Stripe, avec la clé `service_role`, et la base ignore les événements arrivés dans le désordre.
-- **Formulaire public** : 3 demandes par heure au plus pour un même e-mail, 30 par heure au total, et un champ piège contre les robots.
-- **En-têtes de sécurité** (`next.config.mjs`) : le site ne peut pas être affiché dans une autre page et ne charge que ses propres fichiers.
-- **RGPD** : polices servies par le site (aucun appel à Google), demandes supprimables depuis `/admin`, purge automatique après 3 ans sans échange.
-- **Dépendances** : `npm audit` est lancé par GitHub à chaque modification.

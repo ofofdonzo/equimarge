@@ -26,7 +26,7 @@ export default function LoginForm() {
   const [info, setInfo] = useState('');
   // N'accepte qu'un chemin interne, pour éviter une redirection vers un autre site
   const suite = params.get('suite') || '';
-  const next = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord/conformite';
+  const next = suite.startsWith('/') && !suite.startsWith('//') && !suite.startsWith('/\\') ? suite : '/tableau-de-bord';
 
   async function submit(e) {
     e.preventDefault();

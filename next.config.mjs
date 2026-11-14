@@ -53,6 +53,8 @@ const nextConfig = {
       { source: '/diagnostic', destination: '/auto-diagnostic', permanent: true },
       { source: '/artisans', destination: '/', permanent: true },
       { source: '/automatisation', destination: '/offres', permanent: true },
+      // Espace client : onglet Recettes retiré
+      { source: '/tableau-de-bord/recettes', destination: '/tableau-de-bord', permanent: true },
       { source: '/guides/rgpd-cabinet-de-courtage', destination: '/guides', permanent: true },
       { source: '/guides/lcb-ft-courtiers-assurance', destination: '/guides', permanent: true },
     ];

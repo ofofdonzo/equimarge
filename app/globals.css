@@ -806,3 +806,11 @@ tr.muted td { opacity: .5; }
 .contact-direct { display: flex; flex-wrap: wrap; gap: 16px 48px; padding: 20px 0; border-top: 1px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); }
 .contact-direct > div { display: grid; gap: 4px; }
 .contact-direct a, .contact-direct span:not(.eyebrow) { font-weight: 600; font-size: 1.05rem; }
+
+/* Accueil de l'espace client : liste des choses à faire */
+.todo-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.todo-list li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.todo-list li:first-child { padding-top: 0; }
+.todo-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.todo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); }
+.todo-dot.warn { background: var(--warn); } .todo-dot.bad { background: var(--bad); }

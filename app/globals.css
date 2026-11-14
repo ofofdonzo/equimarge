@@ -814,3 +814,10 @@ tr.muted td { opacity: .5; }
 .todo-list li:last-child { border-bottom: 0; padding-bottom: 0; }
 .todo-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); }
 .todo-dot.warn { background: var(--warn); } .todo-dot.bad { background: var(--bad); }
+
+/* Agenda du poste de travail */
+.agenda-day h2 { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; text-transform: none; }
+.agenda-day h2::first-letter { text-transform: uppercase; }
+.agenda-day.late { border-color: color-mix(in srgb, var(--bad) 40%, var(--line)); }
+.agenda-day.empty-day { padding-top: 14px; padding-bottom: 14px; }
+.agenda-day.empty-day h2 { margin-bottom: 4px; font-size: 1.05rem; }

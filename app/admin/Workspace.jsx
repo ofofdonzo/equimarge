@@ -17,7 +17,6 @@ const VIEWS = [
   { key: 'won', label: 'Gagnées', test: (r) => r.status === 'Gagnée' },
   { key: 'all', label: 'Toutes', test: () => true },
 ];
-const POLES = ['Tous', 'Marges', 'Conformité', 'Automatisation'];
 const OPEN = (r) => r.status !== 'Gagnée' && r.status !== 'Perdue';
 
 const euros = (n) =>
@@ -101,7 +100,6 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
   const [rows, setRows] = useState(initialRequests);
   const [tracking, setTracking] = useState(() => Object.fromEntries(initialTracking.map((t) => [t.request_id, t])));
   const [view, setView] = useState(initialRequests.some((r) => r.status === 'Nouvelle') ? 'todo' : 'all');
-  const [pole, setPole] = useState('Tous');
   const [q, setQ] = useState('');
   const [selected, setSelected] = useState(initialSelected);
   const [live, setLive] = useState(false);
@@ -147,7 +145,6 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
   const counts = Object.fromEntries(VIEWS.map((v) => [v.key, rows.filter(v.test).length]));
   const shown = rows.filter((r) => {
     if (!VIEWS.find((v) => v.key === view).test(r)) return false;
-    if (pole !== 'Tous' && poleOf(r.offer) !== pole) return false;
     if (!q) return true;
     const hay = `${r.company} ${r.contact_name} ${r.email} ${r.message || ''}`.toLowerCase();
     return hay.includes(q.toLowerCase());
@@ -236,9 +233,6 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
               <Search size={16} />
               <input type="search" placeholder="Entreprise, contact, message…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Rechercher une demande" />
             </label>
-            <select className="status" value={pole} onChange={(e) => setPole(e.target.value)} aria-label="Filtrer par pôle">
-              {POLES.map((p) => <option key={p}>{p}</option>)}
-            </select>
           </div>
 
           {shown.length === 0 ? (
@@ -259,8 +253,7 @@ export default function Workspace({ initialRequests, initialTracking, initialSel
                         <small>{ago(r.created_at)}</small>
                       </span>
                       <span className="req-meta">
-                        <span className={'pole-tag p-' + poleOf(r.offer).toLowerCase()}>{poleOf(r.offer)}</span>
-                        {r.offer !== poleOf(r.offer) && <span>{r.offer} ·</span>}
+                        {r.topics?.length ? <span>{r.topics.join(', ')} ·</span> : poleOf(r.offer) !== 'Conformité' && <span>{r.offer} ·</span>}
                         <span>{r.contact_name}</span>
                       </span>
                       <span className="req-bottom">

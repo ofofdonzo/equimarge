@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
-// Navigation du poste de travail : les demandes reçues, puis les dossiers clients.
+// Navigation du poste de travail : les demandes reçues, les dossiers clients, l'agenda.
 const TABS = [
   { key: 'demandes', href: '/admin', label: 'Demandes' },
   { key: 'clients', href: '/admin/clients', label: 'Dossiers clients' },
+  { key: 'agenda', href: '/admin/agenda', label: 'Agenda' },
 ];
 
 export default function AdminNav({ current }) {
@@ -15,7 +16,7 @@ export default function AdminNav({ current }) {
         </Link>
       ))}
       {/* L'espace tel que les clients le voient */}
-      <Link href="/tableau-de-bord/demandes" className="switch">Voir l’espace client</Link>
+      <Link href="/tableau-de-bord" className="switch">Voir l’espace client</Link>
     </nav>
   );
 }

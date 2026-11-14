@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 
-// Onglets de l'espace client : demandes, dossier de conformité, suivi de marge, recettes, compte.
+// Onglets de l'espace client : accueil, demandes de devis, dossier, compte.
 const TABS = [
+  { key: 'accueil', href: '/tableau-de-bord', label: 'Accueil' },
   { key: 'demandes', href: '/tableau-de-bord/demandes', label: 'Mes demandes' },
-  { key: 'conformite', href: '/tableau-de-bord/conformite', label: 'Mon dossier conformité' },
-  { key: 'marges', href: '/tableau-de-bord', label: 'Suivi de marge' },
-  { key: 'recettes', href: '/tableau-de-bord/recettes', label: 'Recettes' },
+  { key: 'dossier', href: '/tableau-de-bord/conformite', label: 'Mon dossier' },
   { key: 'compte', href: '/tableau-de-bord/compte', label: 'Mon compte' },
 ];
 

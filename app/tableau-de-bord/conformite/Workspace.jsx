@@ -24,10 +24,16 @@ const TAB_LABELS = {
   actions: 'Plan d’action',
   registre: 'Registre RGPD',
   risques: 'Risques',
+  livrables: 'Livrables',
 };
+// Libellés propres à l'espace client sur le site
+const CLIENT_LABELS = { infos: 'Questions', documents: 'Documents à déposer', livrables: 'Livrables', messages: 'Messages' };
 // Onglets selon le rôle : Equimarge (admin) réalise la mission et voit tout ; le client ne voit que
 // ce qui a déjà du contenu (le plan, le registre et les risques apparaissent quand Equimarge les a établis).
-function tabsFor(role, lists) {
+// Sur le site, le client a quatre onglets : questions, documents à déposer, livrables, messages. Le plan d'action,
+// le registre et les risques sont rangés avec les livrables. L'application iPhone garde ses onglets.
+function tabsFor(role, lists, app) {
+  if (role !== 'admin' && !app) return ['infos', 'documents', 'livrables', 'messages'];
   if (role === 'admin') return ['bord', 'infos', 'documents', 'messages', 'diagnostic', 'actions', 'registre', 'risques'];
   const filled = { actions: lists.actions.length, registre: lists.records.length, risques: lists.risks.length };
   return ['bord', 'infos', 'documents', 'messages', 'actions', 'registre', 'risques', 'diagnostic'].filter((t) => !(t in filled) || filled[t] > 0);
@@ -70,11 +76,11 @@ function newId() {
 
 // offline : aperçu sans base (rien n'est enregistré).
 // app : présent dans l'application mobile ({ onAccount, requestedTab, demo }) : onglets en bas de l'écran.
-export default function Workspace({ role = 'client', dossier, initial, setupMissing = false, offline = false, app = null }) {
+export default function Workspace({ role = 'client', dossier, initial, setupMissing = false, offline = false, app = null, initialTab = null }) {
   const supabase = useMemo(() => (offline ? null : createClient()), [offline]);
   const admin = role === 'admin';
   const mission = isMission(dossier);
-  const [tab, setTab] = useState('bord');
+  const [tab, setTab] = useState(initialTab || (role !== 'admin' && !app ? 'infos' : 'bord'));
   const [domain, setDomain] = useState('');
   const [answers, setAnswers] = useState(initial.answers);
   const [lists, setLists] = useState({
@@ -326,8 +332,9 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
   const filtered = (list) => list.filter((x) => !domain || x.domain === domain);
   const pendingInfos = lists.infos.filter((i) => i.status === 'À fournir').length;
   const unread = messages.filter((m) => m.from_admin !== admin && !m.read_at).length;
-  const tabs = tabsFor(role, lists);
-  const current = tabs.includes(tab) ? tab : 'bord';
+  const tabs = tabsFor(role, lists, app);
+  const clientWeb = !admin && !app;
+  const current = tabs.includes(tab) ? tab : tabs[0];
 
   // Messages reçus marqués comme lus dès que l'onglet Messages est ouvert
   useEffect(() => {
@@ -365,7 +372,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
               l’avancement ici.
             </p>
           </div>
-          <Link className="btn" href="/conformite#devis">Demander un devis <ArrowRight size={18} /></Link>
+          <Link className="btn" href="/contact">Demander un devis <ArrowRight size={18} /></Link>
         </div>
         <p className="note" style={{ margin: 0 }}>
           Cet auto-diagnostic donne des repères d’organisation ; il ne constitue pas une consultation juridique.
@@ -387,7 +394,7 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
           <div className="tabs" role="tablist" aria-label="Outils du dossier">
             {tabs.map((t) => (
               <button key={t} type="button" role="tab" id={`tab-${t}`} aria-selected={current === t} aria-controls="ws-panel" onClick={() => setTab(t)}>
-                {TAB_LABELS[t]}
+                {(clientWeb && CLIENT_LABELS[t]) || TAB_LABELS[t]}
                 {t === 'infos' && pendingInfos > 0 && <span className="tab-count">{pendingInfos}</span>}
                 {t === 'messages' && unread > 0 && <span className="tab-count">{unread}</span>}
               </button>
@@ -445,7 +452,29 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
             onAddActions={addRecommended}
           />
         )}
-        {current === 'infos' && (
+        {current === 'infos' && clientWeb && (
+          <div className="stack">
+            <InfoRequests
+              items={lists.infos}
+              documents={lists.documents}
+              role={role}
+              today={today}
+              onAdd={() => {}}
+              onUpdate={() => {}}
+              onRemove={() => {}}
+              onAnswer={answerInfo}
+              onUpload={upload}
+              onOpenDoc={openDoc}
+            />
+            <details className="panel">
+              <summary><b>Votre auto-diagnostic</b></summary>
+              <div style={{ marginTop: 16 }}>
+                <Questionnaire answers={answers} scores={scores} domain="" actions={lists.actions} canPlan={false} onAnswer={answer} onAddActions={addRecommended} />
+              </div>
+            </details>
+          </div>
+        )}
+        {current === 'infos' && !clientWeb && (
           <InfoRequests
             items={lists.infos}
             documents={lists.documents}
@@ -460,7 +489,15 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
           />
         )}
         {current === 'documents' && (
-          <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
+          <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} only={clientWeb ? 'Client' : null} onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
+        )}
+        {current === 'livrables' && (
+          <div className="stack">
+            <Documents documents={lists.documents} infos={lists.infos} role={role} offline={!supabase} only="Livrable" onUpload={upload} onOpen={openDoc} onRemove={removeDoc} />
+            {lists.actions.length > 0 && <Actions actions={lists.actions} domain="" today={today} readOnly onAdd={() => {}} onUpdate={() => {}} onRemove={() => {}} />}
+            {lists.records.length > 0 && <Register records={lists.records} readOnly onAdd={() => {}} onUpdate={() => {}} onRemove={() => {}} />}
+            {lists.risks.length > 0 && <Risks risks={lists.risks} domain="" readOnly onAdd={() => {}} onUpdate={() => {}} onRemove={() => {}} />}
+          </div>
         )}
         {current === 'messages' && <Messages role={role} messages={messages} canWrite={admin || mission} onSend={sendMessage} />}
         {current === 'actions' && (
@@ -497,8 +534,8 @@ export default function Workspace({ role = 'client', dossier, initial, setupMiss
 
       {admin && (
         <p className="note" style={{ margin: 0 }}>
-          Le client voit ce dossier dans son espace : tableau de bord, demandes, documents, messages, puis plan, registre et
-          risques (en lecture seule) dès qu’ils contiennent quelque chose.
+          Le client voit ce dossier dans son espace, en quatre onglets : questions (avec son auto-diagnostic), documents à
+          déposer, livrables (avec le plan, le registre et les risques, en lecture seule) et messages.
         </p>
       )}
 

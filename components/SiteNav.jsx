@@ -3,14 +3,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// `only` : 'wide' = lien réservé à la barre des grands écrans, 'panel' = lien réservé au menu déroulant des téléphones
 const LINKS = [
-  { href: '/conformite', label: 'Conformité' },
+  { href: '/', label: 'Accueil' },
+  { href: '/offres', label: 'Offres' },
+  { href: '/auto-diagnostic', label: 'Auto-diagnostic gratuit' },
   { href: '/guides', label: 'Guides' },
-  { href: '/#services', label: 'Autres services', only: 'wide' },
-  { href: '/diagnostic', label: 'Diagnostic de marge', only: 'panel' },
-  { href: '/artisans', label: 'Artisans de l’alimentation', only: 'panel' },
-  { href: '/automatisation', label: 'Automatisation', only: 'panel' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 // Navigation de l'en-tête. Grands écrans : liens en ligne, soulignés au survol.
@@ -55,13 +53,13 @@ export default function SiteNav({ children }) {
       </div>
       <nav id="menu-principal" className={'nav' + (open ? ' open' : '')} aria-label="Navigation principale">
         <div className="nav-inner">
-          {LINKS.map(({ href, label, only }, i) => (
+          {LINKS.map(({ href, label }, i) => (
             <Link
               key={href}
               href={href}
-              className={'nav-link' + (only ? ' only-' + only : '')}
+              className="nav-link"
               style={{ '--i': i }}
-              aria-current={pathname === href || pathname.startsWith(href + '/') ? 'page' : undefined}
+              aria-current={pathname === href || (href !== '/' && pathname.startsWith(href + '/')) ? 'page' : undefined}
               onClick={close}
             >
               {label}

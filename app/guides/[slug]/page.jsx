@@ -47,7 +47,7 @@ export default async function GuidePage({ params }) {
           <p>Nous répondons à toute demande de devis sous 48&nbsp;h ouvrées.</p>
         </div>
         <div className="row">
-          <Link href="/conformite#devis" className="btn lg">Demander un devis</Link>
+          <Link href="/contact" className="btn lg">Demander un devis</Link>
           <Link href={g.related.href} className="btn ghost lg">{g.related.label}</Link>
         </div>
       </div>

@@ -2,24 +2,17 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { OFFERS, COMPLIANCE, COMPLIANCE_OFFER, AUTOMATION, AUTOMATION_OFFER, SECTORS, REVENUE_BANDS } from '@/components/offers';
-import { Check, Clock, DOMAIN_ICONS, FLOOR_ICONS } from '@/components/icons';
+import { COMPLIANCE_OFFER, PRESTATIONS, PRESTATION_UNSURE, SECTORS, REVENUE_BANDS } from '@/components/offers';
+import { Check } from '@/components/icons';
 
-// Formulaire de demande, commun aux deux pôles :
-// kind="diagnostic" : choix d'une formule de diagnostic de marge ;
-// kind="conformite" : choix d'un ou plusieurs domaines, devis sur mesure ;
-// kind="automatisation" : choix d'un ou plusieurs étages d'agents IA, devis sur mesure.
-const QUOTE_KINDS = {
-  conformite: { offer: COMPLIANCE_OFFER, list: COMPLIANCE, icons: DOMAIN_ICONS, legend: 'Domaines concernés', what: 'au moins un domaine' },
-  automatisation: { offer: AUTOMATION_OFFER, list: AUTOMATION, icons: FLOOR_ICONS, legend: 'Tâches à automatiser', what: 'au moins une tâche à automatiser' },
-};
+// Le formulaire de demande de devis du site (page /contact). Le visiteur choisit une ou plusieurs offres ;
+// la demande est enregistrée avec la formule « Conformité » et les offres choisies dans `topics`.
+const CHOICES = [...PRESTATIONS, PRESTATION_UNSURE];
 
-export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, defaultTopics = [], defaultSector = SECTORS[0] }) {
-  const quote = QUOTE_KINDS[kind];
-  const compliance = Boolean(quote);
+export default function RequestForm({ userId, defaultEmail, defaultTopics = [] }) {
   const [f, setF] = useState({
-    offer: quote ? quote.offer : defaultOffer, topics: defaultTopics,
-    company: '', siren: '', sector: SECTORS.includes(defaultSector) ? defaultSector : SECTORS[0], revenue_band: REVENUE_BANDS[0],
+    topics: defaultTopics,
+    company: '', siren: '', sector: SECTORS[0], revenue_band: REVENUE_BANDS[0],
     contact_name: '', email: defaultEmail, phone: '', availability: '', message: '', callback: false, consent: false, website: '',
   });
   const [busy, setBusy] = useState(false);
@@ -29,9 +22,10 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
   const toggleTopic = (key) =>
     setF({ ...f, topics: f.topics.includes(key) ? f.topics.filter((t) => t !== key) : [...f.topics, key] });
-  const topicNames = (quote?.list || []).filter((d) => f.topics.includes(d.key)).map((d) => d.id);
+  const topicNames = CHOICES.filter((d) => f.topics.includes(d.key)).map((d) => d.topic);
+  const chosenNames = CHOICES.filter((d) => f.topics.includes(d.key)).map((d) => d.name);
 
-  // Amène la confirmation à l'écran, même quand le formulaire est en bas de page (/conformite)
+  // Amène la confirmation à l'écran
   useEffect(() => {
     if (done) doneRef.current?.scrollIntoView({ block: 'center' });
   }, [done]);
@@ -40,7 +34,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     e.preventDefault();
     const siren = f.siren.replace(/\s/g, '');
     const miss = [];
-    if (quote && topicNames.length === 0) miss.push(quote.what);
+    if (topicNames.length === 0) miss.push('au moins une offre');
     if (!f.company.trim()) miss.push('la raison sociale');
     if (siren && !/^\d{9}$/.test(siren)) miss.push('un SIREN à 9 chiffres (ou laissez le champ vide)');
     if (!f.contact_name.trim()) miss.push('votre nom');
@@ -56,9 +50,8 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
     const supabase = createClient();
     const { error } = await supabase.from('diagnostic_requests').insert({
       user_id: userId,
-      offer: f.offer,
-      // La colonne topics n'est envoyée que pour les devis (voir supabase/schema.sql)
-      ...(compliance && { topics: topicNames }),
+      offer: COMPLIANCE_OFFER,
+      topics: topicNames,
       company: f.company.trim(),
       siren: siren || null,
       sector: f.sector,
@@ -83,26 +76,13 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
       <div ref={doneRef} className="panel success stack" style={{ padding: 28 }}>
         <span className="done-icon"><Check size={26} /></span>
         <h2 style={{ margin: 0 }}>Demande envoyée</h2>
-        {compliance ? (
-          <p style={{ margin: 0 }}>
-            Merci. Votre demande de devis {kind === 'automatisation' ? 'd’automatisation ' : ''}pour <b>{f.company}</b> ({topicNames.join(', ')}) est bien enregistrée.{' '}
-            {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
-          </p>
-        ) : (
-          <p style={{ margin: 0 }}>
-            Merci. Votre demande de diagnostic <b>{f.offer}</b> pour <b>{f.company}</b> est bien enregistrée.{' '}
-            {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
-          </p>
-        )}
+        <p style={{ margin: 0 }}>
+          Votre demande pour <b>{f.company}</b> ({chosenNames.join(', ')}) est enregistrée.{' '}
+          {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
+        </p>
         {userId && (
           <p className="note" style={{ margin: 0 }}>
             Vous suivez son avancement dans votre espace. <Link href="/tableau-de-bord/demandes">Voir mes demandes</Link>
-          </p>
-        )}
-        {!userId && !compliance && (
-          <p className="note" style={{ margin: 0 }}>
-            En attendant, créez votre espace gratuit pour saisir vos marges : nous gagnerons du temps lors du rendez-vous.{' '}
-            <Link href="/connexion?mode=inscription">Créer mon espace</Link>
           </p>
         )}
       </div>
@@ -111,40 +91,21 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
 
   return (
     <form className="stack" onSubmit={submit} noValidate>
-      {compliance ? (
-        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend><span className="step-label"><span className="n">1</span>{quote.legend}</span></legend>
-          <div className={(kind === 'automatisation' ? 'grid2' : 'grid3') + ' topics'}>
-            {quote.list.map((d) => {
-              const Icon = quote.icons[d.key];
-              const on = f.topics.includes(d.key);
-              return (
-                <label key={d.key} className={'offer topic' + (on ? ' selected' : '')}>
-                  <input type="checkbox" name="topics" value={d.key} checked={on} onChange={() => toggleTopic(d.key)} />
-                  <span className="topic-icon"><Icon size={20} /></span>
-                  <span className="topic-name">{d.id}</span>
-                </label>
-              );
-            })}
-          </div>
-          <p className="note" style={{ marginBottom: 0 }}>Plusieurs choix possibles. Tarif sur devis, selon votre situation.</p>
-        </fieldset>
-      ) : (
-        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend><span className="step-label"><span className="n">1</span>Formule</span></legend>
-          <div className="grid3">
-            {OFFERS.map((o) => (
-              <label key={o.id} className={'offer' + (f.offer === o.id ? ' selected' : '')}>
-                <input type="radio" name="offer" value={o.id} checked={f.offer === o.id} onChange={set('offer')} />
-                <h3>{o.id}</h3>
-                <span className="meta"><Clock size={16} />{o.delay}</span>
-                <div className="price">{o.price}</div>
-                <ul className="checks">{o.items.map((i) => <li key={i}><Check size={16} />{i}</li>)}</ul>
+      <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend><span className="step-label"><span className="n">1</span>Votre besoin</span></legend>
+        <div className="grid2 topics">
+          {CHOICES.map((d) => {
+            const on = f.topics.includes(d.key);
+            return (
+              <label key={d.key} className={'offer topic' + (on ? ' selected' : '')}>
+                <input type="checkbox" name="topics" value={d.key} checked={on} onChange={() => toggleTopic(d.key)} />
+                <span className="topic-name">{d.name}</span>
               </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
+            );
+          })}
+        </div>
+        <p className="note" style={{ marginBottom: 0 }}>Plusieurs choix possibles.</p>
+      </fieldset>
 
       <div className="panel stack">
         <span className="step-label"><span className="n">2</span>Votre entreprise</span>
@@ -167,18 +128,12 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
           <div className="field"><label htmlFor="dispo">Disponibilités</label><input id="dispo" placeholder="ex. mardi matin" maxLength={200} value={f.availability} onChange={set('availability')} /></div>
         </div>
         <div className="field">
-          <label htmlFor="msg">{compliance ? 'Décrivez votre besoin' : "Qu'attendez-vous du diagnostic ?"}</label>
+          <label htmlFor="msg">Votre situation</label>
           <textarea
             id="msg"
             rows={3}
             maxLength={4000}
-            placeholder={
-              kind === 'automatisation'
-                ? 'ex. Nous recevons 80 mails par jour et nos relances de factures se font à la main.'
-                : compliance
-                  ? 'ex. Un client grand compte nous demande notre dispositif anticorruption.'
-                  : 'ex. Notre marge baisse depuis 6 mois malgré un CA stable.'
-            }
+            placeholder="ex. Nous avons 25 salariés, un site de vente en ligne et aucun registre des traitements."
             value={f.message}
             onChange={set('message')}
           />
@@ -201,7 +156,7 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
         {error && <p className="err" role="alert">{error}</p>}
         <div className="row">
           <button className="btn lg" type="submit" disabled={busy}>
-            {busy ? 'Envoi…' : <>{compliance ? 'Demander un devis' : 'Envoyer ma demande'}</>}
+            {busy ? 'Envoi…' : 'Envoyer la demande'}
           </button>
           <span className="note">* champs obligatoires</span>
         </div>

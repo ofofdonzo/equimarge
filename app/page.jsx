@@ -1,52 +1,22 @@
 import Link from 'next/link';
 import { Check } from '@/components/icons';
+import { PRESTATIONS } from '@/components/offers';
 import { siteUrl } from '@/lib/site';
 
 export const metadata = { alternates: { canonical: '/' } };
 
-const DIAGNOSTIC = '/connexion?mode=inscription&suite=/tableau-de-bord/conformite';
-
 const STEPS = [
-  { n: '1', title: 'Auto-diagnostic gratuit', text: 'Vous répondez en ligne à un questionnaire, domaine par domaine. Comptez quelques minutes.' },
-  { n: '2', title: 'Devis', text: 'Nous échangeons sur votre situation et vous proposons une mission au forfait ou un abonnement.' },
-  { n: '3', title: 'Réalisation', text: 'Vous répondez à nos demandes et déposez vos documents dans votre dossier en ligne. Nous préparons le registre, les procédures et le plan d’action.' },
-  { n: '4', title: 'Livrables et suivi', text: 'Nous livrons les documents dans votre dossier, puis nous suivons leur mise à jour avec vous.' },
-];
-
-const OFFERS = [
-  {
-    title: 'Mise en conformité RGPD',
-    price: 'Forfait sur devis',
-    href: '/conformite?domaine=rgpd#devis',
-    items: ['État des lieux et registre des traitements', 'Mentions d’information, demandes de droits, violations de données', 'Contrats de sous-traitance revus et plan d’action'],
-  },
-  {
-    title: 'DPO externalisé',
-    price: 'Abonnement mensuel sur devis',
-    href: '/conformite?domaine=dpo#devis',
-    items: ['Désignation auprès de la CNIL', 'Demandes de droits et violations de données traitées', 'Registre tenu à jour et rapport annuel'],
-  },
-  {
-    title: 'Vos autres obligations',
-    price: 'Sur devis',
-    href: '/conformite#domaines',
-    items: ['Anti-blanchiment (LCB-FT)', 'Intelligence artificielle (AI Act)', 'Anticorruption, procédures internes, droit social'],
-  },
-];
-
-const SERVICES = [
-  { href: '/diagnostic', title: 'Diagnostic de marge', text: 'Une analyse produit par produit de votre rentabilité, avec un outil gratuit de suivi de marge.' },
-  { href: '/artisans', title: 'Artisans de l’alimentation', text: 'Vous photographiez vos factures fournisseurs, l’outil recalcule le coût de chaque recette et propose un prix de vente. Une version gratuite existe.' },
-  { href: '/automatisation', title: 'Automatisation par agents IA', text: 'Des agents IA préparent vos mails, vos factures et vos relances. Vous validez avant tout envoi.' },
+  { n: '1', title: 'Premier échange', text: 'Par téléphone ou en visio, nous faisons le point sur votre activité, vos données et vos obligations.' },
+  { n: '2', title: 'Devis', text: 'Vous recevez un devis sous 48 h ouvrées : un forfait pour la mise en conformité, un abonnement pour le DPO externalisé.' },
+  { n: '3', title: 'État des lieux et documents', text: 'Vous répondez à nos questions et déposez vos pièces dans votre dossier en ligne. Nous rédigeons le registre, les procédures et le plan d’action.' },
+  { n: '4', title: 'Suivi', text: 'Avec l’abonnement DPO, nous tenons votre conformité à jour et traitons les demandes et les incidents au fil de l’année.' },
 ];
 
 // Exemple de dossier client, tel que le client le voit dans son espace
 const PLAN = [
   { name: 'RGPD', progress: 100, state: 'ok', label: 'Conforme' },
-  { name: 'Procédures internes', progress: 100, state: 'ok', label: 'Conforme' },
   { name: 'Anti-blanchiment', progress: 60, state: 'warn', label: 'En cours' },
-  { name: 'Intelligence artificielle', progress: 40, state: 'warn', label: 'En cours' },
-  { name: 'Droit social', progress: 10, state: 'bad', label: 'À traiter' },
+  { name: 'Intelligence artificielle', progress: 20, state: 'bad', label: 'À traiter' },
 ];
 
 function Preview() {
@@ -55,9 +25,9 @@ function Preview() {
       <div className="preview-card">
         <div className="preview-head">Exemple de dossier client, tel qu’il apparaît dans votre espace</div>
         <div className="preview-kpis">
-          <div><small>Domaines suivis</small><b>5</b></div>
-          <div><small>Conformes</small><b>2 sur 5</b></div>
-          <div><small>Avancement</small><b>62&nbsp;%</b></div>
+          <div><small>Domaines suivis</small><b>3</b></div>
+          <div><small>Conformes</small><b>1 sur 3</b></div>
+          <div><small>Avancement</small><b>60&nbsp;%</b></div>
         </div>
         <div className="preview-rows">
           {PLAN.map((r) => (
@@ -90,35 +60,63 @@ export default function Home() {
     { '@context': 'https://schema.org', '@type': 'Organization', name: 'Equimarge', url: `${base}/`, logo: `${base}/icon.svg`, email: 'contact@equimarge.fr' },
   ];
 
+  const [rgpd, dpo, ...secondary] = PRESTATIONS;
+
   return (
     <div className="home">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="hero">
         <div>
-          <span className="badge">Pour les PME</span>
+          <span className="badge">Conformité des PME</span>
           <h1>Mise en conformité RGPD et DPO externalisé</h1>
           <p className="lead">
-            Equimarge réalise votre mise en conformité RGPD et assure la fonction de délégué à la protection des données
-            (DPO). Nous traitons aussi l’anti-blanchiment, l’usage de l’intelligence artificielle et vos procédures
-            internes. Vous déposez vos informations dans un dossier en ligne et vous y suivez l’avancement de la mission.
+            Equimarge met votre entreprise en conformité avec le RGPD, puis peut assurer la fonction de délégué à la
+            protection des données (DPO). Nous intervenons aussi sur l’usage de l’intelligence artificielle et sur
+            l’anti-blanchiment. Vos documents et l’avancement de la mission sont dans un dossier en ligne.
           </p>
           <div className="row">
-            <Link href="/conformite#devis" className="btn lg">Demander un devis</Link>
-            <Link href={DIAGNOSTIC} className="btn ghost lg">Faire l’auto-diagnostic gratuit</Link>
+            <Link href="/contact" className="btn lg">Demander un devis</Link>
+            <Link href="/auto-diagnostic" className="btn ghost lg">Faire l’auto-diagnostic gratuit</Link>
           </div>
           <ul className="trust">
-            <li>Forfait ou abonnement</li>
+            <li>Devis sous 48&nbsp;h ouvrées</li>
+            <li>Un seul interlocuteur</li>
             <li>Dossier suivi en ligne</li>
-            <li>Réponse sous 48&nbsp;h ouvrées</li>
           </ul>
         </div>
         <Preview />
       </section>
 
+      <section className="section" id="offres">
+        <div className="section-head">
+          <h2>Nos offres</h2>
+          <p>Un forfait pour se mettre en conformité, un abonnement pour le rester.</p>
+        </div>
+        <div className="grid2">
+          {[rgpd, dpo].map((o) => (
+            <article key={o.key} className="feature domain">
+              <h3>{o.name}</h3>
+              <span className="meta">{o.price}</span>
+              <p className="note" style={{ marginTop: 10 }}>{o.short}</p>
+              <ul className="checks">
+                {o.includes.slice(0, 4).map((i) => <li key={i}><Check size={16} />{i}</li>)}
+              </ul>
+              <Link href={`/offres#${o.key}`} className="domain-link">Le détail de l’offre</Link>
+            </article>
+          ))}
+        </div>
+        <ul className="linklist">
+          {secondary.map((o) => (
+            <li key={o.key}>
+              <Link href={`/offres#${o.key}`}><b>{o.name}</b><span>{o.short}</span></Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <section className="section">
         <div className="section-head">
-          <h2>Déroulement d’une mission</h2>
-          <p>Nous faisons l’état des lieux et rédigeons les documents. De votre côté, vous répondez à nos questions et déposez les pièces demandées.</p>
+          <h2>Comment se passe une mission</h2>
         </div>
         <ol className="steps4">
           {STEPS.map(({ n, title, text }) => (
@@ -131,38 +129,6 @@ export default function Home() {
         </ol>
       </section>
 
-      <section className="section" id="offres">
-        <div className="section-head">
-          <h2>Forfait ou abonnement</h2>
-          <p>Nous répondons à toute demande de devis sous 48&nbsp;h ouvrées. La demande ne vous engage pas.</p>
-        </div>
-        <div className="grid3">
-          {OFFERS.map(({ title, price, href, items }) => (
-            <article key={title} className="feature domain">
-              <h3>{title}</h3>
-              <span className="meta">{price}</span>
-              <ul className="checks">
-                {items.map((i) => <li key={i}><Check size={16} />{i}</li>)}
-              </ul>
-              <Link href={href} className="domain-link">Demander un devis</Link>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section" id="services">
-        <div className="section-head">
-          <h2>Les autres services d’Equimarge</h2>
-        </div>
-        <ul className="linklist">
-          {SERVICES.map(({ href, title, text }) => (
-            <li key={href}>
-              <Link href={href}><b>{title}</b><span>{text}</span></Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section className="section" id="a-propos">
         <div className="section-head">
           <h2>Qui réalise votre mission</h2>
@@ -173,12 +139,12 @@ export default function Home() {
             interlocuteur du premier échange à la livraison des documents.
           </p>
           <p>
-            Une mission commence par un état des lieux. Nous classons ensuite les écarts par priorité, puis nous rédigeons
-            les documents. Vous suivez chaque étape dans votre dossier en ligne.
+            Nos missions relèvent de l’audit et de l’accompagnement. Elles ne constituent pas des consultations
+            juridiques : quand une question demande l’avis d’un avocat, nous vous le disons.
           </p>
           <p>
-            Pour un premier échange, écrivez à <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a>, appelez
-            le <a href="tel:+33766557340">07 66 55 73 40</a> ou <Link href="/conformite#devis">demandez à être rappelé</Link>.
+            Pour un premier échange, écrivez à <a href="mailto:contact@equimarge.fr">contact@equimarge.fr</a> ou appelez
+            le <a href="tel:+33766557340">07 66 55 73 40</a>.
           </p>
         </div>
       </section>
@@ -186,11 +152,11 @@ export default function Home() {
       <section className="cta">
         <div>
           <h2>Demander un devis</h2>
-          <p>Nous répondons sous 48&nbsp;h ouvrées. Vous pouvez aussi commencer par l’auto-diagnostic gratuit.</p>
+          <p>Décrivez votre situation en quelques lignes. Nous répondons sous 48&nbsp;h ouvrées, sans engagement.</p>
         </div>
         <div className="row">
-          <Link href="/conformite#devis" className="btn inverse lg">Demander un devis</Link>
-          <Link href={DIAGNOSTIC} className="btn on-grad lg">Faire l’auto-diagnostic gratuit</Link>
+          <Link href="/contact" className="btn inverse lg">Demander un devis</Link>
+          <Link href="/auto-diagnostic" className="btn on-grad lg">Faire l’auto-diagnostic gratuit</Link>
         </div>
       </section>
     </div>

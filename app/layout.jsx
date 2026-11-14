@@ -13,9 +13,9 @@ import { siteUrl } from '@/lib/site';
 const franklin = Libre_Franklin({ subsets: ['latin'], weight: ['400', '500', '600', '700'], display: 'swap', variable: '--font-franklin' });
 const serif = Source_Serif_4({ subsets: ['latin'], weight: ['600', '700'], display: 'swap', variable: '--font-serif' });
 
-const TITLE = 'Equimarge : conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
+const TITLE = 'Equimarge : mise en conformité RGPD et DPO externalisé pour les PME';
 const DESCRIPTION =
-  'Equimarge réalise la mise en conformité des PME : RGPD, DPO externalisé, anti-blanchiment, IA, anticorruption, droit social. Dossier suivi en ligne. Aussi : diagnostic de marge et automatisation.';
+  'Equimarge réalise la mise en conformité RGPD des PME et assure la fonction de DPO externalisé. Également : conformité IA (AI Act) et anti-blanchiment. Dossier suivi en ligne, devis sous 48 h ouvrées.';
 
 export function generateMetadata() {
   return {
@@ -66,15 +66,14 @@ export default function RootLayout({ children }) {
                 <LogoMark size={28} />
                 <span>Equimarge</span>
               </Link>
-              <p>Conformité, marge et automatisation pour les PME.</p>
+              <p>Conformité RGPD, DPO externalisé, AI Act et anti-blanchiment pour les PME.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
-              <Link href="/conformite">Conformité</Link>
-              <Link href="/diagnostic">Diagnostic de marge</Link>
-              <Link href="/artisans">Artisans de l’alimentation</Link>
-              <Link href="/automatisation">Automatisation IA</Link>
+              <Link href="/offres">Offres</Link>
+              <Link href="/auto-diagnostic">Auto-diagnostic gratuit</Link>
               <Link href="/guides">Guides</Link>
               <Link href="/#a-propos">Qui sommes-nous</Link>
+              <Link href="/contact">Contact</Link>
               <Link href="/mentions-legales">Mentions légales</Link>
               <Link href="/conditions-generales">Conditions générales</Link>
               <Link href="/confidentialite">Confidentialité</Link>

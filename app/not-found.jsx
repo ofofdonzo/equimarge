@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BarChart, Shield } from '@/components/icons';
+import { ClipboardList, Shield } from '@/components/icons';
 
 export const metadata = { title: 'Page introuvable | Equimarge', robots: { index: false } };
 
@@ -18,13 +18,13 @@ export default function NotFound() {
         </Link>
       </div>
       <div className="notfound-links">
-        <Link href="/diagnostic" className="notfound-link">
-          <span className="topic-icon"><BarChart size={20} /></span>
-          <span><b>Diagnostic de marge</b><small>Outil gratuit et analyse de vos marges</small></span>
-        </Link>
-        <Link href="/conformite" className="notfound-link">
+        <Link href="/offres" className="notfound-link">
           <span className="topic-icon"><Shield size={20} /></span>
-          <span><b>Conformité</b><small>Audit et accompagnement</small></span>
+          <span><b>Offres</b><small>RGPD, DPO externalisé, AI Act, anti-blanchiment</small></span>
+        </Link>
+        <Link href="/auto-diagnostic" className="notfound-link">
+          <span className="topic-icon"><ClipboardList size={20} /></span>
+          <span><b>Auto-diagnostic gratuit</b><small>Où en est votre entreprise</small></span>
         </Link>
       </div>
       <p className="note">

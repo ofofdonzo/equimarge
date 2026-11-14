@@ -17,9 +17,7 @@ const STEPS = {
 };
 
 const NEW = [
-  { href: '/diagnostic', title: 'Diagnostic de marge', text: 'Une analyse de votre rentabilité, produit par produit.' },
-  { href: '/automatisation#devis', title: 'Automatisation', text: 'Des agents IA pour vos mails, factures et relances.' },
-  { href: '/conformite#devis', title: 'Mise en conformité', text: 'RGPD, DPO externalisé et vos autres obligations.' },
+  { href: '/contact', title: 'Demande de devis', text: 'Mise en conformité RGPD, DPO externalisé, conformité IA, anti-blanchiment.' },
 ];
 
 function subject(r) {
@@ -46,7 +44,7 @@ export default async function Page() {
       <SpaceNav current="demandes" />
       <div>
         <span className="eyebrow">Mon espace</span>
-        <h1>Vos demandes</h1>
+        <h1>Mes demandes</h1>
         <p className="lead" style={{ marginBottom: 0 }}>
           Chaque demande envoyée à Equimarge depuis votre compte apparaît ici, avec son état d’avancement.
         </p>

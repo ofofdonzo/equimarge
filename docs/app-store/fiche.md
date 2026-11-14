@@ -26,7 +26,7 @@ Suivez votre mise en conformité RGPD, DPO externalisé et anti-blanchiment avec
 
 ## Description (4 000 max.)
 
-Equimarge accompagne les PME et les intermédiaires d’assurance dans leur mise en conformité : RGPD et DPO externalisé, anti-blanchiment, intelligence artificielle, anticorruption, procédures internes.
+Equimarge accompagne les PME dans leur mise en conformité : RGPD et DPO externalisé, anti-blanchiment, intelligence artificielle, anticorruption, procédures internes.
 
 L’application Equimarge est votre espace client. Votre consultant réalise la mission ; vous suivez l’avancement et vous lui transmettez ce dont il a besoin, depuis votre iPhone.
 
@@ -62,7 +62,7 @@ Application réservée aux professionnels. L’accompagnement Equimarge fait l�
 
 ## Mots-clés (100 max., séparés par des virgules)
 
-conformité,RGPD,DPO,anti-blanchiment,LCB-FT,courtier,assurance,DDA,registre,PME,audit,dossier
+conformité,RGPD,DPO,anti-blanchiment,LCB-FT,registre,PME,audit,dossier
 
 ## Nouveautés de la version 1.0
 
@@ -77,7 +77,7 @@ Dans l'ordre, depuis `docs/app-store/captures/` :
 4. `4-messages.png` — messagerie avec le consultant
 5. `5-compte.png` — compte, notifications et suppression du compte (facultative)
 
-Elles montrent l'application avec un dossier d'exemple fictif (« Courtage Bêta »). Pour les refaire :
+Elles montrent l'application avec un dossier d'exemple fictif (« Menuiserie Bêta »). Pour les refaire :
 `EQUIMARGE_DEMO=1 node scripts/build-mobile.mjs`, puis ouvrir `mobile/demo/index.html?onglet=infos` (onglets : `infos`,
 `documents`, `messages` ; `?ecran=account` pour le compte) dans une fenêtre de 440 × 956 points.
 

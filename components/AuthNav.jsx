@@ -12,13 +12,18 @@ export default function AuthNav() {
   const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-      // L'administrateur va directement à son poste de travail
-      if (data.session) supabase.rpc('is_admin').then(({ data: isAdmin }) => setAdmin(Boolean(isAdmin)));
-    });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
-    return () => data.subscription.unsubscribe();
+    let cancelled = false;
+    // L'administrateur va directement à son poste de travail. Le rôle est relu à chaque connexion ou
+    // déconnexion : sans cela, le bouton restait sur « Mon espace » jusqu'au rechargement de la page.
+    const apply = (session) => {
+      setUser(session?.user ?? null);
+      if (!session) return setAdmin(false);
+      supabase.rpc('is_admin').then(({ data: isAdmin }) => { if (!cancelled) setAdmin(Boolean(isAdmin)); });
+    };
+    supabase.auth.getSession().then(({ data }) => { if (!cancelled) apply(data.session); });
+    // setTimeout : un appel à la base lancé dans ce rappel bloquerait la connexion en cours
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setTimeout(() => { if (!cancelled) apply(session); }, 0));
+    return () => { cancelled = true; data.subscription.unsubscribe(); };
   }, [supabase]);
 
   if (user) {

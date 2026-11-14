@@ -15,7 +15,7 @@ const serif = Source_Serif_4({ subsets: ['latin'], weight: ['600', '700'], displ
 
 const TITLE = 'Equimarge : conformité RGPD, DPO externalisé et anti-blanchiment pour PME';
 const DESCRIPTION =
-  'Equimarge réalise la mise en conformité des PME et des intermédiaires d’assurance : RGPD, DPO externalisé, anti-blanchiment, IA, anticorruption, droit social. Dossier suivi en ligne. Aussi : diagnostic de marge et automatisation.';
+  'Equimarge réalise la mise en conformité des PME : RGPD, DPO externalisé, anti-blanchiment, IA, anticorruption, droit social. Dossier suivi en ligne. Aussi : diagnostic de marge et automatisation.';
 
 export function generateMetadata() {
   return {
@@ -66,11 +66,10 @@ export default function RootLayout({ children }) {
                 <LogoMark size={28} />
                 <span>Equimarge</span>
               </Link>
-              <p>Conformité des PME et des intermédiaires d’assurance.</p>
+              <p>Conformité, marge et automatisation pour les PME.</p>
             </div>
             <nav className="footer-links" aria-label="Liens du pied de page">
               <Link href="/conformite">Conformité</Link>
-              <Link href="/intermediaires-assurance">Intermédiaires d’assurance</Link>
               <Link href="/diagnostic">Diagnostic de marge</Link>
               <Link href="/artisans">Artisans de l’alimentation</Link>
               <Link href="/automatisation">Automatisation IA</Link>

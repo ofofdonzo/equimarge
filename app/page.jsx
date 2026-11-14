@@ -95,7 +95,7 @@ export default function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <section className="hero">
         <div>
-          <span className="badge">Pour les PME et les intermédiaires d’assurance</span>
+          <span className="badge">Pour les PME</span>
           <h1>Mise en conformité RGPD et DPO externalisé</h1>
           <p className="lead">
             Equimarge réalise votre mise en conformité RGPD et assure la fonction de délégué à la protection des données
@@ -148,17 +148,6 @@ export default function Home() {
             </article>
           ))}
         </div>
-      </section>
-
-      <section className="band">
-        <div>
-          <h2>Courtiers et intermédiaires d’assurance</h2>
-          <p>
-            Nous auditons le cabinet et mettons ses procédures à jour : devoir de conseil, lutte contre le blanchiment,
-            données de santé, réclamations.
-          </p>
-        </div>
-        <Link href="/intermediaires-assurance" className="btn ghost lg">Voir l’accompagnement dédié</Link>
       </section>
 
       <section className="section" id="services">

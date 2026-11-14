@@ -47,7 +47,7 @@ export const COMPLIANCE = [
   {
     key: 'lcbft',
     id: 'Anti-blanchiment (LCB-FT)',
-    intro: "Organiser le dispositif anti-blanchiment des professions assujetties : agences immobilières, intermédiaires d'assurance, experts-comptables, domiciliataires…",
+    intro: "Organiser le dispositif anti-blanchiment des professions assujetties : agences immobilières, experts-comptables, domiciliataires…",
     items: ['Classification des risques', 'Procédures de vigilance sur les clients', 'Contrôle interne et sensibilisation des équipes'],
   },
   {
@@ -119,7 +119,6 @@ export const SECTORS = [
   'Industrie',
   'Services aux entreprises',
   'Immobilier (agence, gestion)',
-  'Assurance / courtage',
   'Professions du chiffre et du droit',
   'Santé / médico-social',
   'Association / fondation',
@@ -142,7 +141,7 @@ export const OBLIGATIONS = [
   },
   {
     key: 'lcbft',
-    who: "Agences immobilières, intermédiaires d'assurance, experts-comptables, domiciliataires…",
+    who: "Agences immobilières, experts-comptables, domiciliataires…",
     what: 'Dispositif anti-blanchiment : classification des risques, vigilance sur la clientèle, déclarations de soupçon à Tracfin, formation.',
   },
   {
@@ -170,7 +169,6 @@ export const STATUSES = ['Nouvelle', 'Contactée', 'Devis envoyé', 'Gagnée', '
 export const MISSIONS = [
   'Mise en conformité RGPD',
   'DPO externalisé',
-  'Conformité d’un intermédiaire d’assurance',
   'Anti-blanchiment (LCB-FT)',
   'Intelligence artificielle (AI Act)',
   'Anticorruption (Sapin II)',

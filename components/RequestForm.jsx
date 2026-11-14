@@ -94,6 +94,11 @@ export default function RequestForm({ kind, userId, defaultEmail, defaultOffer, 
             {f.callback ? <>Nous vous rappelons au {f.phone} sous 48&nbsp;h ouvrées.</> : <>Nous vous écrivons à {f.email} sous 48&nbsp;h ouvrées.</>}
           </p>
         )}
+        {userId && (
+          <p className="note" style={{ margin: 0 }}>
+            Vous suivez son avancement dans votre espace. <Link href="/tableau-de-bord/demandes">Voir mes demandes</Link>
+          </p>
+        )}
         {!userId && !compliance && (
           <p className="note" style={{ margin: 0 }}>
             En attendant, créez votre espace gratuit pour saisir vos marges : nous gagnerons du temps lors du rendez-vous.{' '}
